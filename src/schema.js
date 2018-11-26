@@ -1,5 +1,5 @@
 const isString = (s) => typeof s === "string" || s instanceof String
-const arrayOf = (arr, cl) = arr instanceof Array && arr.every(a => a instanceof cl)
+const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
 // Judgment abstract class and kinds of judgments
 
@@ -19,6 +19,19 @@ class LKJudgment extends Judgment {
 			this.conclusion = conclusion;
     } else {
       throw new TypeError("LKJudgment has to contain Judgments and a Sequent");
+    }
+  }
+}
+
+// All LK rules here
+
+class TruthRight extends LKJudgment {
+  constructor(premises, conclusion, index) {
+    super(premises, conclusion);
+	  if (conclusion.antecedent[index] instanceof Truth) {
+			this.index = index;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
     }
   }
 }
