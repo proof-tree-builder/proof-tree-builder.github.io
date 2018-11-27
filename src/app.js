@@ -21,7 +21,7 @@ svg.append("text")
 	.attr("height", 100)
   .text("Γ ⊢ Δ");
 
-const drawJudgment = function(judgment) {
+const drawJudgment = (judgment) => {
 }
 
 // update(katex.renderToString("\\Gamma \\vdash \\Delta"))
