@@ -20,11 +20,25 @@ class Formula {
       throw new TypeError("Cannot construct Formula instances directly");
     }
   }
+  shouldParen () {
+    return !(this instanceof Var || this instanceof Truth || this instanceof Falsity)
+  }
+  // parenthesize the formula if necessary in the Unicode or LaTeX rendering
+  punicode() { return this.shouldParen() ?  `(${this.unicode()})` : this.unicode() }
+  platex() { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
 }
 
-class Truth extends Formula { constructor() { super(); } }
+class Truth extends Formula {
+  constructor() { super(); }
+  unicode() { return "⊤" }
+  latex() { return "\\top" }
+}
 
-class Falsity extends Formula { constructor() { super(); } }
+class Falsity extends Formula {
+  constructor() { super(); }
+  unicode() { return "⊥" }
+  latex() { return "\\bot" }
+}
 
 class Var extends Formula {
   constructor(v) {
@@ -35,6 +49,8 @@ class Var extends Formula {
       throw new TypeError("Var has to contain a String");
     }
   }
+  unicode() { return this.v }
+  latex() { return this.v }
 }
 
 class And extends Formula {
@@ -47,6 +63,8 @@ class And extends Formula {
       throw new TypeError("And has to contain Formulas");
     }
   }
+  unicode() { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
+  latex() { return `${this.left.platex()} \\land ${this.right.platex()}` }
 }
 
 class Or extends Formula {
@@ -59,6 +77,8 @@ class Or extends Formula {
       throw new TypeError("Or has to contain Formulas");
     }
   }
+  unicode() { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
+  latex() { return `${this.left.platex()} \\lor ${this.right.platex()}` }
 }
 
 class Implies extends Formula {
@@ -71,6 +91,8 @@ class Implies extends Formula {
       throw new TypeError("Implies has to contain Formulas");
     }
   }
+  unicode() { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
+  latex() { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
 }
 
 class Not extends Formula {
@@ -82,6 +104,8 @@ class Not extends Formula {
       throw new TypeError("Not has to contain a Formula");
     }
   }
+  unicode() { return `¬ ${this.one.punicode()}` }
+  latex() { return `\\lnot ${this.one.platex()}` }
 }
 
 class Forall extends Formula {
@@ -94,6 +118,8 @@ class Forall extends Formula {
       throw new TypeError("Forall has to contain a String and a Formula");
     }
   }
+  unicode() { return `∀ ${this.v}. (${this.left.unicode()})` }
+  latex() { return `\\forall ${this.v}. (${this.left.latex()})` }
 }
 
 class Exists extends Formula {
@@ -106,6 +132,8 @@ class Exists extends Formula {
       throw new TypeError("Exists has to contain a String and a Formula");
     }
   }
+  unicode() { return `∃ ${this.v}. (${this.left.unicode()})` }
+  latex() { return `\\exists ${this.v}. (${this.left.latex()})` }
 }
 
 class Sequent {
@@ -117,6 +145,8 @@ class Sequent {
       throw new TypeError("Sequent has to contain Formulas");
     }
   }
+  unicode() { return `${this.precedents.map(f => f.unicode())} ⊢ ${this.antecedents.map(f => f.unicode())}` }
+  latex() { return `${this.precedents.map(f => f.latex())} \\vdash ${this.antecedents.map(f => f.latex())}` }
 }
 
 // Judgment abstract class and kinds of judgments
@@ -158,6 +188,8 @@ class TruthRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -175,6 +207,8 @@ class FalsityLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormulaIndex) =>
@@ -197,6 +231,8 @@ class Identity extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -220,6 +256,8 @@ class AndLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -243,6 +281,8 @@ class AndRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -266,6 +306,8 @@ class ImpliesLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -288,6 +330,8 @@ class ImpliesRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+
+  latex() { return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}` }
 }
 
 // End of LK rules
