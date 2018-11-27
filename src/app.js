@@ -57,7 +57,10 @@ Judgment.prototype.image = function() {
 
   var premiseGroup = new fabric.Group(premiseImages)
 
-  var text = new fabric.Text(this.conclusion.unicode(), { fontFamily: 'Helvetica' });
+  var text = new fabric.Text(this.conclusion.unicode(), {
+    fontFamily: 'Helvetica',
+    fontSize: 30
+  });
   var newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin("center", "bottom"))
   text.setPositionByOrigin(newTextPt)
 
@@ -70,7 +73,14 @@ Judgment.prototype.image = function() {
                                 selectable: false,
                               })
 
-  var group = new fabric.Group([premiseGroup, line, text]);
+  var ruleLabel = new fabric.Text(this.unicodeName, {
+    fontFamily: 'Helvetica',
+    fontSize: 10
+  });
+  ruleLabel.setPositionByOrigin(
+    (new fabric.Point(15, 0)).add(line.getPointByOrigin("right", "top"), "left", "top"))
+
+  var group = new fabric.Group([premiseGroup, line, ruleLabel, text]);
   group.lockRotation = true;
   group.lockScalingX = true;
   group.lockScalingY = true;

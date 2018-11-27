@@ -209,17 +209,23 @@ class LKJudgment extends Judgment {
   }
 
   latex() {
+    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
     switch (this.premises.length) {
       case 0:
-        return `\\AxiomC{${this.conclusion.latex()}}`
+        return `${rule}
+\\AxiomC{$${this.conclusion.latex()}$}`
       case 1:
-        return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}`
+        return `${this.premises[0].latex()}
+${rule}
+\\UnaryC{$${this.conclusion.latex()}$}`
       case 2:
-        return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}`
+        return `${this.premises[0].latex()}
+${this.premises[1].latex()}
+${rule}
+\\BinaryC{$${this.conclusion.latex()}$}`
       default:
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
     }
-
   }
 }
 
@@ -234,6 +240,9 @@ class TruthRight extends LKJudgment {
     super([], conclusion);
     this.isLeft = false;
     this.isRight = true;
+    this.unicodeName = "⊤-R"
+    this.latexName = "\\top_R"
+    this.connective = Truth;
     if (conclusion.antecedents[conclusionFormulaIndex] instanceof Truth) {
       this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
@@ -251,6 +260,9 @@ class FalsityLeft extends LKJudgment {
     super([], conclusion);
     this.isLeft = true;
     this.isRight = false;
+    this.unicodeName = "⊥-L"
+    this.latexName = "\\bot_L"
+    this.connective = Falsity;
     if (conclusion.precedents[conclusionFormulaIndex] instanceof Falsity) {
       this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
@@ -271,6 +283,9 @@ class Identity extends LKJudgment {
     super([], conclusion);
     this.isLeft = false;
     this.isRight = false;
+    this.connective = null;
+    this.unicodeName = "Id"
+    this.latexName = "Id"
 
     if (deepEqual(conclusion.precedents[conclusionFormulaIndex1], conclusion.antecedents[conclusionFormulaIndex2])) {
       this.conclusionFormulaIndex1 = conclusionFormulaIndex1;
@@ -291,6 +306,9 @@ class AndLeft extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = true;
     this.isRight = false;
+    this.connective = And;
+    this.unicodeName = "∧-L"
+    this.latexName = "\\land_L"
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex2)
 
@@ -314,6 +332,9 @@ class AndRight extends LKJudgment {
     super([premise1, premise2], conclusion);
     this.isLeft = false;
     this.isRight = true;
+    this.connective = And;
+    this.unicodeName = "∧-R"
+    this.latexName = "\\land_R"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
 
@@ -337,6 +358,9 @@ class ImpliesLeft extends LKJudgment {
     super([premise1, premise2], conclusion);
     this.isLeft = true;
     this.isRight = false;
+    this.connective = Implies;
+    this.unicodeName = "⇒-L"
+    this.latexName = "\\Rightarrow_L"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
 
@@ -360,6 +384,9 @@ class ImpliesRight extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = false;
     this.isRight = true;
+    this.connective = Implies;
+    this.unicodeName = "⇒-R"
+    this.latexName = "\\Rightarrow_R"
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
     if (deepEqual(new Implies(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
@@ -382,6 +409,9 @@ class OrLeft extends LKJudgment {
     super([premise1, premise2], conclusion);
     this.isLeft = true;
     this.isRight = false;
+    this.connective = Or;
+    this.unicodeName = "∨-L"
+    this.latexName = "\\lor_L"
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
 
@@ -405,6 +435,9 @@ class OrRight extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = false;
     this.isRight = true;
+    this.connective = Or;
+    this.unicodeName = "∨-R"
+    this.latexName = "\\lor_R"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
 
@@ -428,6 +461,9 @@ class NotLeft extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = true;
     this.isRight = false;
+    this.connective = Not;
+    this.unicodeName = "¬-L"
+    this.latexName = "\\lnot_L"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
 
     if (deepEqual(new Not(f1), conclusion.precedents[conclusionFormulaIndex])) {
@@ -449,6 +485,9 @@ class NotRight extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = false;
     this.isRight = true;
+    this.connective = Not;
+    this.unicodeName = "¬-R"
+    this.latexName = "\\lnot_R"
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
 
     if (deepEqual(new Not(f1), conclusion.antecedents[conclusionFormulaIndex])) {
