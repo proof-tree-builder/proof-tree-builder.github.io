@@ -145,8 +145,16 @@ class Sequent {
       throw new TypeError("Sequent has to contain Formulas");
     }
   }
-  unicode() { return `${this.precedents.map(f => f.unicode())} ⊢ ${this.antecedents.map(f => f.unicode())}` }
-  latex() { return `${this.precedents.map(f => f.latex())} \\vdash ${this.antecedents.map(f => f.latex())}` }
+  unicode() {
+    const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(", ") + " " : ""
+    const right = this.antecedents.map(f => f.unicode())
+    return `${left}⊢ ${right}`
+  }
+  latex() {
+    const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(", ") + " " : ""
+    const right = this.antecedents.map(f => f.latex())
+    return `${left}\\vdash ${right}`
+  }
 }
 
 // Judgment abstract class and kinds of judgments
@@ -156,6 +164,16 @@ class Judgment {
     if (new.target === Judgment) {
       throw new TypeError("Cannot construct Judgment instances directly");
     }
+  }
+
+  wrappedLatex () {
+    return `% in the preamble
+\\usepackage{bussproofs}
+
+% where you want to have the proof tree
+\\begin{prooftree}
+${this.latex()}
+\\end{prooftree}`;
   }
 }
 
@@ -168,6 +186,20 @@ class LKJudgment extends Judgment {
     } else {
       throw new TypeError("LKJudgment has to contain Judgments and a Sequent");
     }
+  }
+
+  latex() {
+    switch (this.premises.length) {
+      case 0:
+        return `\\AxiomC{${this.conclusion.latex()}}`
+      case 1:
+        return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}`
+      case 2:
+        return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}`
+      default:
+        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
+    }
+
   }
 }
 
@@ -188,8 +220,6 @@ class TruthRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -207,8 +237,6 @@ class FalsityLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormulaIndex) =>
@@ -231,8 +259,6 @@ class Identity extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `\\AxiomC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -256,8 +282,6 @@ class AndLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -281,8 +305,6 @@ class AndRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -306,8 +328,6 @@ class ImpliesLeft extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
-
-  latex() { return `${this.premises[0].latex()}\n${this.premises[1].latex()}\n\\BinaryC{${this.conclusion.latex()}}` }
 }
 
 /*
@@ -330,8 +350,52 @@ class ImpliesRight extends LKJudgment {
       throw new TypeError("Not the right kind of formula at index");
     }
   }
+}
 
-  latex() { return `${this.premises[0].latex()}\n\\UnaryC{${this.conclusion.latex()}}` }
+/*
+  Γ, F ⊢ Δ     Γ, G ⊢ Δ
+  −−−−−−−−−−−−−−−−−−−−− ∨_R
+      Γ, F ∨ G ⊢ Δ
+*/
+class OrLeft extends LKJudgment {
+  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion);
+    this.isLeft = true;
+    this.isRight = false;
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
+
+    if (deepEqual(new Or(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
+			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+/*
+  Γ ⊢ Δ, F, G
+  −−−−−−−−−−−− ∨_R
+  Γ ⊢ Δ, F ∨ G
+*/
+class OrRight extends LKJudgment {
+  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion);
+    this.isLeft = false;
+    this.isRight = true;
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
+
+    if (deepEqual(new And(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
+			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
 }
 
 // End of LK rules
