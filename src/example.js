@@ -20,3 +20,17 @@ var pf4 = new AndLeft(pf3, new Sequent([pq], [qp]), 0, 1, 0)
 var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
 
 pf5.draw()
+
+var np = new Not(p)
+var nnp = new Not(np)
+
+var weakLEM = new Sequent([], [new Or(np, nnp)])
+
+var pfWeakLEM =
+  new OrRight(
+    new NotRight(
+      new Identity(new Sequent([np], [np]), 0, 0),
+    new Sequent([], [np, nnp]), 0, 1),
+  weakLEM, 0,1,0)
+
+pfWeakLEM.draw()

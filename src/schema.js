@@ -449,7 +449,7 @@ class NotRight extends LKJudgment {
     super([premise], conclusion);
     this.isLeft = false;
     this.isRight = true;
-    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
 
     if (deepEqual(new Not(f1), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex = premiseFormulaIndex;

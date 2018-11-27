@@ -61,8 +61,8 @@ Judgment.prototype.image = function() {
   var newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin("center", "bottom"))
   text.setPositionByOrigin(newTextPt)
 
-  var p1 = (new fabric.Point(0, 10)).add(premiseGroup.getPointByOrigin("left", "bottom"))
-  var p2 = (new fabric.Point(0, 10)).add(premiseGroup.getPointByOrigin("right", "bottom"))
+  var p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("left", "top"))
+  var p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("right", "top"))
   var line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
                                 fill: 'black',
                                 stroke: 'black',
