@@ -26,16 +26,30 @@ class Formula {
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
   punicode() { return this.shouldParen() ?  `(${this.unicode()})` : this.unicode() }
   platex() { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
+
+  isQuantifier() {
+    return this instanceof Forall || this instanceof Exists;
+  }
+
+  isQuantifierFree() {
+    return !this.isQuantifier && this.subformulas.every(f => f.isQuantifierFree())
+  }
 }
 
 class Truth extends Formula {
-  constructor() { super(); }
+  constructor() {
+    super();
+    this.subformulas = [];
+  }
   unicode() { return "⊤" }
   latex() { return "\\top" }
 }
 
 class Falsity extends Formula {
-  constructor() { super(); }
+  constructor() {
+    super();
+    this.subformulas = [];
+  }
   unicode() { return "⊥" }
   latex() { return "\\bot" }
 }
@@ -59,6 +73,7 @@ class And extends Formula {
 	  if (left instanceof Formula && right instanceof Formula) {
 			this.left = left;
 			this.right = right;
+      this.subformulas = [left, right];
     } else {
       throw new TypeError("And has to contain Formulas");
     }
@@ -73,6 +88,7 @@ class Or extends Formula {
 	  if (left instanceof Formula && right instanceof Formula) {
 			this.left = left;
 			this.right = right;
+      this.subformulas = [left, right];
     } else {
       throw new TypeError("Or has to contain Formulas");
     }
@@ -87,6 +103,7 @@ class Implies extends Formula {
 	  if (left instanceof Formula && right instanceof Formula) {
 			this.left = left;
 			this.right = right;
+      this.subformulas = [left, right];
     } else {
       throw new TypeError("Implies has to contain Formulas");
     }
@@ -100,6 +117,7 @@ class Not extends Formula {
 		super();
 	  if (one instanceof Formula) {
 			this.one = one;
+      this.subformulas = [one];
     } else {
       throw new TypeError("Not has to contain a Formula");
     }
@@ -114,6 +132,7 @@ class Forall extends Formula {
 	  if (isString(v) && one instanceof Formula) {
 			this.v = v;
 			this.one = one;
+      this.subformulas = [one];
     } else {
       throw new TypeError("Forall has to contain a String and a Formula");
     }
@@ -128,6 +147,7 @@ class Exists extends Formula {
 	  if (isString(v) && one instanceof Formula) {
 			this.v = v;
 			this.one = one;
+      this.subformulas = [one];
     } else {
       throw new TypeError("Exists has to contain a String and a Formula");
     }
@@ -388,9 +408,51 @@ class OrRight extends LKJudgment {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
 
-    if (deepEqual(new And(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
+    if (deepEqual(new Or(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
+			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+/*
+  Γ ⊢ Δ, F
+  −−−−−−−−−−− ¬_L
+  Γ, ¬ F ⊢ Δ
+*/
+class NotLeft extends LKJudgment {
+  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
+    super([premise], conclusion);
+    this.isLeft = true;
+    this.isRight = false;
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
+
+    if (deepEqual(new Not(f1), conclusion.precedents[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex = premiseFormulaIndex;
+			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+/*
+  Γ, F ⊢ Δ
+  −−−−−−−−−−− ¬_R
+  Γ ⊢ ¬ F, Δ
+*/
+class NotRight extends LKJudgment {
+  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
+    super([premise], conclusion);
+    this.isLeft = false;
+    this.isRight = true;
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
+
+    if (deepEqual(new Not(f1), conclusion.antecedents[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex = premiseFormulaIndex;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
