@@ -33,4 +33,4 @@ var pfWeakLEM =
     new Sequent([], [np, nnp]), 0, 1),
   weakLEM, 0,1,0)
 
-pfWeakLEM.draw()
+// pfWeakLEM.draw()

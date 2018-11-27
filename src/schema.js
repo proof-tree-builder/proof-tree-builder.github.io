@@ -56,9 +56,9 @@ class Falsity extends Formula {
 
 class Var extends Formula {
   constructor(v) {
-		super();
-	  if (isString(v)) {
-			this.v = v;
+    super();
+    if (isString(v)) {
+      this.v = v;
     } else {
       throw new TypeError("Var has to contain a String");
     }
@@ -69,10 +69,10 @@ class Var extends Formula {
 
 class And extends Formula {
   constructor(left, right) {
-		super();
-	  if (left instanceof Formula && right instanceof Formula) {
-			this.left = left;
-			this.right = right;
+    super();
+    if (left instanceof Formula && right instanceof Formula) {
+      this.left = left;
+      this.right = right;
       this.subformulas = [left, right];
     } else {
       throw new TypeError("And has to contain Formulas");
@@ -84,10 +84,10 @@ class And extends Formula {
 
 class Or extends Formula {
   constructor(left, right) {
-		super();
-	  if (left instanceof Formula && right instanceof Formula) {
-			this.left = left;
-			this.right = right;
+    super();
+    if (left instanceof Formula && right instanceof Formula) {
+      this.left = left;
+      this.right = right;
       this.subformulas = [left, right];
     } else {
       throw new TypeError("Or has to contain Formulas");
@@ -99,10 +99,10 @@ class Or extends Formula {
 
 class Implies extends Formula {
   constructor(left, right) {
-		super();
-	  if (left instanceof Formula && right instanceof Formula) {
-			this.left = left;
-			this.right = right;
+    super();
+    if (left instanceof Formula && right instanceof Formula) {
+      this.left = left;
+      this.right = right;
       this.subformulas = [left, right];
     } else {
       throw new TypeError("Implies has to contain Formulas");
@@ -114,9 +114,9 @@ class Implies extends Formula {
 
 class Not extends Formula {
   constructor(one) {
-		super();
-	  if (one instanceof Formula) {
-			this.one = one;
+    super();
+    if (one instanceof Formula) {
+      this.one = one;
       this.subformulas = [one];
     } else {
       throw new TypeError("Not has to contain a Formula");
@@ -128,10 +128,10 @@ class Not extends Formula {
 
 class Forall extends Formula {
   constructor(v, one) {
-		super();
-	  if (isString(v) && one instanceof Formula) {
-			this.v = v;
-			this.one = one;
+    super();
+    if (isString(v) && one instanceof Formula) {
+      this.v = v;
+      this.one = one;
       this.subformulas = [one];
     } else {
       throw new TypeError("Forall has to contain a String and a Formula");
@@ -143,10 +143,10 @@ class Forall extends Formula {
 
 class Exists extends Formula {
   constructor(v, one) {
-		super();
-	  if (isString(v) && one instanceof Formula) {
-			this.v = v;
-			this.one = one;
+    super();
+    if (isString(v) && one instanceof Formula) {
+      this.v = v;
+      this.one = one;
       this.subformulas = [one];
     } else {
       throw new TypeError("Exists has to contain a String and a Formula");
@@ -158,9 +158,9 @@ class Exists extends Formula {
 
 class Sequent {
   constructor(precedents, antecedents) {
-	  if (arrayOf(precedents, Formula) && arrayOf(antecedents, Formula)) {
-			this.precedents = precedents;
-			this.antecedents = antecedents;
+    if (arrayOf(precedents, Formula) && arrayOf(antecedents, Formula)) {
+      this.precedents = precedents;
+      this.antecedents = antecedents;
     } else {
       throw new TypeError("Sequent has to contain Formulas");
     }
@@ -199,10 +199,10 @@ ${this.latex()}
 
 class LKJudgment extends Judgment {
   constructor(premises, conclusion) {
-		super();
-	  if (arrayOf(premises, LKJudgment) && conclusion instanceof Sequent) {
-			this.premises = premises;
-			this.conclusion = conclusion;
+    super();
+    if (arrayOf(premises, LKJudgment) && conclusion instanceof Sequent) {
+      this.premises = premises;
+      this.conclusion = conclusion;
     } else {
       throw new TypeError("LKJudgment has to contain Judgments and a Sequent");
     }
@@ -234,8 +234,8 @@ class TruthRight extends LKJudgment {
     super([], conclusion);
     this.isLeft = false;
     this.isRight = true;
-	  if (conclusion.antecedents[conclusionFormulaIndex] instanceof Truth) {
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    if (conclusion.antecedents[conclusionFormulaIndex] instanceof Truth) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -251,8 +251,8 @@ class FalsityLeft extends LKJudgment {
     super([], conclusion);
     this.isLeft = true;
     this.isRight = false;
-	  if (conclusion.precedents[conclusionFormulaIndex] instanceof Falsity) {
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    if (conclusion.precedents[conclusionFormulaIndex] instanceof Falsity) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -273,8 +273,8 @@ class Identity extends LKJudgment {
     this.isRight = false;
 
     if (deepEqual(conclusion.precedents[conclusionFormulaIndex1], conclusion.antecedents[conclusionFormulaIndex2])) {
-			this.conclusionFormulaIndex1 = conclusionFormulaIndex1;
-			this.conclusionFormulaIndex2 = conclusionFormulaIndex2;
+      this.conclusionFormulaIndex1 = conclusionFormulaIndex1;
+      this.conclusionFormulaIndex2 = conclusionFormulaIndex2;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -297,7 +297,7 @@ class AndLeft extends LKJudgment {
     if (deepEqual(new And(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -320,7 +320,7 @@ class AndRight extends LKJudgment {
     if (deepEqual(new And(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -343,7 +343,7 @@ class ImpliesLeft extends LKJudgment {
     if (deepEqual(new Implies(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -365,7 +365,7 @@ class ImpliesRight extends LKJudgment {
     if (deepEqual(new Implies(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -388,7 +388,7 @@ class OrLeft extends LKJudgment {
     if (deepEqual(new Or(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -411,7 +411,7 @@ class OrRight extends LKJudgment {
     if (deepEqual(new Or(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -432,7 +432,7 @@ class NotLeft extends LKJudgment {
 
     if (deepEqual(new Not(f1), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex = premiseFormulaIndex;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
@@ -453,7 +453,7 @@ class NotRight extends LKJudgment {
 
     if (deepEqual(new Not(f1), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex = premiseFormulaIndex;
-			this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
     }
