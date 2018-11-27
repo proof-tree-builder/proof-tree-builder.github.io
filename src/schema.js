@@ -152,7 +152,7 @@ class TruthRight extends LKJudgment {
     super([], conclusion);
     this.isLeft = false;
     this.isRight = true;
-	  if (conclusion.antecedent[conclusionFormulaIndex] instanceof Truth) {
+	  if (conclusion.antecedents[conclusionFormulaIndex] instanceof Truth) {
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
@@ -169,7 +169,7 @@ class FalsityLeft extends LKJudgment {
     super([], conclusion);
     this.isLeft = true;
     this.isRight = false;
-	  if (conclusion.precedent[conclusionFormulaIndex] instanceof Falsity) {
+	  if (conclusion.precedents[conclusionFormulaIndex] instanceof Falsity) {
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
@@ -178,7 +178,26 @@ class FalsityLeft extends LKJudgment {
 }
 
 const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormulaIndex) =>
-  premises[premiseIndex]["conclusion"][isInPrecedent ? "precedent" : "antecedent"][premiseFormulaIndex]
+  premises[premiseIndex]["conclusion"][isInPrecedent ? "precedents" : "antecedents"][premiseFormulaIndex]
+
+/*
+  −−−−−−−−−−−− I
+  Γ, F ⊢ Δ, F
+*/
+class Identity extends LKJudgment {
+  constructor(conclusion, conclusionFormulaIndex1, conclusionFormulaIndex2) {
+    super([], conclusion);
+    this.isLeft = false;
+    this.isRight = false;
+
+    if (deepEqual(conclusion.precedents[conclusionFormulaIndex1], conclusion.antecedents[conclusionFormulaIndex2])) {
+			this.conclusionFormulaIndex1 = conclusionFormulaIndex1;
+			this.conclusionFormulaIndex2 = conclusionFormulaIndex2;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
 
 /*
   Γ, F, G ⊢ Δ
@@ -193,7 +212,7 @@ class AndLeft extends LKJudgment {
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex2)
 
-    if (deepEqual(new And(f1, f2), conclusion.precedent[conclusionFormulaIndex])) {
+    if (deepEqual(new And(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
@@ -216,7 +235,7 @@ class AndRight extends LKJudgment {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
 
-    if (deepEqual(new And(f1, f2), conclusion.antecedent[conclusionFormulaIndex])) {
+    if (deepEqual(new And(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
@@ -239,7 +258,7 @@ class ImpliesLeft extends LKJudgment {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
 
-    if (deepEqual(new Implies(f1, f2), conclusion.precedent[conclusionFormulaIndex])) {
+    if (deepEqual(new Implies(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
@@ -261,7 +280,7 @@ class ImpliesRight extends LKJudgment {
     this.isRight = true;
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
-    if (deepEqual(new Implies(f1, f2), conclusion.antecedent[conclusionFormulaIndex])) {
+    if (deepEqual(new Implies(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
       this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
