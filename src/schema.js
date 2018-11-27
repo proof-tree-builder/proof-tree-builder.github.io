@@ -143,6 +143,10 @@ class LKJudgment extends Judgment {
 
 // Beginning of LK rules
 
+/*
+  −−−−−−−−− ⊤_R
+  Γ ⊢ Δ, ⊤
+*/
 class TruthRight extends LKJudgment {
   constructor(conclusion, conclusionFormulaIndex) {
     super([], conclusion);
@@ -156,6 +160,10 @@ class TruthRight extends LKJudgment {
   }
 }
 
+/*
+  −−−−−−−−− ⊥_L
+  Γ, ⊥ ⊢ Δ
+*/
 class FalsityLeft extends LKJudgment {
   constructor(conclusion, conclusionFormulaIndex) {
     super([], conclusion);
@@ -172,22 +180,22 @@ class FalsityLeft extends LKJudgment {
 const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormulaIndex) =>
   premises[premiseIndex]["conclusion"][isInPrecedent ? "precedent" : "antecedent"][premiseFormulaIndex]
 
+/*
+  Γ, F, G ⊢ Δ
+  −−−−−−−−−−−− ∧_L
+  Γ, F ∧ G ⊢ Δ
+*/
 class AndLeft extends LKJudgment {
-  constructor(premises, conclusion, isInPrecedent, premiseIndex, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super(premises, conclusion);
+  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion);
     this.isLeft = true;
     this.isRight = false;
-    if (premises.length !== 1) {
-      throw new TypeError("Not the right number of premises");
-    }
-    const f1 = getPremiseFormula(premises, isInPrecedent, premiseIndex, premiseFormulaIndex1)
-    const f2 = getPremiseFormula(premises, isInPrecedent, premiseIndex, premiseFormulaIndex2)
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex2)
 
-	  if (   getPremiseFormula(premises, isInPrecedent, premiseIndex, premiseFormulaIndex1) instanceof And
-        && conclusion.precedent[conclusionFormulaIndex] instanceof And) {
-      this.isInPrecedent = isInPrecedent;
-      this.premiseIndex = premiseIndex;
-      this.premiseFormulaIndex = premiseFormulaIndex;
+    if (deepEqual(new And(f1, f2), conclusion.precedent[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
@@ -195,19 +203,22 @@ class AndLeft extends LKJudgment {
   }
 }
 
+/*
+  Γ ⊢ Δ, F     Γ ⊢ Δ, G
+  −−−−−−−−−−−−--------- ∧_R
+      Γ ⊢ Δ, F ∧ G
+*/
 class AndRight extends LKJudgment {
-  constructor(premises, conclusion, isInPrecedent, premiseIndex, premiseFormulaIndex, conclusionFormulaIndex) {
-    super(premises, conclusion);
+  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion);
     this.isLeft = false;
     this.isRight = true;
-    if (premises.length !== 2) {
-      throw new TypeError("Not the right number of premises");
-    }
-	  if (   getPremiseFormula(premises, isInPrecedent, premiseIndex, premiseFormulaIndex) instanceof And
-        && conclusion.precedent[conclusionFormulaIndex] instanceof And) {
-      this.isInPrecedent = isInPrecedent;
-      this.premiseIndex = premiseIndex;
-      this.premiseFormulaIndex = premiseFormulaIndex;
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
+
+    if (deepEqual(new And(f1, f2), conclusion.antecedent[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
@@ -215,19 +226,44 @@ class AndRight extends LKJudgment {
   }
 }
 
+/*
+  Γ ⊢ F, Δ     Γ, G ⊢ Δ
+  −−−−−−−−−−−−−−−−−−−−−− ⇒_L
+      Γ, F ⇒ G ⊢ Δ
+*/
+class ImpliesLeft extends LKJudgment {
+  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion);
+    this.isLeft = true;
+    this.isRight = false;
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
+
+    if (deepEqual(new Implies(f1, f2), conclusion.precedent[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
+			this.conclusionFormulaIndex = conclusionFormulaIndex;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+/*
+  Γ, F ⊢ Δ, G
+  −−−−−−−−−−−−- ⇒_R
+  Γ ⊢ Δ, F ⇒ G
+*/
 class ImpliesRight extends LKJudgment {
-  constructor(premises, conclusion, premiseIndex, premiseFormulaIndex, conclusionFormulaIndex) {
-    super(premises, conclusion);
+  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion);
     this.isLeft = false;
     this.isRight = true;
-    if (premises.length !== 1) {
-      throw new TypeError("Not the right number of premises");
-    }
-	  if (   getPremiseFormula(premises, isInPrecedent, premiseIndex, premiseFormulaIndex) instanceof Implies
-        && conclusion.precedent[conclusionFormulaIndex] instanceof Implies) {
-      this.isInPrecedent = isInPrecedent;
-      this.premiseIndex = premiseIndex;
-      this.premiseFormulaIndex = premiseFormulaIndex;
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
+    const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
+    if (deepEqual(new Implies(f1, f2), conclusion.antecedent[conclusionFormulaIndex])) {
+      this.premiseFormulaIndex1 = premiseFormulaIndex1;
+      this.premiseFormulaIndex2 = premiseFormulaIndex2;
 			this.conclusionFormulaIndex = conclusionFormulaIndex;
     } else {
       throw new TypeError("Not the right kind of formula at index");
