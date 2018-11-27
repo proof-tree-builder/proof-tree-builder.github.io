@@ -1,27 +1,84 @@
-import katex from 'https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.mjs';
+var canvas = this.__canvas = new fabric.Canvas('c');
+fabric.Object.prototype.transparentCorners = false;
+canvas.setWidth(window.innerWidth)
+canvas.setHeight(window.innerHeight)
 
-var zoom = d3.zoom()
-  .scaleExtent([0.5, 5])
-  .on("zoom", function () {
-    svg.attr("transform", d3.event.transform)
+// Panning with ALT + drag
+canvas.on('mouse:down', function(opt) {
+  var evt = opt.e;
+  if (evt.altKey === true) {
+    this.isDragging = true;
+    this.selection = false;
+    this.lastPosX = evt.clientX;
+    this.lastPosY = evt.clientY;
+  }
+});
+canvas.on('mouse:move', function(opt) {
+  if (this.isDragging) {
+    var e = opt.e;
+    this.viewportTransform[4] += e.clientX - this.lastPosX;
+    this.viewportTransform[5] += e.clientY - this.lastPosY;
+    this.requestRenderAll();
+    this.lastPosX = e.clientX;
+    this.lastPosY = e.clientY;
+  }
+});
+canvas.on('mouse:up', function(opt) {
+  this.isDragging = false;
+  this.selection = true;
+});
+
+// Zooming to the cursor
+canvas.on('mouse:wheel', function(opt) {
+  var delta = opt.e.deltaY;
+  var pointer = canvas.getPointer(opt.e);
+  var zoom = canvas.getZoom();
+  zoom = zoom + delta/200;
+  if (zoom > 20) zoom = 20;
+  if (zoom < 0.01) zoom = 0.01;
+  canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+  opt.e.preventDefault();
+  opt.e.stopPropagation();
+});
+
+
+Judgment.prototype.image = function() {
+  var premiseImages = this.premises.map(p => p.image())
+
+  premiseImages.forEach((image, i) => {
+    if (i === 0) return;
+
+    var prev = premiseImages[i - 1]
+
+    image.setPositionByOrigin(
+      (new fabric.Point(80, 0)).add(prev.getPointByOrigin("right", "top")), "left", "top")
+    premiseImages[i] = image
   })
 
-var svg = d3.select("body")
-  .append("svg")
-  .attr("width", "100%")
-  .attr("height", "100%")
-  .call(zoom)
-  .append("g")
+  var premiseGroup = new fabric.Group(premiseImages)
 
+  var text = new fabric.Text(this.conclusion.unicode(), { fontFamily: 'Helvetica' });
+  var newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin("center", "bottom"))
+  text.setPositionByOrigin(newTextPt)
 
-svg.append("text")
-  .attr("x", document.body.clientWidth / 2)
-  .attr("y", document.body.clientHeight / 2)
-	.attr("width", 100)
-	.attr("height", 100)
-  .text("Γ ⊢ Δ");
+  var p1 = (new fabric.Point(0, 10)).add(premiseGroup.getPointByOrigin("left", "bottom"))
+  var p2 = (new fabric.Point(0, 10)).add(premiseGroup.getPointByOrigin("right", "bottom"))
+  var line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
+                                fill: 'black',
+                                stroke: 'black',
+                                strokeWidth: 2,
+                                selectable: false,
+                              })
 
-const drawJudgment = (judgment) => {
+  var group = new fabric.Group([premiseGroup, line, text]);
+  group.lockRotation = true;
+  group.lockScalingX = true;
+  group.lockScalingY = true;
+  return group;
 }
 
-// update(katex.renderToString("\\Gamma \\vdash \\Delta"))
+Judgment.prototype.draw = function() {
+  i = this.image()
+  canvas.add(i)
+  i.center();
+}

@@ -18,3 +18,5 @@ var pf3 = new AndRight(pf1, pf2, new Sequent([p, q], [qp]), 0, 0, 0)
 var pf4 = new AndLeft(pf3, new Sequent([pq], [qp]), 0, 1, 0)
 // Proving that ⊢ (p ∧ q) ⇒ (q ∧ p)
 var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
+
+pf5.draw()
