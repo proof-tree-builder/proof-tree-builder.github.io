@@ -32,7 +32,7 @@ class Formula {
   }
 
   isQuantifierFree() {
-    return !this.isQuantifier && this.subformulas.every(f => f.isQuantifierFree())
+    return !this.isQuantifier() && this.subformulas.every(f => f.isQuantifierFree())
   }
 }
 
@@ -57,6 +57,7 @@ class Falsity extends Formula {
 class Var extends Formula {
   constructor(v) {
     super();
+    this.subformulas = [];
     if (isString(v)) {
       this.v = v;
     } else {
@@ -174,6 +175,10 @@ class Sequent {
     const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(", ") + " " : ""
     const right = this.antecedents.map(f => f.latex())
     return `${left}\\vdash ${right}`
+  }
+  isQuantifierFree() {
+    return this.precedents.every(p => p.isQuantifierFree()) &&
+           this.antecedents.every(q => q.isQuantifierFree());
   }
 }
 
@@ -498,5 +503,7 @@ class NotRight extends LKJudgment {
     }
   }
 }
+
+// TODO forall and exists rules, and maybe cut?
 
 // End of LK rules
