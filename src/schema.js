@@ -1,5 +1,11 @@
+
+////////////////////////////////////////////////////// UTILITY FUNCTIONS //////////////////////////////////////////////////////
+
+// Check if argument (s) is a string
 const isString = (s) => typeof s === "string" || s instanceof String
 
+
+// Check deep equality
 const deepEqual = (x, y) => {
   const ok = Object.keys,
         tx = typeof x,
@@ -10,51 +16,68 @@ const deepEqual = (x, y) => {
   ) : (x === y);
 }
 
+
+// Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
-// Formula abstract class and kinds of formulas
+
+////////////////////////////////////////////////////// FORMULA CLASS & CHILDREN //////////////////////////////////////////////////////
 
 class Formula {
+	
   constructor() {
     if (new.target === Formula) {
       throw new TypeError("Cannot construct Formula instances directly");
     }
   }
+  
+  // checks if we should put parens around this formula
   shouldParen () {
     return !(this instanceof Var || this instanceof Truth || this instanceof Falsity)
   }
+  
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
   punicode() { return this.shouldParen() ?  `(${this.unicode()})` : this.unicode() }
   platex() { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
 
+  // checks if formula is quantified
   isQuantifier() {
     return this instanceof Forall || this instanceof Exists;
   }
 
+  // checks if formula is quantifier free
   isQuantifierFree() {
     return !this.isQuantifier() && this.subformulas.every(f => f.isQuantifierFree())
   }
 }
 
+
 class Truth extends Formula {
+	
   constructor() {
     super();
     this.subformulas = [];
   }
+  
   unicode() { return "⊤" }
   latex() { return "\\top" }
 }
 
+
 class Falsity extends Formula {
+	
   constructor() {
     super();
     this.subformulas = [];
   }
+  
   unicode() { return "⊥" }
   latex() { return "\\bot" }
 }
 
+
 class Var extends Formula {
+	
   constructor(v) {
     super();
     this.subformulas = [];
@@ -64,11 +87,14 @@ class Var extends Formula {
       throw new TypeError("Var has to contain a String");
     }
   }
+  
   unicode() { return this.v }
   latex() { return this.v }
 }
 
+
 class And extends Formula {
+	
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -79,11 +105,14 @@ class And extends Formula {
       throw new TypeError("And has to contain Formulas");
     }
   }
+  
   unicode() { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\land ${this.right.platex()}` }
 }
 
+
 class Or extends Formula {
+	
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -94,11 +123,13 @@ class Or extends Formula {
       throw new TypeError("Or has to contain Formulas");
     }
   }
+  
   unicode() { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\lor ${this.right.platex()}` }
 }
 
 class Implies extends Formula {
+	
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -109,11 +140,13 @@ class Implies extends Formula {
       throw new TypeError("Implies has to contain Formulas");
     }
   }
+  
   unicode() { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
 }
 
 class Not extends Formula {
+	
   constructor(one) {
     super();
     if (one instanceof Formula) {
@@ -123,11 +156,13 @@ class Not extends Formula {
       throw new TypeError("Not has to contain a Formula");
     }
   }
+  
   unicode() { return `¬ ${this.one.punicode()}` }
   latex() { return `\\lnot ${this.one.platex()}` }
 }
 
 class Forall extends Formula {
+	
   constructor(v, one) {
     super();
     if (isString(v) && one instanceof Formula) {
@@ -138,11 +173,13 @@ class Forall extends Formula {
       throw new TypeError("Forall has to contain a String and a Formula");
     }
   }
+  
   unicode() { return `∀ ${this.v}. (${this.left.unicode()})` }
   latex() { return `\\forall ${this.v}. (${this.left.latex()})` }
 }
 
 class Exists extends Formula {
+	
   constructor(v, one) {
     super();
     if (isString(v) && one instanceof Formula) {
@@ -153,11 +190,16 @@ class Exists extends Formula {
       throw new TypeError("Exists has to contain a String and a Formula");
     }
   }
+  
   unicode() { return `∃ ${this.v}. (${this.left.unicode()})` }
   latex() { return `\\exists ${this.v}. (${this.left.latex()})` }
 }
 
+
+////////////////////////////////////////////////////// SEQUENT CLASS //////////////////////////////////////////////////////
+
 class Sequent {
+	
   constructor(precedents, antecedents) {
     if (arrayOf(precedents, Formula) && arrayOf(antecedents, Formula)) {
       this.precedents = precedents;
@@ -166,23 +208,27 @@ class Sequent {
       throw new TypeError("Sequent has to contain Formulas");
     }
   }
+  
   unicode() {
     const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(", ") + " " : ""
     const right = this.antecedents.map(f => f.unicode())
     return `${left}⊢ ${right}`
   }
+  
   latex() {
     const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(", ") + " " : ""
     const right = this.antecedents.map(f => f.latex())
     return `${left}\\vdash ${right}`
   }
+  
   isQuantifierFree() {
     return this.precedents.every(p => p.isQuantifierFree()) &&
            this.antecedents.every(q => q.isQuantifierFree());
   }
 }
 
-// Judgment abstract class and kinds of judgments
+
+////////////////////////////////////////////////////// JUDGMENT ABSTRACT CLASS AND CHILDREN //////////////////////////////////////////////////////
 
 class Judgment {
   constructor() {
@@ -201,6 +247,7 @@ ${this.latex()}
 \\end{prooftree}`;
   }
 }
+
 
 class LKJudgment extends Judgment {
   constructor(premises, conclusion) {
