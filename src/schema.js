@@ -1,5 +1,5 @@
 
-////////////////////////////////////////////////////// UTILITY FUNCTIONS //////////////////////////////////////////////////////
+////////UTILITY FUNCTIONS ///////
 
 // Check if argument (s) is a string
 const isString = (s) => typeof s === "string" || s instanceof String
@@ -21,21 +21,21 @@ const deepEqual = (x, y) => {
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
 
-////////////////////////////////////////////////////// FORMULA CLASS & CHILDREN //////////////////////////////////////////////////////
+/////////FORMULA CLASS & CHILDREN ///////////
 
 class Formula {
-	
+
   constructor() {
     if (new.target === Formula) {
       throw new TypeError("Cannot construct Formula instances directly");
     }
   }
-  
+
   // checks if we should put parens around this formula
   shouldParen () {
     return !(this instanceof Var || this instanceof Truth || this instanceof Falsity)
   }
-  
+
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
   punicode() { return this.shouldParen() ?  `(${this.unicode()})` : this.unicode() }
   platex() { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
@@ -53,31 +53,31 @@ class Formula {
 
 
 class Truth extends Formula {
-	
+
   constructor() {
     super();
     this.subformulas = [];
   }
-  
+
   unicode() { return "⊤" }
   latex() { return "\\top" }
 }
 
 
 class Falsity extends Formula {
-	
+
   constructor() {
     super();
     this.subformulas = [];
   }
-  
+
   unicode() { return "⊥" }
   latex() { return "\\bot" }
 }
 
 
 class Var extends Formula {
-	
+
   constructor(v) {
     super();
     this.subformulas = [];
@@ -87,14 +87,14 @@ class Var extends Formula {
       throw new TypeError("Var has to contain a String");
     }
   }
-  
+
   unicode() { return this.v }
   latex() { return this.v }
 }
 
 
 class And extends Formula {
-	
+
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -105,14 +105,14 @@ class And extends Formula {
       throw new TypeError("And has to contain Formulas");
     }
   }
-  
+
   unicode() { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\land ${this.right.platex()}` }
 }
 
 
 class Or extends Formula {
-	
+
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -123,13 +123,13 @@ class Or extends Formula {
       throw new TypeError("Or has to contain Formulas");
     }
   }
-  
+
   unicode() { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\lor ${this.right.platex()}` }
 }
 
 class Implies extends Formula {
-	
+
   constructor(left, right) {
     super();
     if (left instanceof Formula && right instanceof Formula) {
@@ -140,13 +140,13 @@ class Implies extends Formula {
       throw new TypeError("Implies has to contain Formulas");
     }
   }
-  
+
   unicode() { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
   latex() { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
 }
 
 class Not extends Formula {
-	
+
   constructor(one) {
     super();
     if (one instanceof Formula) {
@@ -156,13 +156,13 @@ class Not extends Formula {
       throw new TypeError("Not has to contain a Formula");
     }
   }
-  
+
   unicode() { return `¬ ${this.one.punicode()}` }
   latex() { return `\\lnot ${this.one.platex()}` }
 }
 
 class Forall extends Formula {
-	
+
   constructor(v, one) {
     super();
     if (isString(v) && one instanceof Formula) {
@@ -173,13 +173,13 @@ class Forall extends Formula {
       throw new TypeError("Forall has to contain a String and a Formula");
     }
   }
-  
+
   unicode() { return `∀ ${this.v}. (${this.left.unicode()})` }
   latex() { return `\\forall ${this.v}. (${this.left.latex()})` }
 }
 
 class Exists extends Formula {
-	
+
   constructor(v, one) {
     super();
     if (isString(v) && one instanceof Formula) {
@@ -190,16 +190,16 @@ class Exists extends Formula {
       throw new TypeError("Exists has to contain a String and a Formula");
     }
   }
-  
+
   unicode() { return `∃ ${this.v}. (${this.left.unicode()})` }
   latex() { return `\\exists ${this.v}. (${this.left.latex()})` }
 }
 
 
-////////////////////////////////////////////////////// SEQUENT CLASS //////////////////////////////////////////////////////
+//////////SEQUENT CLASS //////////////
 
 class Sequent {
-	
+
   constructor(precedents, antecedents) {
     if (arrayOf(precedents, Formula) && arrayOf(antecedents, Formula)) {
       this.precedents = precedents;
@@ -208,19 +208,19 @@ class Sequent {
       throw new TypeError("Sequent has to contain Formulas");
     }
   }
-  
+
   unicode() {
     const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(", ") + " " : ""
     const right = this.antecedents.map(f => f.unicode())
     return `${left}⊢ ${right}`
   }
-  
+
   latex() {
     const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(", ") + " " : ""
     const right = this.antecedents.map(f => f.latex())
     return `${left}\\vdash ${right}`
   }
-  
+
   isQuantifierFree() {
     return this.precedents.every(p => p.isQuantifierFree()) &&
            this.antecedents.every(q => q.isQuantifierFree());
@@ -228,12 +228,12 @@ class Sequent {
 }
 
 
-////////////////////////////////////////////////////// JUDGMENT ABSTRACT CLASS AND CHILDREN //////////////////////////////////////////////////////
+//////JUDGMENT ABSTRACT CLASS AND CHILDREN ////////
 
-class Judgment {
+class ProofTree {
   constructor() {
-    if (new.target === Judgment) {
-      throw new TypeError("Cannot construct Judgment instances directly");
+    if (new.target === ProofTree) {
+      throw new TypeError("Cannot construct ProofTree instances directly");
     }
   }
 
@@ -249,14 +249,14 @@ ${this.latex()}
 }
 
 
-class LKJudgment extends Judgment {
+class LKProofTree extends ProofTree {
   constructor(premises, conclusion) {
     super();
-    if (arrayOf(premises, LKJudgment) && conclusion instanceof Sequent) {
+    if (arrayOf(premises, LKProofTree) && conclusion instanceof Sequent) {
       this.premises = premises;
       this.conclusion = conclusion;
     } else {
-      throw new TypeError("LKJudgment has to contain Judgments and a Sequent");
+      throw new TypeError("LKProofTree has to contain ProofTrees and a Sequent");
     }
   }
 
@@ -287,7 +287,7 @@ ${rule}
   −−−−−−−−− ⊤_R
   Γ ⊢ Δ, ⊤
 */
-class TruthRight extends LKJudgment {
+class TruthRight extends LKProofTree {
   constructor(conclusion, conclusionFormulaIndex) {
     super([], conclusion);
     this.isLeft = false;
@@ -307,7 +307,7 @@ class TruthRight extends LKJudgment {
   −−−−−−−−− ⊥_L
   Γ, ⊥ ⊢ Δ
 */
-class FalsityLeft extends LKJudgment {
+class FalsityLeft extends LKProofTree {
   constructor(conclusion, conclusionFormulaIndex) {
     super([], conclusion);
     this.isLeft = true;
@@ -330,7 +330,7 @@ const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormula
   −−−−−−−−−−−− I
   Γ, F ⊢ Δ, F
 */
-class Identity extends LKJudgment {
+class Identity extends LKProofTree {
   constructor(conclusion, conclusionFormulaIndex1, conclusionFormulaIndex2) {
     super([], conclusion);
     this.isLeft = false;
@@ -353,7 +353,7 @@ class Identity extends LKJudgment {
   −−−−−−−−−−−− ∧_L
   Γ, F ∧ G ⊢ Δ
 */
-class AndLeft extends LKJudgment {
+class AndLeft extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise], conclusion);
     this.isLeft = true;
@@ -379,7 +379,7 @@ class AndLeft extends LKJudgment {
   −−−−−−−−−−−−--------- ∧_R
       Γ ⊢ Δ, F ∧ G
 */
-class AndRight extends LKJudgment {
+class AndRight extends LKProofTree {
   constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise1, premise2], conclusion);
     this.isLeft = false;
@@ -405,7 +405,7 @@ class AndRight extends LKJudgment {
   −−−−−−−−−−−−−−−−−−−−−− ⇒_L
       Γ, F ⇒ G ⊢ Δ
 */
-class ImpliesLeft extends LKJudgment {
+class ImpliesLeft extends LKProofTree {
   constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise1, premise2], conclusion);
     this.isLeft = true;
@@ -431,7 +431,7 @@ class ImpliesLeft extends LKJudgment {
   −−−−−−−−−−−−- ⇒_R
   Γ ⊢ Δ, F ⇒ G
 */
-class ImpliesRight extends LKJudgment {
+class ImpliesRight extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise], conclusion);
     this.isLeft = false;
@@ -456,7 +456,7 @@ class ImpliesRight extends LKJudgment {
   −−−−−−−−−−−−−−−−−−−−− ∨_R
       Γ, F ∨ G ⊢ Δ
 */
-class OrLeft extends LKJudgment {
+class OrLeft extends LKProofTree {
   constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise1, premise2], conclusion);
     this.isLeft = true;
@@ -482,7 +482,7 @@ class OrLeft extends LKJudgment {
   −−−−−−−−−−−− ∨_R
   Γ ⊢ Δ, F ∨ G
 */
-class OrRight extends LKJudgment {
+class OrRight extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
     super([premise], conclusion);
     this.isLeft = false;
@@ -508,15 +508,17 @@ class OrRight extends LKJudgment {
   −−−−−−−−−−− ¬_L
   Γ, ¬ F ⊢ Δ
 */
-class NotLeft extends LKJudgment {
+class NotLeft extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
+    console.log(premise);
+    console.log(conclusion);
     super([premise], conclusion);
     this.isLeft = true;
     this.isRight = false;
     this.connective = Not;
     this.unicodeName = "¬-L"
     this.latexName = "\\lnot_L"
-    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
 
     if (deepEqual(new Not(f1), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex = premiseFormulaIndex;
@@ -532,7 +534,7 @@ class NotLeft extends LKJudgment {
   −−−−−−−−−−− ¬_R
   Γ ⊢ ¬ F, Δ
 */
-class NotRight extends LKJudgment {
+class NotRight extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
     super([premise], conclusion);
     this.isLeft = false;

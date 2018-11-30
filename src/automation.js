@@ -28,5 +28,32 @@ Sequent.prototype.prove = function() {
     return new Identity(this, precIndex, anteIndex)
   }
 
+  // Check if NotLeft is applicable
+
+  var precIndex = this.precedents.findIndex(p => p instanceof Not)
+  var precElem = this.precedents.find(p => p instanceof Not)
+  if (precIndex > -1) {
+    var newPrecedents = this.precedents
+    newPrecedents.splice(precIndex, 1)
+    var seq = new Sequent(newPrecedents, this.antecedents.concat([precElem.one]))
+    console.log(seq.unicode());
+
+    return new NotLeft(seq.prove(), this, this.antecedents.length, precIndex)
+  }
+
+  // Check if NotRight is applicable
+
+  var anteIndex = this.antecedents.findIndex(p => p instanceof Not)
+  var anteElem = this.antecedents.find(p => p instanceof Not)
+  if (anteIndex > -1) {
+    var newAntecedents = this.antecedents
+    newAntecedents.splice(anteIndex, 1)
+    var seq = new Sequent(this.precedents.concat([anteElem.one]), newAntecedents)
+    console.log(seq.unicode());
+
+    return new NotRight(seq.prove(), this, this.precedents.length, anteIndex)
+  }
+
+
   // TODO the rest of Wang's algorithm
 }

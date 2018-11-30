@@ -33,4 +33,8 @@ var pfWeakLEM =
     new Sequent([], [np, nnp]), 0, 1),
   weakLEM, 0,1,0)
 
-// pfWeakLEM.draw()
+// automation tests
+
+var pnp1 = new Sequent([p, np], [])
+var pnp2 = new Sequent([], [p, np])
+// pnp1.prove()

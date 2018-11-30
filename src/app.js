@@ -1,4 +1,4 @@
-var canvas = this.__canvas = new fabric.Canvas('c');
+var canvas = this.__canvas = new fabric.Canvas('c', {selection: false});
 fabric.Object.prototype.transparentCorners = false;
 canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
@@ -42,7 +42,7 @@ canvas.on('mouse:wheel', function(opt) {
 });
 
 
-Judgment.prototype.image = function() {
+ProofTree.prototype.image = function() {
   var premiseImages = this.premises.map(p => p.image())
 
   premiseImages.forEach((image, i) => {
@@ -55,7 +55,7 @@ Judgment.prototype.image = function() {
     premiseImages[i] = image
   })
 
-  var premiseGroup = new fabric.Group(premiseImages)
+  var premiseGroup = this.premises ? new fabric.Group(premiseImages) : new fabric.Group()
 
   var text = new fabric.Text(this.conclusion.unicode(), {
     fontFamily: 'Helvetica',
@@ -80,14 +80,20 @@ Judgment.prototype.image = function() {
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin("right", "top"), "left", "top"))
 
-  var group = new fabric.Group([premiseGroup, line, ruleLabel, text]);
+  var group = new fabric.Group([premiseGroup, line, ruleLabel, text], {selectable: true});
+  group.on('selected', () => {
+    console.log(ruleLabel);
+    canvas.setActiveObject(group);
+  })
   group.lockRotation = true;
   group.lockScalingX = true;
   group.lockScalingY = true;
+  group.hasControls = false;
+  group.set({borderColor: 'black'})
   return group;
 }
 
-Judgment.prototype.draw = function() {
+ProofTree.prototype.draw = function() {
   i = this.image()
   canvas.add(i)
   i.center();
