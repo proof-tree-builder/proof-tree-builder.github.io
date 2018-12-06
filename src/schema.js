@@ -228,7 +228,7 @@ class Sequent {
 }
 
 
-//////JUDGMENT ABSTRACT CLASS AND CHILDREN ////////
+//////PROOFTREE ABSTRACT CLASS AND CHILDREN ////////
 
 class ProofTree {
   constructor() {
@@ -554,5 +554,16 @@ class NotRight extends LKProofTree {
 }
 
 // TODO forall and exists rules, and maybe cut?
+
+class LKIncomplete extends LKProofTree {
+  constructor(conclusion) {
+    super([], conclusion)
+    this.isLeft = false;
+    this.isRight = false;
+    this.connective = null;
+    this.unicodeName = "?"
+    this.latexName = "?"
+  }
+}
 
 // End of LK rules
