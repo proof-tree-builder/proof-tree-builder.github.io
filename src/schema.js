@@ -20,6 +20,47 @@ const deepEqual = (x, y) => {
 // Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
+/////////FORMULA CLASS & CHILDREN ///////////
+
+class Term {
+  constructor() {
+    if (new.target === Term) {
+      throw new TypeError("Cannot construct Term instances directly");
+    }
+  }
+}
+
+class TermVar extends Term {
+  constructor(v) {
+    super()
+    if (isString(v)) {
+      this.v = v;
+    } else {
+      throw new TypeError("TermVar has to contain a String");
+    }
+  }
+  unicode() { return this.v; }
+  latex() { return this.v; }
+}
+
+class TermFun extends Term {
+  constructor(name, args) {
+    super()
+    if (isString(name) && arrayOf(args, Term)) {
+      this.name = name;
+      this.args = args;
+    } else {
+      throw new TypeError("TermFun has to contain a String and Terms");
+    }
+  }
+  unicode() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+  latex() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+}
+
+// TODO think about this later.
+// class TermConst extends Term {
+// }
+
 
 /////////FORMULA CLASS & CHILDREN ///////////
 
@@ -161,6 +202,22 @@ class Not extends Formula {
   latex() { return `\\lnot ${this.one.platex()}` }
 }
 
+class Relation extends Formula {
+  constructor(name, args) {
+    super()
+    if (isString(name) && arrayOf(args, Term)) {
+      this.name = name;
+      this.args = args;
+      this.subformulas = [];
+    } else {
+      throw new TypeError("Relation has to contain a String and Terms");
+    }
+  }
+  unicode() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+  latex() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+}
+
+
 class Forall extends Formula {
 
   constructor(v, one) {
@@ -174,8 +231,8 @@ class Forall extends Formula {
     }
   }
 
-  unicode() { return `∀ ${this.v}. (${this.left.unicode()})` }
-  latex() { return `\\forall ${this.v}. (${this.left.latex()})` }
+  unicode() { return `∀ ${this.v}. (${this.one.unicode()})` }
+  latex() { return `\\forall ${this.v}. (${this.one.latex()})` }
 }
 
 class Exists extends Formula {
@@ -191,8 +248,8 @@ class Exists extends Formula {
     }
   }
 
-  unicode() { return `∃ ${this.v}. (${this.left.unicode()})` }
-  latex() { return `\\exists ${this.v}. (${this.left.latex()})` }
+  unicode() { return `∃ ${this.v}. (${this.one.unicode()})` }
+  latex() { return `\\exists ${this.v}. (${this.one.latex()})` }
 }
 
 
