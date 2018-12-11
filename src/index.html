@@ -13,10 +13,58 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      canvas { display:block; }
+      #top-bar {
+        position: fixed;
+        width: 100%;
+        height: 2em;
+        border: 1px solid black;
+        z-index: 10;
+        padding: 0.2em;
+        background: #ddd;
+      }
+
+      button {
+        background: #eaf666;
+        border: 1px solid black;
+      }
+
+      #top-bar button {
+        height: 100%;
+        padding: 0 1em 0 1em;
+        font-size: 1em;
+      }
+
+      #left-bar {
+        position: fixed;
+        height: 100%;
+        width: 10em;
+        top: 2.5em;
+        border: 1px solid black;
+        z-index: 10;
+        padding: 0.2em;
+        background: #ddd;
+      }
+      #left-bar ol {
+        margin-left: 1em;
+      }
+
+      canvas {
+        display:block;
+        top: 0;
+        left:0;
+        z-index: 5;
+      }
     </style>
   </head>
   <body>
+
+    <div id="top-bar">
+      <button type="button" id="addGoal">Add goal</button>
+    </div>
+    <div id="left-bar">
+      <ol start="1">
+      </ol>
+    </div>
 
 
     <canvas id="c" width="800" height="450"></canvas>

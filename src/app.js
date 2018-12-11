@@ -1,3 +1,5 @@
+var proofs = []
+
 var canvas = this.__canvas = new fabric.Canvas('c', {selection: false});
 fabric.Object.prototype.transparentCorners = false;
 canvas.setWidth(window.innerWidth)
@@ -41,9 +43,31 @@ canvas.on('mouse:wheel', function(opt) {
   opt.e.stopPropagation();
 });
 
+const refreshList = () => {
+  var ol = document.querySelector("#left-bar ol")
+  ol.innerHTML = ""
+  proofs.forEach(pf => {
+    ol.innerHTML += `<li>${pf.conclusion.unicode()}</li>`
+  })
+}
+
+const addProof = (pf) => {
+  proofs.push(pf)
+  refreshList()
+}
+
+document.getElementById('addGoal').addEventListener("click", function() {
+  var input = prompt("Enter a goal sequent:")
+  var parsed = peg.parse(input, {startRule: "Sequent"})
+  addProof(new LKIncomplete(parsed))
+  proofs[proofs.length - 1].draw()
+})
+
 
 ProofTree.prototype.image = function() {
   var premiseImages = this.premises.map(p => p.image())
+
+  var isIncomplete = this instanceof LKIncomplete
 
   premiseImages.forEach((image, i) => {
     if (i === 0) return;
@@ -67,15 +91,16 @@ ProofTree.prototype.image = function() {
   var p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("left", "top"))
   var p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("right", "top"))
   var line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
-                                fill: 'black',
-                                stroke: 'black',
+                                fill: isIncomplete ? 'red' : 'black',
+                                stroke: isIncomplete ? 'red' : 'black',
                                 strokeWidth: 2,
                                 selectable: false,
                               })
 
   var ruleLabel = new fabric.Text(this.unicodeName, {
     fontFamily: 'Helvetica',
-    fontSize: 10
+    fontSize: 10,
+    stroke: isIncomplete ? 'red' : 'black'
   });
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin("right", "top"), "left", "top"))

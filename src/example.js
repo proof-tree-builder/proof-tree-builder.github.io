@@ -8,6 +8,9 @@ var pq = new And(p, q)
 var qp = new And(q, p)
 var pq2qp = new Implies(pq, qp)
 
+// var incomplete1 = new LKIncomplete(new Sequent([],[pq2qp]))
+// incomplete1.draw()
+
 // Proving that p,q ⊢ q
 var pf1 = new Identity(new Sequent([p, q], [q]), 1, 0)
 // Proving that p,q ⊢ p
@@ -19,7 +22,7 @@ var pf4 = new AndLeft(pf3, new Sequent([pq], [qp]), 0, 1, 0)
 // Proving that ⊢ (p ∧ q) ⇒ (q ∧ p)
 var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
 
-pf5.draw()
+// pf5.draw()
 
 var np = new Not(p)
 var nnp = new Not(np)
@@ -38,3 +41,5 @@ var pfWeakLEM =
 var pnp1 = new Sequent([p, np], [])
 var pnp2 = new Sequent([], [p, np])
 // pnp1.prove()
+
+
