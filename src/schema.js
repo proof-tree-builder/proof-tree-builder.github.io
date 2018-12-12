@@ -471,7 +471,10 @@ class ImpliesLeft extends LKProofTree {
     this.unicodeName = "⇒-L"
     this.latexName = "\\Rightarrow_L"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
-    const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
+	// changed false to true 
+    const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
+	console.log((new Implies(f1, f2)).unicode())
+	console.log(conclusion.precedents[conclusionFormulaIndex].unicode())
 
     if (deepEqual(new Implies(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1;
@@ -567,8 +570,6 @@ class OrRight extends LKProofTree {
 */
 class NotLeft extends LKProofTree {
   constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
-    console.log(premise);
-    console.log(conclusion);
     super([premise], conclusion);
     this.isLeft = true;
     this.isRight = false;
