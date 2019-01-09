@@ -22,7 +22,8 @@ var pf4 = new AndLeft(pf3, new Sequent([pq], [qp]), 0, 1, 0)
 // Proving that ⊢ (p ∧ q) ⇒ (q ∧ p)
 var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
 
-// pf5.draw()
+addProof(pf5)
+pf5.draw()
 
 var np = new Not(p)
 var nnp = new Not(np)

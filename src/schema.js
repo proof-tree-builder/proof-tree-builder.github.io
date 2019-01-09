@@ -20,7 +20,7 @@ const deepEqual = (x, y) => {
 // Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
-/////////FORMULA CLASS & CHILDREN ///////////
+/////////TERM CLASS & CHILDREN ///////////
 
 class Term {
   constructor() {

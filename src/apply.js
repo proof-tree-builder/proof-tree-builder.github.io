@@ -252,8 +252,39 @@ function apply(sequent, rule) {
 	// identity
 	
 	if (rule === Identity) {
+		// for each thing on the right hand side, 
+		// we have to find the same thing on the lhs
+		firstmatchidx = -1
+		for (i = 0; i < rhs.length; i++) {
+			formula = rhs[i]
+			found = false
+			// if we find match, stop looking
+			for (j = 0; j < lhs.length; j++) {
+				if (deepEqual(formula, lhs[j])) {
+					found = true;
+					// for identity constructor
+					if (i == 0) {
+						firstmatchidx = j;
+					}
+					break;
+				}
+			}
+			// if any rhs elts have no match, can't apply id
+			// stop looking
+			if (!found) {
+				throw new Error("Rule not applicable.");
+				break;
+			}
+		}
 		
+		// if all matches found
+		tree = new Identity(sequent, firstmatchidx, 0)
+		return tree;
 	}
+	
+	
+	
+	// TODO: forall, exists 
 
 	throw new Error("no such rule so far");
 }
