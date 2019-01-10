@@ -625,3 +625,284 @@ class LKIncomplete extends LKProofTree {
 }
 
 // End of LK rules
+
+
+
+
+
+///////////////// HOARE STUFF /////////////////////////////
+
+class Assertion {
+	
+    constructor(s) {
+		if (isString(s)) {
+			this.s = s;
+		}
+    }
+	
+	unicode() { return this.s }
+	latex() { return this.s }
+}
+
+
+///////////////// COMMANDS /////////////////////////////
+
+class Command {
+
+  constructor() {
+    if (new.target === Command) {
+      throw new TypeError("Cannot construct Command instances directly");
+    }
+  }
+}
+
+
+//TODO: is t a term or something else?
+class CmdAssign extends Command {
+
+  constructor(v, t) {
+    super();
+    this.subcommands = [];
+    if (isString(v) && (t instanceof Term)) {
+      this.v = v;
+	  this.t = t;
+    } else {
+      throw new TypeError("Assign has to contain a String");
+    }
+  }
+
+  unicode() { return `${this.v} := ${this.t.unicode()}` }
+  latex() { return `${this.v} \\coloneqq ${this.t.latex()}` } //mathtools package
+}
+
+class CmdSeq extends Command {
+
+  constructor(first, second) {
+    super();
+    if (first instanceof Command && second instanceof Command) {
+      this.first = first;
+      this.second = second;
+      this.subcommands = [first, second];
+    } else {
+      throw new TypeError("Seq has to contain Commands");
+    }
+  }
+
+  unicode() { return `${this.first.unicode()} ; ${this.second.unicode()}` }
+  latex() { return `${this.first.latex()} ; ${this.second.latex()}` }
+}
+
+class CmdIf extends Command {
+
+  constructor(condition, btrue, bfalse) {
+    super();
+    if (btrue instanceof Command && bfalse instanceof Command && condition instanceof Assertion) {
+      this.condition = cond;
+      this.btrue = btrue;
+	  this.bfalse = bfalse;
+      this.subcommands = [btrue, bfalse];
+    } else {
+      throw new TypeError("If has to contain Commands and an Assertion");
+    }
+  }
+
+  unicode() { return `if (${this.condition.unicode()}) then (${this.btrue.unicode()}) else (${this.bfalse.unicode()})` }
+  latex() { return `if (${this.condition.latex()}) then (${this.btrue.latex()}) else (${this.bfalse.latex()})` }
+}
+
+class CmdWhile extends Command {
+
+  constructor(condition, body) {
+    super();
+    if (body instanceof Command && condition instanceof Assertion) {
+      this.condition = cond;
+      this.body = body;
+      this.subcommands = [body];
+    } else {
+      throw new TypeError("While has to contain Commands and an Assertion");
+    }
+  }
+
+  unicode() { return `while (${this.condition.unicode()}) do (${this.body.unicode()})` }
+  latex() { return `while (${this.condition.latex()}) do (${this.body.latex()})` }
+}
+
+
+///////////////// HOARE TRIPLE /////////////////////////////
+
+class HoareTriple {
+
+  constructor(pre, command, post) {
+    if (pre instanceof Assertion && post instanceof Assertion && command instanceof Command) {
+      this.pre = pre;
+      this.post = post;
+	  this.command = command;
+    } else {
+      throw new TypeError("Hoare Triple has to contain Assertions and a Command");
+    }
+  }
+
+  unicode() {
+    return `⊢ {${this.pre.unicode()}} ${this.command.unicode()} {${this.command.unicode()}}`
+  }
+
+  latex() {
+    return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.command.latex()}}`
+  }
+}
+
+///////////////// HOARE PROOF TREE /////////////////////////////
+
+class HoareProofTree extends ProofTree {
+  constructor(premises, conclusion) {
+    super();
+    if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
+      this.premises = premises;
+      this.conclusion = conclusion;
+    } else {
+      throw new TypeError("HoareProofTree has to contain ProofTrees and a HoareTriple");
+    }
+  }
+
+
+  //TODO: need one for 3 premises!!!
+  latex() {
+    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+    switch (this.premises.length) {
+      case 0:
+        return `${rule}
+\\AxiomC{$${this.conclusion.latex()}$}`
+      case 1:
+        return `${this.premises[0].latex()}
+${rule}
+\\UnaryC{$${this.conclusion.latex()}$}`
+      case 2:
+        return `${this.premises[0].latex()}
+${this.premises[1].latex()}
+${rule}
+\\BinaryC{$${this.conclusion.latex()}$}`
+      default:
+        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
+    }
+  }
+}
+
+
+/*
+  −−−−−−−−−---------------  ASGN
+  ⊢ {F[v -> t]} v := t {F}
+*/
+class Assignment extends HoareProofTree {
+  constructor(conclusion) {
+    super([], conclusion);
+    this.unicodeName = "ASGN"
+    this.latexName = "ASGN"
+    this.command = CmdAssign;
+    if (!conclusion.command instanceof CmdAssign) {
+      throw new TypeError("Not the right kind of Command");
+    }
+  }
+}
+
+/*
+  ⊢ {F} S1 {F'}  ⊢ {F'} S2 {F''}
+  −−−−−−−−−−−−------------------- SEQ
+  		⊢ {F} S1; S2 {F''}
+*/
+class Sequencing extends HoareProofTree {
+  constructor(premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion);
+    this.command = CmdSeq;
+    this.unicodeName = "SEQ"
+    this.latexName = "SEQ"
+	
+	if ( ! deepEqual(premise1.conclusion.command, conclusion.command.first) &&
+		deepEqual(premise2.conclusion.command, conclusion.command.second) &&
+		deepEqual(premise1.conclusion.pre, conclusion.pre) &&
+		deepEqual(premise2.conclusion.post, conclusion.post) &&
+		deepEqual(premise1.conclusion.post, premise2.conclusion.pre)) {
+			throw new TypeError("Commands and conditions don't match up");
+		}
+  }
+}
+
+/*
+  F ⊢ F'	⊢ {F'} S {G'}	G' ⊢ G
+  −−−−−−−−−−−−---------------------- CONS
+  			⊢ {F} S {G}
+*/
+
+// TODO: make sure premise1 and premise2 are proper type
+// change this in HoareProofTree constructor as well
+class Consequence extends HoareProofTree {
+  constructor(premise1, premise2, premise3, conclusion) {
+    super([premise1, premise2, premise3], conclusion);
+    this.command = conclusion.command;
+    this.unicodeName = "CONS"
+    this.latexName = "CONS"
+	
+	if ( ! deepEqual(premise2.conclusion.command, conclusion.command)
+		/* add more for pre/post conditions */ ) {
+			throw new TypeError("Commands and conditions don't match up");
+		}
+  }
+}
+
+/*
+  ⊢ {F ∧ c} S {F'}    ⊢ {F ∧ ¬c} S' {F'}
+  −−−−−−−−−−−−---------------------------- COND
+  	⊢ {F} if c then S else S' {F'}
+*/
+
+class Conditional extends HoareProofTree {
+  constructor(premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion);
+    this.command = CmdIf;
+    this.unicodeName = "COND"
+    this.latexName = "COND"
+	
+	if ( ! deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
+		deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
+		deepEqual(premise1.conclusion.post, conclusion.post) &&
+		deepEqual(premise2.conclusion.post, conclusion.post) 
+		/* add more for pre/post conditions */ ) {
+			throw new TypeError("Commands and conditions don't match up");
+		}
+  }
+}
+
+/*
+  		  ⊢ {F ∧ c} S {F}  
+  −−−−−−−−−−−−------------------- LOOP
+  	⊢ {F} while c do S {F ∧ ¬c}
+*/
+
+class Loop extends HoareProofTree {
+  constructor(premise, conclusion) {
+    super([premise], conclusion);
+    this.command = CmdWhile;
+    this.unicodeName = "LOOP"
+    this.latexName = "LOOP"
+	
+	if ( ! deepEqual(premise.conclusion.command, conclusion.command.body) &&
+		deepEqual(premise.conclusion.post, conclusion.pre)  
+		/* add more for pre/post conditions */ ) {
+			throw new TypeError("Commands and conditions don't match up");
+		}
+  }
+}
+
+
+
+class HoareIncomplete extends HoareProofTree {
+  constructor(conclusion) {
+    super([], conclusion)
+    this.connective = null;
+    this.unicodeName = "?"
+    this.latexName = "?"
+  }
+}
+
+
+
+
