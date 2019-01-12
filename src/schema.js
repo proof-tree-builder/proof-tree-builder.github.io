@@ -57,9 +57,18 @@ class TermFun extends Term {
   latex() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
 }
 
-// TODO think about this later.
-// class TermConst extends Term {
-// }
+class TermInt extends Term {
+  constructor(i) {
+    super()
+    if (Number.isInteger(i)) {
+      this.i = i;
+    } else {
+      throw new TypeError("TermInt has to contain an Integer");
+    }
+  }
+  unicode() { return this.v; }
+  latex() { return this.v; }
+}
 
 
 /////////FORMULA CLASS & CHILDREN ///////////
@@ -628,20 +637,105 @@ class LKIncomplete extends LKProofTree {
 
 
 
-
-
 ///////////////// HOARE STUFF /////////////////////////////
 
-class Assertion {
-	
-    constructor(s) {
-		if (isString(s)) {
-			this.s = s;
-		}
+class AddTerms extends TermFun {
+    constructor(first, second) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("+", [first, second]);
+      this.first = first;
+	  this.second = second;
     }
-	
-	unicode() { return this.s }
-	latex() { return this.s }
+    unicode() { return `(${this.first} + ${this.second})`; }
+    latex() { return `(${this.first} + ${this.second})`; }
+}
+
+class SubtractTerms extends TermFun {
+    constructor(first, second) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("-", [first, second]);
+      this.first = first;
+	  this.second = second;
+    }
+    unicode() { return `(${this.first} - ${this.second})`; }
+    latex() { return `(${this.first} - ${this.second})`; }
+}
+
+class MultiplyTerms extends TermFun {
+    constructor(first, second) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("*", [first, second]);
+      this.first = first;
+	  this.second = second;
+    }
+    unicode() { return `(${this.first} * ${this.second})`; }
+    latex() { return `(${this.first} * ${this.second})`; }
+}
+
+class DivideTerms extends TermFun {
+    constructor(first, second) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("/", [first, second]);
+      this.first = first;
+	  this.second = second;
+    }
+    unicode() { return `(${this.first} / ${this.second})`; }
+    latex() { return `(${this.first} / ${this.second})`; }
+}
+
+class LessThan extends Relation {
+    constructor(lhs, rhs) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("<", [lhs, rhs]);
+      this.lhs = lhs;
+	  this.rhs = rhs;
+    }
+    unicode() { return `(${this.lhs} < ${this.rhs})`; }
+    latex() { return `(${this.lhs} < ${this.rhs})`; }
+}
+
+class GreaterThan extends Relation {
+    constructor(lhs, rhs) {
+	  // parent constructor will throw error if arguments are not terms
+	  super(">", [lhs, rhs]);
+      this.lhs = lhs;
+	  this.rhs = rhs;
+    }
+    unicode() { return `(${this.lhs} > ${this.rhs})`; }
+    latex() { return `(${this.lhs} > ${this.rhs})`; }
+}
+
+class LeqThan extends Relation {
+    constructor(lhs, rhs) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("<=", [lhs, rhs]);
+      this.lhs = lhs;
+	  this.rhs = rhs;
+    }
+    unicode() { return `(${this.lhs} ≤ ${this.rhs})`; }
+    latex() { return `(${this.lhs} \\leq ${this.rhs})`; }
+}
+
+class GeqThan extends Relation {
+    constructor(lhs, rhs) {
+	  // parent constructor will throw error if arguments are not terms
+	  super(">=", [lhs, rhs]);
+      this.lhs = lhs;
+	  this.rhs = rhs;
+    }
+    unicode() { return `(${this.lhs} ≥ ${this.rhs})`; }
+    latex() { return `(${this.lhs} \\geq ${this.rhs})`; }
+}
+
+class Equal extends Relation {
+    constructor(lhs, rhs) {
+	  // parent constructor will throw error if arguments are not terms
+	  super("=", [lhs, rhs]);
+      this.lhs = lhs;
+	  this.rhs = rhs;
+    }
+    unicode() { return `(${this.lhs} = ${this.rhs})`; }
+    latex() { return `(${this.lhs} = ${this.rhs})`; }
 }
 
 
@@ -656,23 +750,21 @@ class Command {
   }
 }
 
-
-//TODO: is t a term or something else?
 class CmdAssign extends Command {
 
   constructor(v, t) {
     super();
     this.subcommands = [];
-    if (isString(v) && (t instanceof Term)) {
+    if (v instanceof TermVar && t instanceof Term) {
       this.v = v;
 	  this.t = t;
     } else {
-      throw new TypeError("Assign has to contain a String");
+      throw new TypeError("Assign has to contain a variable and a term");
     }
   }
 
   unicode() { return `${this.v} := ${this.t.unicode()}` }
-  latex() { return `${this.v} \\coloneqq ${this.t.latex()}` } //mathtools package
+  latex() { return `${this.v} := ${this.t.latex()}` } 
 }
 
 class CmdSeq extends Command {
@@ -696,13 +788,13 @@ class CmdIf extends Command {
 
   constructor(condition, btrue, bfalse) {
     super();
-    if (btrue instanceof Command && bfalse instanceof Command && condition instanceof Assertion) {
+    if (btrue instanceof Command && bfalse instanceof Command && condition instanceof Formula) {
       this.condition = cond;
       this.btrue = btrue;
 	  this.bfalse = bfalse;
       this.subcommands = [btrue, bfalse];
     } else {
-      throw new TypeError("If has to contain Commands and an Assertion");
+      throw new TypeError("If has to contain Commands and a Formula");
     }
   }
 
@@ -714,12 +806,12 @@ class CmdWhile extends Command {
 
   constructor(condition, body) {
     super();
-    if (body instanceof Command && condition instanceof Assertion) {
+    if (body instanceof Command && condition instanceof Formula) {
       this.condition = cond;
       this.body = body;
       this.subcommands = [body];
     } else {
-      throw new TypeError("While has to contain Commands and an Assertion");
+      throw new TypeError("While has to contain Commands and a Formula");
     }
   }
 
@@ -733,12 +825,12 @@ class CmdWhile extends Command {
 class HoareTriple {
 
   constructor(pre, command, post) {
-    if (pre instanceof Assertion && post instanceof Assertion && command instanceof Command) {
+    if (pre instanceof Formula && post instanceof Formula && command instanceof Command) {
       this.pre = pre;
       this.post = post;
 	  this.command = command;
     } else {
-      throw new TypeError("Hoare Triple has to contain Assertions and a Command");
+      throw new TypeError("Hoare Triple has to contain Formulas and a Command");
     }
   }
 
@@ -765,7 +857,6 @@ class HoareProofTree extends ProofTree {
   }
 
 
-  //TODO: need one for 3 premises!!!
   latex() {
     var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
     switch (this.premises.length) {
@@ -781,13 +872,32 @@ ${rule}
 ${this.premises[1].latex()}
 ${rule}
 \\BinaryC{$${this.conclusion.latex()}$}`
+      case 3:
+        return `${this.premises[0].latex()}
+${this.premises[1].latex()}
+${this.premises[2].latex()}
+${rule}
+\\TernaryC{$${this.conclusion.latex()}$}`
       default:
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
     }
   }
 }
 
+class ChangeCondition extends HoareProofTree {
+    constructor(left, right) {
+      super([], conclusion);
+      this.unicodeName = ""
+      this.latexName = ""
+      this.command = null;
+      if (arrayOf([left, right], Formula)) {
+        throw new TypeError("Conditions are not Formulas");
+      }
+    }
+}
 
+
+//TODO: WRITE A FUNCTION FOR REPLACING VAR WITH A TERM IN FORMULA
 /*
   −−−−−−−−−---------------  ASGN
   ⊢ {F[v -> t]} v := t {F}
@@ -831,18 +941,22 @@ class Sequencing extends HoareProofTree {
   −−−−−−−−−−−−---------------------- CONS
   			⊢ {F} S {G}
 */
-
-// TODO: make sure premise1 and premise2 are proper type
-// change this in HoareProofTree constructor as well
 class Consequence extends HoareProofTree {
   constructor(premise1, premise2, premise3, conclusion) {
     super([premise1, premise2, premise3], conclusion);
-    this.command = conclusion.command;
-    this.unicodeName = "CONS"
-    this.latexName = "CONS"
+	if (arrayOf([premise1, premise2], ChangeCondition)) {
+	    this.command = conclusion.command;
+	    this.unicodeName = "CONS"
+	    this.latexName = "CONS"
+	} else {
+		throw new TypeError("First and last premise must be ChangeCondition");
+	}
 	
-	if ( ! deepEqual(premise2.conclusion.command, conclusion.command)
-		/* add more for pre/post conditions */ ) {
+	if ( ! deepEqual(premise2.conclusion.command, conclusion.command) &&
+		deepEqual(premise1.left, conclusion.pre) &&
+		deepEqual(premise3.right, conclusion.post) &&
+		deepEqual(premise1.right, premise2.conclusion.pre) &&
+		deepEqual(premise3.left, premise2.conclusion.post)) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
@@ -861,11 +975,14 @@ class Conditional extends HoareProofTree {
     this.unicodeName = "COND"
     this.latexName = "COND"
 	
+	var c = conclusion.command.condition;
+	
 	if ( ! deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
 		deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
 		deepEqual(premise1.conclusion.post, conclusion.post) &&
-		deepEqual(premise2.conclusion.post, conclusion.post) 
-		/* add more for pre/post conditions */ ) {
+		deepEqual(premise2.conclusion.post, conclusion.post) &&
+		deepEqual(premise1.conclusion.pre, new And(conclusion.pre, c)) &&
+		deepEqual(premise2.conclusion.pre, new And(conclusion.pre, new Not(c)))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
@@ -884,14 +1001,17 @@ class Loop extends HoareProofTree {
     this.unicodeName = "LOOP"
     this.latexName = "LOOP"
 	
+	var c = conclusion.command.condition;
+	
 	if ( ! deepEqual(premise.conclusion.command, conclusion.command.body) &&
-		deepEqual(premise.conclusion.post, conclusion.pre)  
-		/* add more for pre/post conditions */ ) {
+		deepEqual(premise.conclusion.post, conclusion.pre)  &&
+		
+		deepEqual(premise.conclusion.pre, new And(conclusion.pre, c)) &&
+		deepEqual(conclusion.post, new And(conclusion.pre, new Not(c)))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
 }
-
 
 
 class HoareIncomplete extends HoareProofTree {
