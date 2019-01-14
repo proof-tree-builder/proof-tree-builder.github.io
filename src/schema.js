@@ -897,6 +897,48 @@ class ChangeCondition extends HoareProofTree {
 }
 
 
+// formula classes: Truth, Falsity, Var, And, Or, Implies, Not, Exists, Forall, Relation
+// term classes: TermVar, TermFun, TermInt
+
+// v has to be a termvar
+function substituteTerm(formula, v, term) {
+	
+	if (! (v instanceof TermVar && term instanceof Term)) {
+		throw new TypeError("Substitution can only be done using terms.")
+	}
+	
+	// base cases
+	if (formula instanceof Truth || formula instanceof Falsity || formula instanceof Var) {
+		// var is a propositional variable
+		// do nothing
+	}
+	
+	if (formula instanceof And || formula instanceof Or || formula instanceof Implies) {
+		formula.left = substituteTerm(formula.left, v, term);
+		formula.right = substituteTerm(formula.right, v, term);
+	}
+	if (formula instanceof Not) {
+		formula.one = substituteTerm(formula.one, v, term);
+	}
+	
+	if (formula instanceof Relation) {
+		var args = formula.args;
+		for (var i = 0; i < args.length; i++) {
+			element = args[i];
+			if (deepEqual(v, element)) {
+				args[i] = term;
+			}
+		}
+	}
+	
+	if (formula instanceof Exists || formula instanceof Forall) {
+		//TODO: fill this in
+	}
+	
+	return formula;
+}
+
+
 //TODO: WRITE A FUNCTION FOR REPLACING VAR WITH A TERM IN FORMULA
 /*
   −−−−−−−−−---------------  ASGN
