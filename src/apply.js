@@ -4,7 +4,11 @@ sk = new Implies(new Var("s"), new Var("k"))
 p = new Var("p")
 notp = new Not(p)
 
-fl = new Forall(new TermVar("x"), new LessThan(new TermVar("x"), new TermInt(0)))
+x = new TermVar("x")
+y = new TermVar("y")
+z = new TermInt(5)
+
+fl = new Forall(x, new LessThan(y, new TermInt(0)))
 
 seq = new Sequent([pq, notp], [notp, pq])
 
