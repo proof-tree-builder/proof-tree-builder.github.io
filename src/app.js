@@ -179,7 +179,17 @@ ProofTree.prototype.image = function(root) {
           var rule = eval(but.value)
           var updated
           if (this instanceof LKIncomplete) {
-            updated = applyLK(this.conclusion, rule)
+            if(rule === ForallLeft || rule === ExistsRight) {
+              var t = prompt("Enter the term to substitute for the variable:")
+              var parsed = peg.parse(t, {startRule: "Term"})
+              updated = applyLK(this.conclusion, rule, parsed)
+            } else if(rule === ForallRight || rule === ExistsLeft) {
+              var t = prompt("Enter a fresh variable to substitute for the variable:")
+              var parsed = peg.parse(t, {startRule: "Name"})
+              updated = applyLK(this.conclusion, rule, new TermVar(parsed))
+            } else {
+              updated = applyLK(this.conclusion, rule)
+            }
           } else if (this instanceof HoareIncomplete) {
             updated = applyHoare(this.conclusion, rule)
           }

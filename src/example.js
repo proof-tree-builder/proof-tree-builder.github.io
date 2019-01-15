@@ -24,7 +24,7 @@ var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
 
 var pf5incomplete = new ImpliesRight(new LKIncomplete(new Sequent([pq], [qp])), new Sequent([], [pq2qp]), 0, 0, 0)
 
-addProof(pf5incomplete)
+// addProof(pf5incomplete)
 // pf5incomplete.draw()
 
 var np = new Not(p)
@@ -45,4 +45,11 @@ var pnp1 = new Sequent([p, np], [])
 var pnp2 = new Sequent([], [p, np])
 // pnp1.prove()
 
+var forallx = peg.parse("forall x. f(x) |- f(1)", {startRule: "Sequent"})
+var forallxi = new LKIncomplete(forallx)
+// addProof(forallxi)
+
+var existsx = peg.parse("exists x. g(x) |- exists y. g(y)", {startRule: "Sequent"})
+var existsxi = new LKIncomplete(existsx)
+addProof(existsxi)
 
