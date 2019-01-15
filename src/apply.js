@@ -17,7 +17,6 @@ pre = new GreaterThan(new TermInt(5), new TermInt(0))
 post = new GreaterThan(x, new TermInt(0))
 t = new HoareTriple(pre, a, post)
 
-
 // user var is a field used for forall and exists.
 // it is a TermVar that we use in the application of the rule
 function applyLK(sequent, rule, uservar) {
@@ -377,14 +376,14 @@ function applyHoare(triple, rule, uservar, uservar2) {
 	
 	if (rule === Assignment) {
 		v = command.v 
-		t = command.t
+		term = command.t
 		
 		if (!command instanceof CmdAssign ||
-			!deepEqual(substituteTerm(post, v, t), pre)) {
+			!deepEqual(substituteTerm(post, v, term), pre)) {
 			throw new Error("Rule not applicable.");
 		}
 		
-		tree = new HoareIncomplete(new Assignment(triple))
+		tree = new Assignment(triple)
 		return tree;
 		
 	} else if (rule === Sequencing) {
