@@ -90,7 +90,7 @@ ProofTree.prototype.image = function(root) {
   if (this.completer) {
     return this.completer.image(root)
   }
-  var isIncomplete = this instanceof LKIncomplete
+  var isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
 
   premiseImages.forEach((image, i) => {
     if (i === 0) return;
@@ -131,30 +131,44 @@ ProofTree.prototype.image = function(root) {
     });
 
     ruleLabel.on('mousedown', (e) => {
-      var box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
-                          <p>Left rules:</p>
-                          <p>
-                            <button value="AndLeft">∧</button>
-                            <button value="OrLeft">∨</button>
-                            <button value="ImpliesLeft">⇒</button>
-                            <button value="FalsityLeft">⊥</button>
-                            <button value="ForallLeft">∀</button>
-                            <button value="ExistsLeft">∃</button>
-                          </p>
-                          <p>Right rules:</p>
-                          <p>
-                            <button value="AndRight">∧</button>
-                            <button value="OrRight">∨</button>
-                            <button value="ImpliesRight">⇒</button>
-                            <button value="TruthRight">⊤</button>
-                            <button value="ForallRight">∀</button>
-                            <button value="ExistsRight">∃</button>
-                          </p>
-                          <p>Other rules:</p>
-                          <p>
-                            <button value="Identity">Id</button>
-                          </p>
-                        </div>`)[0]
+      var box
+      if (this instanceof LKIncomplete) {
+        box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
+                         <p>Left rules:</p>
+                         <p>
+                           <button value="AndLeft">∧</button>
+                           <button value="OrLeft">∨</button>
+                           <button value="ImpliesLeft">⇒</button>
+                           <button value="FalsityLeft">⊥</button>
+                           <button value="ForallLeft">∀</button>
+                           <button value="ExistsLeft">∃</button>
+                         </p>
+                         <p>Right rules:</p>
+                         <p>
+                           <button value="AndRight">∧</button>
+                           <button value="OrRight">∨</button>
+                           <button value="ImpliesRight">⇒</button>
+                           <button value="TruthRight">⊤</button>
+                           <button value="ForallRight">∀</button>
+                           <button value="ExistsRight">∃</button>
+                         </p>
+                         <p>Other rules:</p>
+                         <p>
+                           <button value="Identity">Id</button>
+                         </p>
+                       </div>`)[0]
+      } else if(this instanceof HoareIncomplete) {
+        box = toNodes(`<div id="hoareRuleSelection" class="ruleSelection">
+                         <p>Rules:</p>
+                         <p>
+                           <button value="Assignment">Assn</button>
+                           <button value="Sequencing">Seq</button>
+                           <button value="Consequence">Cons</button>
+                           <button value="Conditional">Cond</button>
+                           <button value="Loop">Loop</button>
+                         </p>
+                       </div>`)[0]
+      }
       box.style.top = `${e.pointer.y}px`
       box.style.left = `${e.pointer.x}px`
       box.style.visibility = 'visible'
@@ -163,7 +177,12 @@ ProofTree.prototype.image = function(root) {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`);
           box.remove()
           var rule = eval(but.value)
-          var updated = applyLK(this.conclusion, rule)
+          var updated
+          if (this instanceof LKIncomplete) {
+            updated = applyLK(this.conclusion, rule)
+          } else if (this instanceof HoareIncomplete) {
+            updated = applyHoare(this.conclusion, rule)
+          }
           this.completer = updated
 
           var entry = proofs.find(entry => root == entry.proof)
