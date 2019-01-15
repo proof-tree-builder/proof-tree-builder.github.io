@@ -231,12 +231,12 @@ class Forall extends Formula {
 
   constructor(v, one) {
     super();
-    if (isString(v) && one instanceof Formula) {
+    if (v instanceof TermVar && one instanceof Formula) {
       this.v = v;
       this.one = one;
       this.subformulas = [one];
     } else {
-      throw new TypeError("Forall has to contain a String and a Formula");
+      throw new TypeError("Forall has to contain a TermVar and a Formula");
     }
   }
 
@@ -248,12 +248,12 @@ class Exists extends Formula {
 
   constructor(v, one) {
     super();
-    if (isString(v) && one instanceof Formula) {
+    if (v instanceof TermVar && one instanceof Formula) {
       this.v = v;
       this.one = one;
       this.subformulas = [one];
     } else {
-      throw new TypeError("Exists has to contain a String and a Formula");
+      throw new TypeError("Exists has to contain a TermVar and a Formula");
     }
   }
 
@@ -620,7 +620,101 @@ class NotRight extends LKProofTree {
   }
 }
 
-// TODO forall and exists rules, and maybe cut?
+
+///////////////////// FORALL & EXISTS //////////
+
+class ForallLeft extends LKProofTree {
+  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
+    super([premise], conclusion);
+    this.isLeft = true;
+    this.isRight = false;
+    this.connective = Forall;
+    this.unicodeName = "∀-L"
+    this.latexName = "\\forall_L"
+	
+	// get the premise function
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
+	const f2 = conclusion.precedents[conclusionFormulaIndex]
+
+    if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
+      this.premiseFormulaIndex = premiseFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
+	  this.t = t;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+class ForallRight extends LKProofTree {
+  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
+    super([premise], conclusion);
+    this.isLeft = false;
+    this.isRight = true;
+    this.connective = Forall;
+    this.unicodeName = "∀-R"
+    this.latexName = "\\forall_R"
+	
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
+	const f2 = conclusion.antecedents[conclusionFormulaIndex]
+
+    if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
+      this.premiseFormulaIndex = premiseFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
+	  this.y = y;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+
+class ExistsLeft extends LKProofTree {
+  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
+    super([premise], conclusion);
+    this.isLeft = true;
+    this.isRight = false;
+    this.connective = Exists;
+    this.unicodeName = "∃-L"
+    this.latexName = "\\exists_L"
+	
+	// get the premise function
+    const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
+	const f2 = conclusion.precedents[conclusionFormulaIndex]
+
+    if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
+      this.premiseFormulaIndex = premiseFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex;
+	  this.y = y;
+    } else {
+      throw new TypeError("Not the right kind of formula at index");
+    }
+  }
+}
+
+
+class ExistsRight extends LKProofTree {
+    constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
+      super([premise], conclusion);
+      this.isLeft = false;
+      this.isRight = true;
+      this.connective = Exists;
+      this.unicodeName = "∃-R"
+      this.latexName = "\\exists_R"
+	
+      const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
+  	  const f2 = conclusion.antecedents[conclusionFormulaIndex]
+
+      if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
+        this.premiseFormulaIndex = premiseFormulaIndex;
+        this.conclusionFormulaIndex = conclusionFormulaIndex;
+  	    this.t = t;
+      } else {
+        throw new TypeError("Not the right kind of formula at index");
+      }
+    }
+  }
+
 
 class LKIncomplete extends LKProofTree {
   constructor(conclusion) {
@@ -932,14 +1026,26 @@ function substituteTerm(formula, v, term) {
 	}
 	
 	if (formula instanceof Exists || formula instanceof Forall) {
-		//TODO: fill this in
+		var quantvar = formula.v
+		var body = formula.one
+		
+		if (deepEqual(v, quantvar)) {
+			// case: replace one var with another 
+			if (term instanceof TermVar) {
+				formula.v = term;
+				formula.one = substituteTerm(body, v, term)
+			} else {
+				formula = substituteTerm(body, v, term)
+			}
+		} else {
+			formula.one = substituteTerm(body, v, term)
+		}
 	}
 	
 	return formula;
 }
 
 
-//TODO: WRITE A FUNCTION FOR REPLACING VAR WITH A TERM IN FORMULA
 /*
   −−−−−−−−−---------------  ASGN
   ⊢ {F[v -> t]} v := t {F}
@@ -968,11 +1074,11 @@ class Sequencing extends HoareProofTree {
     this.unicodeName = "SEQ"
     this.latexName = "SEQ"
 	
-	if ( ! deepEqual(premise1.conclusion.command, conclusion.command.first) &&
+	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.first) &&
 		deepEqual(premise2.conclusion.command, conclusion.command.second) &&
 		deepEqual(premise1.conclusion.pre, conclusion.pre) &&
 		deepEqual(premise2.conclusion.post, conclusion.post) &&
-		deepEqual(premise1.conclusion.post, premise2.conclusion.pre)) {
+		deepEqual(premise1.conclusion.post, premise2.conclusion.pre))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
@@ -994,11 +1100,11 @@ class Consequence extends HoareProofTree {
 		throw new TypeError("First and last premise must be ChangeCondition");
 	}
 	
-	if ( ! deepEqual(premise2.conclusion.command, conclusion.command) &&
+	if ( ! (deepEqual(premise2.conclusion.command, conclusion.command) &&
 		deepEqual(premise1.left, conclusion.pre) &&
 		deepEqual(premise3.right, conclusion.post) &&
 		deepEqual(premise1.right, premise2.conclusion.pre) &&
-		deepEqual(premise3.left, premise2.conclusion.post)) {
+		deepEqual(premise3.left, premise2.conclusion.post))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
@@ -1019,12 +1125,12 @@ class Conditional extends HoareProofTree {
 	
 	var c = conclusion.command.condition;
 	
-	if ( ! deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
+	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
 		deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
 		deepEqual(premise1.conclusion.post, conclusion.post) &&
 		deepEqual(premise2.conclusion.post, conclusion.post) &&
 		deepEqual(premise1.conclusion.pre, new And(conclusion.pre, c)) &&
-		deepEqual(premise2.conclusion.pre, new And(conclusion.pre, new Not(c)))) {
+		deepEqual(premise2.conclusion.pre, new And(conclusion.pre, new Not(c))))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }
@@ -1045,11 +1151,10 @@ class Loop extends HoareProofTree {
 	
 	var c = conclusion.command.condition;
 	
-	if ( ! deepEqual(premise.conclusion.command, conclusion.command.body) &&
+	if ( ! (deepEqual(premise.conclusion.command, conclusion.command.body) &&
 		deepEqual(premise.conclusion.post, conclusion.pre)  &&
-		
 		deepEqual(premise.conclusion.pre, new And(conclusion.pre, c)) &&
-		deepEqual(conclusion.post, new And(conclusion.pre, new Not(c)))) {
+		deepEqual(conclusion.post, new And(conclusion.pre, new Not(c))))) {
 			throw new TypeError("Commands and conditions don't match up");
 		}
   }

@@ -1,5 +1,14 @@
+// pq = new And(new Var("p"), new Var("q"))
+// sk = new Implies(new Var("s"), new Var("k"))
+// p = new Var("p")
+// notp = new Not(p)
+//
+// seq = new Sequent([pq], [notp, sk])
 
-function apply(sequent, rule) {
+
+// user var is a field used for forall and exists.
+// it is a TermVar that we use in the application of the rule
+function applyLK(sequent, rule, uservar) {
 	lhs = sequent.precedents;
 	rhs = sequent.antecedents;
 	
@@ -17,11 +26,15 @@ function apply(sequent, rule) {
 		formula = Truth;
 	} else if (rule === FalsityLeft) {
 		formula = Falsity;
+	} else if (rule === ForallLeft || rule === ForallRight) {
+		formula = Forall;
+	} else if (rule === ExistsLeft || rule === ExistsRight) {
+		formula = Exists;
 	}
 	
 	
 	// if dealing with Left rules
-	// or, and, implies, not, falsity
+	// or, and, implies, not, falsity, forall, exists
 	if (rule.name.includes("Left")) {
 		
 		// get all applicable indices
@@ -128,17 +141,43 @@ function apply(sequent, rule) {
 			tree = new ImpliesLeft(premise1, premise2, sequent, 0, idx, idx);
 			return tree;
 			
-		}
-
+		} else if (rule === ForallLeft) {
+			// original Forall formula
+			og = lhs[idx];
+			// subformulas
+			v = og.v
+			body = og.one
+			newbody = substituteTerm(body, v, uservar)
+			
+			// make premise
+			plhs = lhs.slice()
+			delete plhs[idx];
+			plhs[idx] = newbody;
+			premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+			
+			tree = new ForallLeft(premise, sequent, idx, idx, uservar);
+			return tree;
+			
+		}  else if (rule === ExistsLeft) {
+			// original Exists formula
+			og = lhs[idx];
+			// subformulas
+			v = og.v
+			body = og.one
+			newbody = substituteTerm(body, v, uservar)
+			
+			// make premise
+			plhs = lhs.slice()
+			delete plhs[idx];
+			plhs[idx] = newbody;
+			premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+			
+			tree = new ExistsLeft(premise, sequent, idx, idx, uservar);
+			return tree;
+		} 
 	}
 	
 	
-	
-
-
-
-
-
 	
 	
 	// if dealing with Right rules
@@ -243,6 +282,38 @@ function apply(sequent, rule) {
 			tree = new ImpliesRight(premise, sequent, plhs.length - 1, idx, idx);
 			return tree;
 			
+		} else if (rule === ForallRight) {
+			// original Forall formula
+			og = rhs[idx];
+			// subformulas
+			v = og.v
+			body = og.one
+			newbody = substituteTerm(body, v, uservar)
+			
+			// make premise
+			prhs = rhs.slice()
+			delete prhs[idx];
+			prhs[idx] = newbody;
+			premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+			
+			tree = new ForallRight(premise, sequent, idx, idx, uservar);
+			return tree;
+		} else if (rule === ExistsRight) {
+			// original Exists formula
+			og = rhs[idx];
+			// subformulas
+			v = og.v
+			body = og.one
+			newbody = substituteTerm(body, v, uservar)
+			
+			// make premise
+			prhs = rhs.slice()
+			delete prhs[idx];
+			prhs[idx] = newbody;
+			premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+			
+			tree = new ExistsRight(premise, sequent, idx, idx, uservar);
+			return tree;
 		}
 		
 	}
@@ -282,19 +353,85 @@ function apply(sequent, rule) {
 		return tree;
 	}
 	
-	
-	
-	// TODO: forall, exists 
 
 	throw new Error("no such rule so far");
 }
 
 
+function applyHoare(triple, rule, uservar, uservar2) {
+	pre = triple.pre
+	command = triple.command
+	post = triple.post
+	
+	if (rule === Assignment) {
+		v = command.v 
+		t = command.t
+		
+		if (!command instanceof CmdAssign ||
+			!deepEquals(substituteTerm(post, v, t), pre)) {
+			throw new Error("Rule not applicable.");
+		}
+		
+		tree = new HoareIcomplete(new Assignment(triple))
+		return tree;
+		
+	} else if (rule === Sequencing) {
+		if (!command instanceof CmdSeq) {
+			throw new Error("Rule not applicable.");
+		}
+		
+		first = command.first
+		second = command.second
+		
+		premise1 = new HoareIcomplete(new HoareTriple(pre, first, uservar))
+		premise2 = new HoareIcomplete(new HoareTriple(uservar, second, post))
+		
+		tree = new Sequencing(premise1, premise2, triple)
+		return tree;
+	} else if (rule === Consequence) {
+		premise1 = new ChangeCondition(pre, uservar)
+		premise2 = new HoareIcomplete(new HoareTriple(uservar, command, uservar2))
+		premise3 = new ChangeCondition(uservar2, post)
+		
+		tree = new Consequence(premise1, premise2, premise3, triple)
+		return tree;
+	} else if (rule === Conditional) {
+		if (!command instanceof CmdIf) {
+			throw new Error("Rule not applicable.");
+		}
+		c = command.condition
+		btrue = command.btrue
+		bfalse = command.bfalse
+		
+		p1 = new And(pre, c)
+		p2 = new And(pre, new Not(c))
+		
+		premise1 = new HoareIncomplete(new HoareTriple(p1, btrue, post))
+		premise2 = new HoareIncomplete(new HoareTriple(p2, bfalse, post))
+		
+		tree = new Conditional(premise1, premise2, triple)
+		return tree;
+	} else if (rule === Loop) {
+		c = command.condition
+		body = command.body
+		
+		if (!command instanceof CmdWhile && 
+			!deepEqual(pre, new And(pre, new Not(c)))) {
+			throw new Error("Rule not applicable.");
+		}
+		
+		p1 = new And(pre, c)
+		p2 = new And(pre, new Not(c))
+		
+		premise1 = new HoareIncomplete(new HoareTriple(p1, body, pre))
+		
+		tree = new Conditional(premise1, premise2, triple)
+		return tree;
+	}
+
+	throw new Error("No rule specified or rule does not exist.");
+	
+}
 
 
-pq = new And(new Var("p"), new Var("q"))
-sk = new Implies(new Var("s"), new Var("k"))
-p = new Var("p")
-notp = new Not(p)
 
-seq = new Sequent([pq], [notp, sk])
