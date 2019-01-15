@@ -1,7 +1,6 @@
 var proofs = []
 
 var canvas = this.__canvas = new fabric.Canvas('c', {selection: false});
-var ruleSelection = document.querySelector('#lkRuleSelection') //TODO
 fabric.Object.prototype.transparentCorners = false;
 canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
@@ -9,9 +8,12 @@ canvas.setHeight(window.innerHeight)
 var incompleteColor = '#FFA500'
 var goodColor = 'black'
 
+const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
+
 // Panning with ALT + drag
 canvas.on('mouse:down', function(opt) {
-  ruleSelection.style.visibility = 'hidden'
+  document.querySelectorAll('.ruleSelection').forEach(e => e.remove())
+
   var evt = opt.e;
   if (evt.altKey === true) {
     this.isDragging = true;
@@ -51,27 +53,36 @@ canvas.on('mouse:wheel', function(opt) {
 const refreshList = () => {
   var ol = document.querySelector("#left-bar ol")
   ol.innerHTML = ""
-  proofs.forEach(pf => {
-    ol.innerHTML += `<li>${pf.conclusion.unicode()}</li>`
+  proofs.forEach((entry, i) => {
+    ol.innerHTML += `<li value="${i}">${entry.proof.conclusion.unicode()}</li>`
   })
 }
 
 const addProof = (pf) => {
-  proofs.push(pf)
+  // proofs.push(pf)
+  proofs.push({proof: pf})
+  pf.draw()
   refreshList()
 }
+
+// const redrawAll = () => {
+//   proofs.forEach
+// }
 
 document.getElementById('addGoal').addEventListener("click", function() {
   var input = prompt("Enter a goal sequent:")
   var parsed = peg.parse(input, {startRule: "Sequent"})
-  addProof(new LKIncomplete(parsed))
-  proofs[proofs.length - 1].draw()
+  var tree = new LKIncomplete(parsed)
+  addProof(tree)
 })
 
 
-ProofTree.prototype.image = function() {
-  var premiseImages = this.premises.map(p => p.image())
+ProofTree.prototype.image = function(root) {
+  var premiseImages = this.premises.map(p => p.image(root))
 
+  if (this.completer) {
+    return this.completer.image(root)
+  }
   var isIncomplete = this instanceof LKIncomplete
 
   premiseImages.forEach((image, i) => {
@@ -111,6 +122,54 @@ ProofTree.prototype.image = function() {
       stroke: 'white',
       backgroundColor: incompleteColor
     });
+
+    ruleLabel.on('mousedown', (e) => {
+      var box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
+                          <p>Left rules:</p>
+                          <p>
+                            <button value="AndLeft">∧</button>
+                            <button value="OrLeft">∨</button>
+                            <button value="ImpliesLeft">⇒</button>
+                            <button value="FalsityLeft">⊥</button>
+                            <button value="ForallLeft">∀</button>
+                            <button value="ExistsLeft">∃</button>
+                          </p>
+                          <p>Right rules:</p>
+                          <p>
+                            <button value="AndRight">∧</button>
+                            <button value="OrRight">∨</button>
+                            <button value="ImpliesRight">⇒</button>
+                            <button value="TruthRight">⊤</button>
+                            <button value="ForallRight">∀</button>
+                            <button value="ExistsRight">∃</button>
+                          </p>
+                          <p>Other rules:</p>
+                          <p>
+                            <button value="Identity">Id</button>
+                          </p>
+                        </div>`)[0]
+      box.style.top = `${e.pointer.y}px`
+      box.style.left = `${e.pointer.x}px`
+      box.style.visibility = 'visible'
+      box.querySelectorAll('button').forEach(but => {
+        but.addEventListener('click', e => {
+          console.log(`${but.value} application for ${this.conclusion.unicode()}`);
+          box.remove()
+          var rule = eval(but.value)
+          var updated = applyLK(this.conclusion, rule)
+          this.completer = updated
+
+          var entry = proofs.find(entry => root == entry.proof)
+          canvas.forEachObject(function(obj){
+            if(!obj.root) return
+            if(obj.root == root) canvas.remove(obj)
+          });
+          entry.proof.draw()
+
+        })
+      })
+      document.body.appendChild(box)
+    })
   } else {
     ruleLabel = new fabric.Text(this.unicodeName, {
       fontFamily: 'Helvetica',
@@ -120,12 +179,7 @@ ProofTree.prototype.image = function() {
   }
 
 
-  ruleLabel.on('mousedown', (e) => {
-    console.log(e);
-    ruleSelection.style.top = `${e.absolutePointer.y}px`
-    ruleSelection.style.left = `${e.absolutePointer.x}px`
-    ruleSelection.style.visibility = 'visible'
-  })
+
 
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin("right", "top"), "left", "top"))
@@ -143,11 +197,13 @@ ProofTree.prototype.image = function() {
   group.lockScalingY = true;
   group.hasControls = false;
   group.set({borderColor: 'black'})
+  group.root = root
   return group;
 }
 
 ProofTree.prototype.draw = function() {
-  i = this.image()
+  i = this.image(this)
   canvas.add(i)
   i.center();
+  return i
 }

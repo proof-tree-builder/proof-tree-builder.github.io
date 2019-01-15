@@ -25,7 +25,7 @@ var pf5 = new ImpliesRight(pf4, new Sequent([], [pq2qp]), 0, 0, 0)
 var pf5incomplete = new ImpliesRight(new LKIncomplete(new Sequent([pq], [qp])), new Sequent([], [pq2qp]), 0, 0, 0)
 
 addProof(pf5incomplete)
-pf5incomplete.draw()
+// pf5incomplete.draw()
 
 var np = new Not(p)
 var nnp = new Not(np)
