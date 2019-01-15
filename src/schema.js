@@ -939,20 +939,37 @@ class HoareTriple {
 
 ///////////////// HOARE PROOF TREE /////////////////////////////
 
+class LatexString {
+	constructor(s) {
+		if (! s instanceof String) {
+			throw new TypeError("Not a String!");
+		}
+	}
+	
+	latex() {return this.s}
+}
+
 class HoareProofTree extends ProofTree {
   constructor(premises, conclusion) {
     super();
-    if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
+	if (premises.length === 0 && conclusion == null) {
+		this.premises = []
+		this.conclusion = null
+	}
+    else if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
       this.premises = premises;
       this.conclusion = conclusion;
     } else {
-      throw new TypeError("HoareProofTree has to contain ProofTrees and a HoareTriple");
-    }
+		throw new TypeError("HoareProofTree must have trees and a triple")
+    } 
   }
 
 
   latex() {
     var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+	if (this.premises.length === 0 && conclusion == null) {
+		return ""
+	}
     switch (this.premises.length) {
       case 0:
         return `${rule}
@@ -980,14 +997,16 @@ ${rule}
 
 class ChangeCondition extends HoareProofTree {
     constructor(left, right) {
-      super([], conclusion);
+	  super([], null)
+	  this.left = left
+	  this.right = right
       this.unicodeName = ""
       this.latexName = ""
       this.command = null;
-      if (arrayOf([left, right], Formula)) {
-        throw new TypeError("Conditions are not Formulas");
-      }
     }
+	
+	unicode() {return `${this.left.unicode()} ⊢ ${this.right.unicode()}`}
+	latex() { return `${this.left.latex()} \\vdash ${this.right.latex()}`}
 }
 
 
@@ -1021,6 +1040,12 @@ function substituteTerm(formula, v, term) {
 			element = args[i];
 			if (deepEqual(v, element)) {
 				args[i] = term;
+				if (formula.lhs && deepEqual(formula.lhs, v)) {
+					formula.lhs = term;
+				}
+				if (formula.rhs && deepEqual(formula.rhs, v)) {
+					formula.rhs = term;
+				}
 			}
 		}
 	}
