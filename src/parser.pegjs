@@ -20,10 +20,10 @@ Formula1
 
 Formula2
   = ("∀" / "forall") _ names:Names1 _ "." _ expr:Formula2 {
-      return names.reduceRight((acc,v) => new Forall(v, acc), expr)
+      return names.reduceRight((acc,v) => new Forall(new TermVar(v), acc), expr)
     }
   / ("∃" / "exists") _ names:Names1 _ "." _ expr:Formula2 {
-      return names.reduceRight((acc,v) => new Exists(v, acc), expr)
+      return names.reduceRight((acc,v) => new Exists(new TermVar(v), acc), expr)
     }
   / Formula3
 
@@ -51,8 +51,8 @@ Formula5
 Term
   = head:Term2 tail:(_ ("+" / "-") _ Term2)* {
       return tail.reduce(function(result, element) {
-        if (element[1] === "+") { return AddTerms(result, element[3]); }
-        if (element[1] === "-") { return SubtractTerms(result, element[3]); }
+        if (element[1] === "+") { return new AddTerms(result, element[3]); }
+        if (element[1] === "-") { return new SubtractTerms(result, element[3]); }
       }, head);
     }
 
@@ -60,8 +60,8 @@ Term
 Term2
   = head:Term1 tail:(_ ("*" / "/") _ Term1)* {
       return tail.reduce(function(result, element) {
-        if (element[1] === "*") { return MultiplyTerms(result, element[3]); }
-        if (element[1] === "/") { return DivideTerms(result, element[3]); }
+        if (element[1] === "*") { return new MultiplyTerms(result, element[3]); }
+        if (element[1] === "/") { return new DivideTerms(result, element[3]); }
       }, head);
     }
 
@@ -79,7 +79,9 @@ Terms
   / _ { return [] }
 
 Atom
-  = first:Term _ ( "<=" / "≤" ) _ second:Term { return new LeqThan(first, second) }
+  = ("true" / "⊤") { return new Truth(); }
+  / ("false" / "⊥") { return new Falsity(); }
+  / first:Term _ ( "<=" / "≤" ) _ second:Term { return new LeqThan(first, second) }
   / first:Term _ "<" _ second:Term { return new LessThan(first, second) }
   / first:Term _ ( ">=" / "≥" ) _ second:Term { return new GeqThan(first, second) }
   / first:Term _ ">" _ second:Term { return new GreaterThan(first, second) }
@@ -93,10 +95,14 @@ HoareTriple
 
 // top level command to avoid left recursion
 Command
-  = cmd1:Command1 _ ";" _ cmd2:(Command / Command1) { return new CmdSeq(cmd1, cmd2) }
+  = head:Command1 tail:(_ (";") _ Command1)* {
+      return tail.reduce(function(result, element) {
+        return new CmdSeq(result, element[3]);
+      }, head);
+    }
 
 Command1
-  = name:Name _ ":=" _ t:Term { return new CmdAssign(name, t) }
+  = name:Name _ ":=" _ t:Term { return new CmdAssign(new TermVar(name), t) }
   / "if" _ cond:Formula _ "then" _ cmd1:Command _ "else" _ cmd2:Command { return new CmdIf(cond, cmd1, cmd2) }
   / "while" _ cond:Formula _ "do" _ cmd:Command { return new CmdWhile(cond, cmd) }
   / "(" _ cmd:Command _ ")" { return cmd }

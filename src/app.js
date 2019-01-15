@@ -69,10 +69,17 @@ const addProof = (pf) => {
 //   proofs.forEach
 // }
 
-document.getElementById('addGoal').addEventListener("click", function() {
-  var input = prompt("Enter a goal sequent:")
+document.getElementById('addLKGoal').addEventListener("click", function() {
+  var input = prompt("Enter a LK goal sequent:")
   var parsed = peg.parse(input, {startRule: "Sequent"})
   var tree = new LKIncomplete(parsed)
+  addProof(tree)
+})
+
+document.getElementById('addHoareGoal').addEventListener("click", function() {
+  var input = prompt("Enter a Hoare logic goal sequent:")
+  var parsed = peg.parse(input, {startRule: "HoareTriple"})
+  var tree = new HoareIncomplete(parsed)
   addProof(tree)
 })
 
