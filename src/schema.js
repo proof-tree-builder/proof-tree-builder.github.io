@@ -66,8 +66,8 @@ class TermInt extends Term {
       throw new TypeError("TermInt has to contain an Integer");
     }
   }
-  unicode() { return this.v; }
-  latex() { return this.v; }
+  unicode() { return this.i; }
+  latex() { return this.i; }
 }
 
 
@@ -240,8 +240,8 @@ class Forall extends Formula {
     }
   }
 
-  unicode() { return `∀ ${this.v}. (${this.one.unicode()})` }
-  latex() { return `\\forall ${this.v}. (${this.one.latex()})` }
+  unicode() { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
+  latex() { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
 }
 
 class Exists extends Formula {
@@ -257,8 +257,8 @@ class Exists extends Formula {
     }
   }
 
-  unicode() { return `∃ ${this.v}. (${this.one.unicode()})` }
-  latex() { return `\\exists ${this.v}. (${this.one.latex()})` }
+  unicode() { return `∃ ${this.v.unicode()}. (${this.one.unicode()})` }
+  latex() { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
 }
 
 
@@ -740,8 +740,8 @@ class AddTerms extends TermFun {
       this.first = first;
 	  this.second = second;
     }
-    unicode() { return `(${this.first} + ${this.second})`; }
-    latex() { return `(${this.first} + ${this.second})`; }
+    unicode() { return `${this.first.unicode()} + ${this.second.unicode()}`; }
+    latex() { return `${this.first.latex()} + ${this.second.latex()}`; }
 }
 
 class SubtractTerms extends TermFun {
@@ -751,8 +751,8 @@ class SubtractTerms extends TermFun {
       this.first = first;
 	  this.second = second;
     }
-    unicode() { return `(${this.first} - ${this.second})`; }
-    latex() { return `(${this.first} - ${this.second})`; }
+    unicode() { return `${this.first.unicode()} - ${this.second.unicode()}`; }
+    latex() { return `${this.first.latex()} - ${this.second.latex()}`; }
 }
 
 class MultiplyTerms extends TermFun {
@@ -762,8 +762,8 @@ class MultiplyTerms extends TermFun {
       this.first = first;
 	  this.second = second;
     }
-    unicode() { return `(${this.first} * ${this.second})`; }
-    latex() { return `(${this.first} * ${this.second})`; }
+    unicode() { return `${this.first.unicode()} * ${this.second.unicode()}`; }
+    latex() { return `${this.first.latex()} * ${this.second.latex()}`; }
 }
 
 class DivideTerms extends TermFun {
@@ -773,8 +773,8 @@ class DivideTerms extends TermFun {
       this.first = first;
 	  this.second = second;
     }
-    unicode() { return `(${this.first} / ${this.second})`; }
-    latex() { return `(${this.first} / ${this.second})`; }
+    unicode() { return `${this.first.unicode()} / ${this.second.unicode()}`; }
+    latex() { return `${this.first.latex()} / ${this.second.latex()}`; }
 }
 
 class LessThan extends Relation {
@@ -784,8 +784,8 @@ class LessThan extends Relation {
       this.lhs = lhs;
 	  this.rhs = rhs;
     }
-    unicode() { return `(${this.lhs} < ${this.rhs})`; }
-    latex() { return `(${this.lhs} < ${this.rhs})`; }
+    unicode() { return `${this.lhs.unicode()} < ${this.rhs.unicode()}`; }
+    latex() { return `${this.lhs.latex()} < ${this.rhs.latex()}`; }
 }
 
 class GreaterThan extends Relation {
@@ -795,8 +795,8 @@ class GreaterThan extends Relation {
       this.lhs = lhs;
 	  this.rhs = rhs;
     }
-    unicode() { return `(${this.lhs} > ${this.rhs})`; }
-    latex() { return `(${this.lhs} > ${this.rhs})`; }
+    unicode() { return `${this.lhs.unicode()} > ${this.rhs.unicode()}`; }
+    latex() { return `${this.lhs.latex()} > ${this.rhs.latex()}`; }
 }
 
 class LeqThan extends Relation {
@@ -806,8 +806,8 @@ class LeqThan extends Relation {
       this.lhs = lhs;
 	  this.rhs = rhs;
     }
-    unicode() { return `(${this.lhs} ≤ ${this.rhs})`; }
-    latex() { return `(${this.lhs} \\leq ${this.rhs})`; }
+    unicode() { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}`; }
+    latex() { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}`; }
 }
 
 class GeqThan extends Relation {
@@ -817,8 +817,8 @@ class GeqThan extends Relation {
       this.lhs = lhs;
 	  this.rhs = rhs;
     }
-    unicode() { return `(${this.lhs} ≥ ${this.rhs})`; }
-    latex() { return `(${this.lhs} \\geq ${this.rhs})`; }
+    unicode() { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}`; }
+    latex() { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}`; }
 }
 
 class Equal extends Relation {
@@ -828,8 +828,8 @@ class Equal extends Relation {
       this.lhs = lhs;
 	  this.rhs = rhs;
     }
-    unicode() { return `(${this.lhs} = ${this.rhs})`; }
-    latex() { return `(${this.lhs} = ${this.rhs})`; }
+    unicode() { return `${this.lhs.unicode()} = ${this.rhs.unicode()}`; }
+    latex() { return `${this.lhs.latex()} = ${this.rhs.latex()}`; }
 }
 
 
@@ -857,8 +857,8 @@ class CmdAssign extends Command {
     }
   }
 
-  unicode() { return `${this.v} := ${this.t.unicode()}` }
-  latex() { return `${this.v} := ${this.t.latex()}` } 
+  unicode() { return `${this.v.unicode()} := ${this.t.unicode()}` }
+  latex() { return `${this.v.latex()} := ${this.t.latex()}` } 
 }
 
 class CmdSeq extends Command {
@@ -883,7 +883,7 @@ class CmdIf extends Command {
   constructor(condition, btrue, bfalse) {
     super();
     if (btrue instanceof Command && bfalse instanceof Command && condition instanceof Formula) {
-      this.condition = cond;
+      this.condition = condition;
       this.btrue = btrue;
 	  this.bfalse = bfalse;
       this.subcommands = [btrue, bfalse];
@@ -901,7 +901,7 @@ class CmdWhile extends Command {
   constructor(condition, body) {
     super();
     if (body instanceof Command && condition instanceof Formula) {
-      this.condition = cond;
+      this.condition = condition;
       this.body = body;
       this.subcommands = [body];
     } else {
@@ -929,11 +929,11 @@ class HoareTriple {
   }
 
   unicode() {
-    return `⊢ {${this.pre.unicode()}} ${this.command.unicode()} {${this.command.unicode()}}`
+    return `⊢ {${this.pre.unicode()}} ${this.command.unicode()} {${this.post.unicode()}}`
   }
 
   latex() {
-    return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.command.latex()}}`
+    return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.post.latex()}}`
   }
 }
 

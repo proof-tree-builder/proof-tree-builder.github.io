@@ -1,9 +1,12 @@
-// pq = new And(new Var("p"), new Var("q"))
-// sk = new Implies(new Var("s"), new Var("k"))
-// p = new Var("p")
-// notp = new Not(p)
-//
-// seq = new Sequent([pq], [notp, sk])
+pq = new And(new Var("p"), new Var("q"))
+qp = new And(new Var("q"), new Var("p"))
+sk = new Implies(new Var("s"), new Var("k"))
+p = new Var("p")
+notp = new Not(p)
+
+fl = new Forall(new TermVar("x"), new LessThan(new TermVar("x"), new TermInt(0)))
+
+seq = new Sequent([pq, notp], [notp, pq])
 
 
 // user var is a field used for forall and exists.
