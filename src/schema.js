@@ -939,16 +939,6 @@ class HoareTriple {
 
 ///////////////// HOARE PROOF TREE /////////////////////////////
 
-class LatexString {
-	constructor(s) {
-		if (! s instanceof String) {
-			throw new TypeError("Not a String!");
-		}
-	}
-	
-	latex() {return this.s}
-}
-
 class HoareProofTree extends ProofTree {
   constructor(premises, conclusion) {
     super();
