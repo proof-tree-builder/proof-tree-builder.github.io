@@ -47,9 +47,30 @@ Formula5
   = ("¬" / "!" / "~") _ expr:Atom { return new Not(expr); }
   / Atom
 
+// Entry point for terms
 Term
+  = head:Term2 tail:(_ ("+" / "-") _ Term2)* {
+      return tail.reduce(function(result, element) {
+        if (element[1] === "+") { return AddTerms(result, element[3]); }
+        if (element[1] === "-") { return SubtractTerms(result, element[3]); }
+      }, head);
+    }
+
+// Lower precedence operators for terms
+Term2
+  = head:Term1 tail:(_ ("*" / "/") _ Term1)* {
+      return tail.reduce(function(result, element) {
+        if (element[1] === "*") { return MultiplyTerms(result, element[3]); }
+        if (element[1] === "/") { return DivideTerms(result, element[3]); }
+      }, head);
+    }
+
+// Literals for terms
+Term1
   = name:Name { return new TermVar(name); }
+  / i:Integer { return new TermInt(i); }
   / name:Name _ "(" _ terms:Terms _ ")" { return new TermFun(name, terms); }
+  / "(" _ t:Term _ ")" { return t; }
 
 Terms
   = first:Term _ rest:("," _ Term)* {
@@ -58,9 +79,27 @@ Terms
   / _ { return [] }
 
 Atom
-  = name:Name _ "(" _ terms:Terms _ ")" { return new Relation(name, terms); }
+  = first:Term _ ( "<=" / "≤" ) _ second:Term { return new LeqThan(first, second) }
+  / first:Term _ "<" _ second:Term { return new LessThan(first, second) }
+  / first:Term _ ( ">=" / "≥" ) _ second:Term { return new GeqThan(first, second) }
+  / first:Term _ ">" _ second:Term { return new GreaterThan(first, second) }
+  / first:Term _ "=" _ second:Term { return new Equal(first, second) }
+  / name:Name _ "(" _ terms:Terms _ ")" { return new Relation(name, terms); }
   / name:Name { return new Var(name); }
   / Parens
+
+HoareTriple
+  = "{" _ pre:Formula _ "}" _ cmd:Command _ "{" _ post:Formula _ "}" { return new HoareTriple(pre, cmd, post) }
+
+// top level command to avoid left recursion
+Command
+  = cmd1:Command1 _ ";" _ cmd2:(Command / Command1) { return new CmdSeq(cmd1, cmd2) }
+
+Command1
+  = name:Name _ ":=" _ t:Term { return new CmdAssign(name, t) }
+  / "if" _ cond:Formula _ "then" _ cmd1:Command _ "else" _ cmd2:Command { return new CmdIf(cond, cmd1, cmd2) }
+  / "while" _ cond:Formula _ "do" _ cmd:Command { return new CmdWhile(cond, cmd) }
+  / "(" _ cmd:Command _ ")" { return cmd }
 
 Parens
   = "(" _ expr:Formula1 _ ")" { return expr; }
@@ -76,6 +115,7 @@ Name
 
 Integer "integer"
   = _ [0-9]+ { return parseInt(text(), 10); }
+  / _ "-" [0-9]+ { return parseInt(text(), 10); }
 
 _ "whitespace"
   = [ \t\n\r]*
