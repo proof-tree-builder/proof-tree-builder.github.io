@@ -12,6 +12,11 @@ fl = new Forall(x, new LessThan(y, new TermInt(0)))
 
 seq = new Sequent([pq, notp], [notp, pq])
 
+a = new CmdAssign(x, new TermInt(5))
+pre = new GreaterThan(new TermInt(5), new TermInt(0))
+post = new GreaterThan(x, new TermInt(0))
+t = new HoareTriple(pre, a, post)
+
 
 // user var is a field used for forall and exists.
 // it is a TermVar that we use in the application of the rule
@@ -375,11 +380,11 @@ function applyHoare(triple, rule, uservar, uservar2) {
 		t = command.t
 		
 		if (!command instanceof CmdAssign ||
-			!deepEquals(substituteTerm(post, v, t), pre)) {
+			!deepEqual(substituteTerm(post, v, t), pre)) {
 			throw new Error("Rule not applicable.");
 		}
 		
-		tree = new HoareIcomplete(new Assignment(triple))
+		tree = new HoareIncomplete(new Assignment(triple))
 		return tree;
 		
 	} else if (rule === Sequencing) {
@@ -390,14 +395,14 @@ function applyHoare(triple, rule, uservar, uservar2) {
 		first = command.first
 		second = command.second
 		
-		premise1 = new HoareIcomplete(new HoareTriple(pre, first, uservar))
-		premise2 = new HoareIcomplete(new HoareTriple(uservar, second, post))
+		premise1 = new HoareIncomplete(new HoareTriple(pre, first, uservar))
+		premise2 = new HoareIncomplete(new HoareTriple(uservar, second, post))
 		
 		tree = new Sequencing(premise1, premise2, triple)
 		return tree;
 	} else if (rule === Consequence) {
 		premise1 = new ChangeCondition(pre, uservar)
-		premise2 = new HoareIcomplete(new HoareTriple(uservar, command, uservar2))
+		premise2 = new HoareIncomplete(new HoareTriple(uservar, command, uservar2))
 		premise3 = new ChangeCondition(uservar2, post)
 		
 		tree = new Consequence(premise1, premise2, premise3, triple)
