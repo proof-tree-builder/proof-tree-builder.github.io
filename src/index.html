@@ -54,6 +54,24 @@
         left:0;
         z-index: 5;
       }
+
+      .ruleSelection {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #ddd;
+        border: 1px solid black;
+        padding: 0.5em;
+        z-index: 20;
+        visibility: hidden;
+      }
+      .ruleSelection > p {
+        padding: 0.2em;
+      }
+      .ruleSelection button {
+        font-size: 1.2em;
+        padding: 0.2em;
+      }
     </style>
   </head>
   <body>
@@ -65,6 +83,28 @@
       <ol start="1">
       </ol>
     </div>
+
+    <div id="lkRuleSelection" class="ruleSelection">
+      <p>Left rules:</p>
+      <p>
+        <button>∧</button>
+        <button>∨</button>
+        <button>⇒</button>
+        <button>⊥</button>
+        <button>∀</button>
+        <button>∃</button>
+      </p>
+      <p>Right rules:</p>
+      <p>
+        <button>∧</button>
+        <button>∨</button>
+        <button>⇒</button>
+        <button>⊤</button>
+        <button>∀</button>
+        <button>∃</button>
+      </p>
+    </div>
+
 
 
     <canvas id="c" width="800" height="450"></canvas>

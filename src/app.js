@@ -1,12 +1,17 @@
 var proofs = []
 
 var canvas = this.__canvas = new fabric.Canvas('c', {selection: false});
+var ruleSelection = document.querySelector('#lkRuleSelection') //TODO
 fabric.Object.prototype.transparentCorners = false;
 canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
 
+var incompleteColor = '#FFA500'
+var goodColor = 'black'
+
 // Panning with ALT + drag
 canvas.on('mouse:down', function(opt) {
+  ruleSelection.style.visibility = 'hidden'
   var evt = opt.e;
   if (evt.altKey === true) {
     this.isDragging = true;
@@ -79,7 +84,8 @@ ProofTree.prototype.image = function() {
     premiseImages[i] = image
   })
 
-  var premiseGroup = this.premises ? new fabric.Group(premiseImages) : new fabric.Group()
+  var opt = {subTargetCheck: true}
+  var premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
 
   var text = new fabric.Text(this.conclusion.unicode(), {
     fontFamily: 'Helvetica',
@@ -91,25 +97,47 @@ ProofTree.prototype.image = function() {
   var p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("left", "top"))
   var p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin("right", "top"))
   var line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
-                                fill: isIncomplete ? 'red' : 'black',
-                                stroke: isIncomplete ? 'red' : 'black',
+                                fill: isIncomplete ? incompleteColor : goodColor,
+                                stroke: isIncomplete ? incompleteColor : goodColor,
                                 strokeWidth: 2,
                                 selectable: false,
                               })
 
-  var ruleLabel = new fabric.Text(this.unicodeName, {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    stroke: isIncomplete ? 'red' : 'black'
-  });
+  var ruleLabel
+  if (isIncomplete) {
+    ruleLabel = new fabric.Text(" + ", {
+      fontFamily: 'Helvetica',
+      fontSize: 11,
+      stroke: 'white',
+      backgroundColor: incompleteColor
+    });
+  } else {
+    ruleLabel = new fabric.Text(this.unicodeName, {
+      fontFamily: 'Helvetica',
+      fontSize: 10,
+      stroke: goodColor
+    });
+  }
+
+
+  ruleLabel.on('mousedown', (e) => {
+    console.log(e);
+    ruleSelection.style.top = `${e.absolutePointer.y}px`
+    ruleSelection.style.left = `${e.absolutePointer.x}px`
+    ruleSelection.style.visibility = 'visible'
+  })
+
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin("right", "top"), "left", "top"))
 
-  var group = new fabric.Group([premiseGroup, line, ruleLabel, text], {selectable: true});
-  group.on('selected', () => {
-    console.log(ruleLabel);
-    canvas.setActiveObject(group);
-  })
+  var group = new fabric.Group([premiseGroup, line, ruleLabel, text], {selectable: true, subTargetCheck: true});
+
+  // group.on('selected', () => {
+  //   console.log(ruleLabel);
+  //   canvas.setActiveObject(group);
+  // })
+
+
   group.lockRotation = true;
   group.lockScalingX = true;
   group.lockScalingY = true;
