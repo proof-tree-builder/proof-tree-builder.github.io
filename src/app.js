@@ -8,6 +8,10 @@ canvas.setHeight(window.innerHeight)
 var incompleteColor = '#FFA500'
 var goodColor = 'black'
 
+const isLearnMode = () => {
+  return document.getElementById('mode').checked
+}
+
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
 
 // Panning with ALT + drag
