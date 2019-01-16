@@ -480,7 +480,7 @@ class ImpliesLeft extends LKProofTree {
     this.unicodeName = "⇒-L"
     this.latexName = "\\Rightarrow_L"
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
-	// changed false to true 
+	// changed false to true
     const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
 	console.log((new Implies(f1, f2)).unicode())
 	console.log(conclusion.precedents[conclusionFormulaIndex].unicode())
@@ -631,7 +631,7 @@ class ForallLeft extends LKProofTree {
     this.connective = Forall;
     this.unicodeName = "∀-L"
     this.latexName = "\\forall_L"
-	
+
 	// get the premise function
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
 	const f2 = conclusion.precedents[conclusionFormulaIndex]
@@ -654,7 +654,7 @@ class ForallRight extends LKProofTree {
     this.connective = Forall;
     this.unicodeName = "∀-R"
     this.latexName = "\\forall_R"
-	
+
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
 	const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
@@ -677,7 +677,7 @@ class ExistsLeft extends LKProofTree {
     this.connective = Exists;
     this.unicodeName = "∃-L"
     this.latexName = "\\exists_L"
-	
+
 	// get the premise function
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
 	const f2 = conclusion.precedents[conclusionFormulaIndex]
@@ -701,7 +701,7 @@ class ExistsRight extends LKProofTree {
       this.connective = Exists;
       this.unicodeName = "∃-R"
       this.latexName = "\\exists_R"
-	
+
       const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
   	  const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
@@ -858,7 +858,7 @@ class CmdAssign extends Command {
   }
 
   unicode() { return `${this.v.unicode()} := ${this.t.unicode()}` }
-  latex() { return `${this.v.latex()} := ${this.t.latex()}` } 
+  latex() { return `${this.v.latex()} := ${this.t.latex()}` }
 }
 
 class CmdSeq extends Command {
@@ -951,13 +951,13 @@ class HoareProofTree extends ProofTree {
       this.conclusion = conclusion;
     } else {
 		throw new TypeError("HoareProofTree must have trees and a triple")
-    } 
+    }
   }
 
 
   latex() {
     var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
-	if (this.premises.length === 0 && conclusion == null) {
+	if (this.premises.length === 0 && this.conclusion == null) {
 		return ""
 	}
     switch (this.premises.length) {
@@ -994,7 +994,7 @@ class ChangeCondition extends HoareProofTree {
       this.latexName = ""
       this.command = null;
     }
-	
+
 	unicode() {return `${this.left.unicode()} ⊢ ${this.right.unicode()}`}
 	latex() { return `${this.left.latex()} \\vdash ${this.right.latex()}`}
 }
@@ -1005,17 +1005,17 @@ class ChangeCondition extends HoareProofTree {
 
 // v has to be a termvar
 function substituteTerm(formula, v, term) {
-	
+
 	if (! (v instanceof TermVar && term instanceof Term)) {
 		throw new TypeError("Substitution can only be done using terms.")
 	}
-	
+
 	// base cases
 	if (formula instanceof Truth || formula instanceof Falsity || formula instanceof Var) {
 		// var is a propositional variable
 		// do nothing
 	}
-	
+
 	if (formula instanceof And || formula instanceof Or || formula instanceof Implies) {
 		formula.left = substituteTerm(formula.left, v, term);
 		formula.right = substituteTerm(formula.right, v, term);
@@ -1023,7 +1023,7 @@ function substituteTerm(formula, v, term) {
 	if (formula instanceof Not) {
 		formula.one = substituteTerm(formula.one, v, term);
 	}
-	
+
 	if (formula instanceof Relation) {
 		var args = formula.args;
 		for (var i = 0; i < args.length; i++) {
@@ -1039,13 +1039,13 @@ function substituteTerm(formula, v, term) {
 			}
 		}
 	}
-	
+
 	if (formula instanceof Exists || formula instanceof Forall) {
 		var quantvar = formula.v
 		var body = formula.one
-		
+
 		if (deepEqual(v, quantvar)) {
-			// case: replace one var with another 
+			// case: replace one var with another
 			if (term instanceof TermVar) {
 				formula.v = term;
 				formula.one = substituteTerm(body, v, term)
@@ -1056,7 +1056,7 @@ function substituteTerm(formula, v, term) {
 			formula.one = substituteTerm(body, v, term)
 		}
 	}
-	
+
 	return formula;
 }
 
@@ -1088,7 +1088,7 @@ class Sequencing extends HoareProofTree {
     this.command = CmdSeq;
     this.unicodeName = "SEQ"
     this.latexName = "SEQ"
-	
+
 	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.first) &&
 		deepEqual(premise2.conclusion.command, conclusion.command.second) &&
 		deepEqual(premise1.conclusion.pre, conclusion.pre) &&
@@ -1114,7 +1114,7 @@ class Consequence extends HoareProofTree {
 	} else {
 		throw new TypeError("First and last premise must be ChangeCondition");
 	}
-	
+
 	if ( ! (deepEqual(premise2.conclusion.command, conclusion.command) &&
 		deepEqual(premise1.left, conclusion.pre) &&
 		deepEqual(premise3.right, conclusion.post) &&
@@ -1137,9 +1137,9 @@ class Conditional extends HoareProofTree {
     this.command = CmdIf;
     this.unicodeName = "COND"
     this.latexName = "COND"
-	
+
 	var c = conclusion.command.condition;
-	
+
 	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
 		deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
 		deepEqual(premise1.conclusion.post, conclusion.post) &&
@@ -1152,7 +1152,7 @@ class Conditional extends HoareProofTree {
 }
 
 /*
-  		  ⊢ {F ∧ c} S {F}  
+  		  ⊢ {F ∧ c} S {F}
   −−−−−−−−−−−−------------------- LOOP
   	⊢ {F} while c do S {F ∧ ¬c}
 */
@@ -1163,9 +1163,9 @@ class Loop extends HoareProofTree {
     this.command = CmdWhile;
     this.unicodeName = "LOOP"
     this.latexName = "LOOP"
-	
+
 	var c = conclusion.command.condition;
-	
+
 	if ( ! (deepEqual(premise.conclusion.command, conclusion.command.body) &&
 		deepEqual(premise.conclusion.post, conclusion.pre)  &&
 		deepEqual(premise.conclusion.pre, new And(conclusion.pre, c)) &&

@@ -112,7 +112,7 @@ document.getElementById('addLKGoal').addEventListener("click", function() {
 })
 
 document.getElementById('addHoareGoal').addEventListener("click", function() {
-  var input = prompt("Enter a Hoare logic goal sequent:")
+  var input = prompt("Enter a Hoare triple:")
   var parsed = peg.parse(input, {startRule: "HoareTriple"})
   var tree = new HoareIncomplete(parsed)
   addProof(tree)
