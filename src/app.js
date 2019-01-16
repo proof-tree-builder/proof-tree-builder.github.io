@@ -8,6 +8,10 @@ canvas.setHeight(window.innerHeight)
 var incompleteColor = '#FFA500'
 var goodColor = 'black'
 
+const isLearnMode = () => {
+  return document.getElementById('mode').checked
+}
+
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
 
 // Panning with ALT + drag
@@ -50,11 +54,42 @@ canvas.on('mouse:wheel', function(opt) {
   opt.e.stopPropagation();
 });
 
+const copyToClipboard = str => {
+  const el = document.createElement('textarea');
+  el.value = str;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+};
+
+const giveLatex = i => {
+  var pf = proofs[i].proof
+  var code = pf.latex()
+  copyToClipboard(code)
+  alert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
+}
+
+const removeProof = i => {
+  var pf = proofs[i].proof
+  canvas.forEachObject(function(obj){
+    if(!obj.root) return
+    if(obj.root == pf) canvas.remove(obj)
+  });
+  proofs.splice(i, 1);
+  refreshList()
+}
+
 const refreshList = () => {
   var ol = document.querySelector("#left-bar ol")
   ol.innerHTML = ""
   proofs.forEach((entry, i) => {
-    ol.innerHTML += `<li value="${i}">${entry.proof.conclusion.unicode()}</li>`
+    ol.innerHTML += `<li value="${i}">
+                        ${entry.proof.conclusion.unicode()}
+                        <br>
+                        <button onclick="javascript:giveLatex(${i})">LaTeX</button>
+                        <button onclick="javascript:removeProof(${i})">Delete</button>
+                     </li>`
   })
 }
 
@@ -77,7 +112,7 @@ document.getElementById('addLKGoal').addEventListener("click", function() {
 })
 
 document.getElementById('addHoareGoal').addEventListener("click", function() {
-  var input = prompt("Enter a Hoare logic goal sequent:")
+  var input = prompt("Enter a Hoare triple:")
   var parsed = peg.parse(input, {startRule: "HoareTriple"})
   var tree = new HoareIncomplete(parsed)
   addProof(tree)

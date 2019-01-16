@@ -76,6 +76,70 @@
         text-transform:capitalize;
         font-variant:small-caps;
       }
+
+      /* from https://stackoverflow.com/a/39846603/2016295 */
+      .switch {
+        position: absolute;
+        top: 0.1em; right: 0.8em;
+        display: inline-block;
+        width: 160px;
+        height: 2.2em;
+      }
+
+      .switch input {display:none;}
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: orange;
+        -webkit-transition: .6s;
+        transition: .6s;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .6s;
+        transition: .6s;
+      }
+
+      input:checked + .slider {
+        background-color: #2ab934;
+      }
+
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+
+      input:checked + .slider:before {
+        -webkit-transform: translateX(125px);
+        -ms-transform: translateX(125px);
+        transform: translateX(125px);
+      }
+
+      .on { display: none; }
+
+      .on, .off {
+        color: white;
+        position: absolute;
+        transform: translate(-50%,-50%);
+        top: 50%;
+        left: 50%;
+        font-size: 1em;
+      }
+
+      input:checked+ .slider .on {display: block;}
+
+      input:checked + .slider .off {display: none;}
     </style>
   </head>
   <body>
@@ -83,6 +147,12 @@
     <div id="top-bar">
       <button type="button" id="addLKGoal">Add LK goal</button>
       <button type="button" id="addHoareGoal">Add Hoare logic goal</button>
+      <label class="switch" alt="Switch between Learn and Automate modes">
+        <input type="checkbox" id="mode" checked>
+        <div class="slider"><span class="on">Learn</span>
+          <span class="off">Automate</span>
+        </div>
+      </label>
     </div>
     <div id="left-bar">
       <ol start="1">

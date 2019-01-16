@@ -91,7 +91,7 @@ Atom
   / Parens
 
 HoareTriple
-  = "{" _ pre:Formula _ "}" _ cmd:Command _ "{" _ post:Formula _ "}" { return new HoareTriple(pre, cmd, post) }
+  = ("|-" / "⊢")? _ "{" _ pre:Formula _ "}" _ cmd:Command _ "{" _ post:Formula _ "}" { return new HoareTriple(pre, cmd, post) }
 
 // top level command to avoid left recursion
 Command
