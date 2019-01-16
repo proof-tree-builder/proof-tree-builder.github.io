@@ -1,21 +1,25 @@
-pq = new And(new Var("p"), new Var("q"))
-qp = new And(new Var("q"), new Var("p"))
-sk = new Implies(new Var("s"), new Var("k"))
-p = new Var("p")
-notp = new Not(p)
+// pq = new And(new Var("p"), new Var("q"))
+// qp = new And(new Var("q"), new Var("p"))
+// sk = new Implies(new Var("s"), new Var("k"))
+// p = new Var("p")
+// notp = new Not(p)
+//
+// x = new TermVar("x")
+// y = new TermVar("y")
+// z = new TermInt(5)
+//
+// fl = new Forall(x, new LessThan(y, new TermInt(0)))
+//
+// seq = new Sequent([pq, notp], [notp, pq])
+//
+// a = new CmdAssign(x, new TermInt(5))
+// pre = new GreaterThan(new TermInt(5), new TermInt(0))
+// post = new GreaterThan(x, new TermInt(0))
+// t = new HoareTriple(pre, a, pre)
+// mid = new GreaterThan(x, new TermInt(5))
+//
+// iff = new CmdIf(pre, a, a)
 
-x = new TermVar("x")
-y = new TermVar("y")
-z = new TermInt(5)
-
-fl = new Forall(x, new LessThan(y, new TermInt(0)))
-
-seq = new Sequent([pq, notp], [notp, pq])
-
-a = new CmdAssign(x, new TermInt(5))
-pre = new GreaterThan(new TermInt(5), new TermInt(0))
-post = new GreaterThan(x, new TermInt(0))
-t = new HoareTriple(pre, a, post)
 
 // user var is a field used for forall and exists.
 // it is a TermVar that we use in the application of the rule

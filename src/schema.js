@@ -1107,7 +1107,7 @@ class Sequencing extends HoareProofTree {
 class Consequence extends HoareProofTree {
   constructor(premise1, premise2, premise3, conclusion) {
     super([premise1, premise2, premise3], conclusion);
-	if (arrayOf([premise1, premise2], ChangeCondition)) {
+	if (arrayOf([premise1, premise3], ChangeCondition)) {
 	    this.command = conclusion.command;
 	    this.unicodeName = "CONS"
 	    this.latexName = "CONS"
