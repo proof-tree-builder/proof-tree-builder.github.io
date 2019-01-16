@@ -1,21 +1,24 @@
-pq = new And(new Var("p"), new Var("q"))
-qp = new And(new Var("q"), new Var("p"))
-sk = new Implies(new Var("s"), new Var("k"))
-p = new Var("p")
-notp = new Not(p)
-
-x = new TermVar("x")
-y = new TermVar("y")
-z = new TermInt(5)
-
-fl = new Forall(x, new LessThan(y, new TermInt(0)))
-
-seq = new Sequent([pq, notp], [notp, pq])
-
-a = new CmdAssign(x, new TermInt(5))
-pre = new GreaterThan(new TermInt(5), new TermInt(0))
-post = new GreaterThan(x, new TermInt(0))
-t = new HoareTriple(pre, a, post)
+// pq = new And(new Var("p"), new Var("q"))
+// qp = new And(new Var("q"), new Var("p"))
+// sk = new Implies(new Var("s"), new Var("k"))
+// p = new Var("p")
+// notp = new Not(p)
+//
+// x = new TermVar("x")
+// y = new TermVar("y")
+// z = new TermInt(5)
+//
+// fl = new Forall(x, new LessThan(y, new TermInt(0)))
+//
+// seq = new Sequent([pq, notp], [notp, pq])
+//
+// a = new CmdAssign(x, new TermInt(5))
+// pre = new GreaterThan(new TermInt(5), new TermInt(0))
+// post = new GreaterThan(x, new TermInt(0))
+// t = new HoareTriple(pre, a, pre)
+// mid = new GreaterThan(x, new TermInt(5))
+//
+// iff = new CmdIf(pre, a, a)
 
 
 // user var is a field used for forall and exists.
@@ -377,14 +380,14 @@ function applyHoare(triple, rule, uservar, uservar2) {
 	
 	if (rule === Assignment) {
 		v = command.v 
-		t = command.t
+		term = command.t
 		
 		if (!command instanceof CmdAssign ||
-			!deepEqual(substituteTerm(post, v, t), pre)) {
+			!deepEqual(substituteTerm(post, v, term), pre)) {
 			throw new Error("Rule not applicable.");
 		}
 		
-		tree = new HoareIncomplete(new Assignment(triple))
+		tree = new Assignment(triple)
 		return tree;
 		
 	} else if (rule === Sequencing) {
