@@ -8,9 +8,8 @@ canvas.setHeight(window.innerHeight)
 var incompleteColor = '#FFA500'
 var goodColor = 'black'
 
-const isLearnMode = () => {
-  return document.getElementById('mode').checked
-}
+const isLearnMode = () => document.getElementById('mode').checked
+const isAutomateMode = () => !document.getElementById('mode').checked
 
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
 
@@ -192,6 +191,16 @@ ProofTree.prototype.image = function(root) {
                            <button value="Identity">Id</button>
                          </p>
                        </div>`)[0]
+
+        if (isAutomateMode()) {
+          var applicables = LKapplicable(this.conclusion).map(x => x.name)
+          console.log(applicables);
+          box.querySelectorAll('button').forEach(but => {
+            if (!applicables.includes(but.value))
+              but.remove()
+          })
+        }
+
       } else if(this instanceof HoareIncomplete) {
         box = toNodes(`<div id="hoareRuleSelection" class="ruleSelection">
                          <p>Rules:</p>
