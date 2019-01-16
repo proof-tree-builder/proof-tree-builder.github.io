@@ -2,10 +2,10 @@
 
 function LKapplicable(sequent) {
 	arr = []
-	
+
 	lhs = sequent.precedents
 	rhs = sequent.antecedents
-	
+
 	// left rules: falsity, or, and, implies, not
 	for (i = 0; i < lhs.length; i++) {
 		// get formula
@@ -21,9 +21,13 @@ function LKapplicable(sequent) {
 			arr.push(ImpliesLeft)
 		} else if (f instanceof Not) {
 			arr.push(NotLeft)
+		} else if (f instanceof Forall) {
+			arr.push(ForallLeft)
+		} else if (f instanceof Exists) {
+			arr.push(ExistsLeft)
 		}
 	}
-	
+
 	// right rules: truth, or, and, implies, not
 	for (i = 0; i < rhs.length; i++) {
 		// get formula
@@ -39,9 +43,13 @@ function LKapplicable(sequent) {
 			arr.push(ImpliesRight)
 		} else if (f instanceof Not) {
 			arr.push(NotRight)
+		} else if (f instanceof Forall) {
+			arr.push(ForallRight)
+		} else if (f instanceof Exists) {
+			arr.push(ExistsRight)
 		}
 	}
-	
+
 	// other: identity
 	for (i = 0; i < rhs.length; i++) {
 		formula = rhs[i]
@@ -58,7 +66,7 @@ function LKapplicable(sequent) {
 			arr.push(Identity)
 		}
 	}
-	
+
 	return arr
 }
 

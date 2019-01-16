@@ -194,7 +194,6 @@ ProofTree.prototype.image = function(root) {
 
         if (isAutomateMode()) {
           var applicables = LKapplicable(this.conclusion).map(x => x.name)
-          console.log(applicables);
           box.querySelectorAll('button').forEach(but => {
             if (!applicables.includes(but.value))
               but.remove()
