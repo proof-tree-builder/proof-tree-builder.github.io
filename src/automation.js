@@ -1,4 +1,4 @@
-Sequent.prototype.prove = function() {
+Sequent.prototype.prove = function () {
   if (!this.isQuantifierFree()) {
     throw new TypeError("The sequent is not quantifier-free, therefore Wang's algorithm doesn't apply")
   }
@@ -36,7 +36,7 @@ Sequent.prototype.prove = function() {
     var newPrecedents = this.precedents
     newPrecedents.splice(precIndex, 1)
     var seq = new Sequent(newPrecedents, this.antecedents.concat([precElem.one]))
-    console.log(seq.unicode());
+    console.log(seq.unicode())
 
     return new NotLeft(seq.prove(), this, this.antecedents.length, precIndex)
   }
@@ -49,11 +49,10 @@ Sequent.prototype.prove = function() {
     var newAntecedents = this.antecedents
     newAntecedents.splice(anteIndex, 1)
     var seq = new Sequent(this.precedents.concat([anteElem.one]), newAntecedents)
-    console.log(seq.unicode());
+    console.log(seq.unicode())
 
     return new NotRight(seq.prove(), this, this.precedents.length, anteIndex)
   }
-
 
   // TODO the rest of Wang's algorithm
 }

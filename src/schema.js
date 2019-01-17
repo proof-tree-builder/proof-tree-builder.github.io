@@ -1,83 +1,81 @@
 
-////////UTILITY FUNCTIONS ///////
+/// /////UTILITY FUNCTIONS ///////
 
 // Check if argument (s) is a string
-const isString = (s) => typeof s === "string" || s instanceof String
-
+const isString = (s) => typeof s === 'string' || s instanceof String
 
 // Check deep equality
 const deepEqual = (x, y) => {
-  const ok = Object.keys,
-        tx = typeof x,
-        ty = typeof y;
+  const ok = Object.keys
+
+  const tx = typeof x
+
+  const ty = typeof y
   return x && y && tx === 'object' && tx === ty && x.constructor === y.constructor ? (
     ok(x).length === ok(y).length &&
       ok(x).every(key => deepEqual(x[key], y[key]))
-  ) : (x === y);
+  ) : (x === y)
 }
-
 
 // Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
-/////////TERM CLASS & CHILDREN ///////////
+/// //////TERM CLASS & CHILDREN ///////////
 
 class Term {
-  constructor() {
+  constructor () {
     if (new.target === Term) {
-      throw new TypeError("Cannot construct Term instances directly");
+      throw new TypeError('Cannot construct Term instances directly')
     }
   }
 }
 
 class TermVar extends Term {
-  constructor(v) {
+  constructor (v) {
     super()
     if (isString(v)) {
-      this.v = v;
+      this.v = v
     } else {
-      throw new TypeError("TermVar has to contain a String");
+      throw new TypeError('TermVar has to contain a String')
     }
   }
-  unicode() { return this.v; }
-  latex() { return this.v; }
+  unicode () { return this.v }
+  latex () { return this.v }
 }
 
 class TermFun extends Term {
-  constructor(name, args) {
+  constructor (name, args) {
     super()
     if (isString(name) && arrayOf(args, Term)) {
-      this.name = name;
-      this.args = args;
+      this.name = name
+      this.args = args
     } else {
-      throw new TypeError("TermFun has to contain a String and Terms");
+      throw new TypeError('TermFun has to contain a String and Terms')
     }
   }
-  unicode() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
-  latex() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+  unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
+  latex () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
 }
 
 class TermInt extends Term {
-  constructor(i) {
+  constructor (i) {
     super()
     if (Number.isInteger(i)) {
-      this.i = i;
+      this.i = i
     } else {
-      throw new TypeError("TermInt has to contain an Integer");
+      throw new TypeError('TermInt has to contain an Integer')
     }
   }
-  unicode() { return this.i; }
-  latex() { return this.i; }
+  unicode () { return this.i }
+  latex () { return this.i }
 }
 
-
-/////////FORMULA CLASS & CHILDREN ///////////
+/// //////FORMULA CLASS & CHILDREN ///////////
 
 class Formula {
-
-  constructor() {
+  constructor () {
     if (new.target === Formula) {
-      throw new TypeError("Cannot construct Formula instances directly");
+      throw new TypeError('Cannot construct Formula instances directly')
     }
   }
 
@@ -87,219 +85,201 @@ class Formula {
   }
 
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
-  punicode() { return this.shouldParen() ?  `(${this.unicode()})` : this.unicode() }
-  platex() { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
+  punicode () { return this.shouldParen() ? `(${this.unicode()})` : this.unicode() }
+  platex () { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
 
   // checks if formula is quantified
-  isQuantifier() {
-    return this instanceof Forall || this instanceof Exists;
+  isQuantifier () {
+    return this instanceof Forall || this instanceof Exists
   }
 
   // checks if formula is quantifier free
-  isQuantifierFree() {
+  isQuantifierFree () {
     return !this.isQuantifier() && this.subformulas.every(f => f.isQuantifierFree())
   }
 }
 
-
 class Truth extends Formula {
-
-  constructor() {
-    super();
-    this.subformulas = [];
+  constructor () {
+    super()
+    this.subformulas = []
   }
 
-  unicode() { return "⊤" }
-  latex() { return "\\top" }
+  unicode () { return '⊤' }
+  latex () { return '\\top' }
 }
-
 
 class Falsity extends Formula {
-
-  constructor() {
-    super();
-    this.subformulas = [];
+  constructor () {
+    super()
+    this.subformulas = []
   }
 
-  unicode() { return "⊥" }
-  latex() { return "\\bot" }
+  unicode () { return '⊥' }
+  latex () { return '\\bot' }
 }
-
 
 class Var extends Formula {
-
-  constructor(v) {
-    super();
-    this.subformulas = [];
+  constructor (v) {
+    super()
+    this.subformulas = []
     if (isString(v)) {
-      this.v = v;
+      this.v = v
     } else {
-      throw new TypeError("Var has to contain a String");
+      throw new TypeError('Var has to contain a String')
     }
   }
 
-  unicode() { return this.v }
-  latex() { return this.v }
+  unicode () { return this.v }
+  latex () { return this.v }
 }
-
 
 class And extends Formula {
-
-  constructor(left, right) {
-    super();
+  constructor (left, right) {
+    super()
     if (left instanceof Formula && right instanceof Formula) {
-      this.left = left;
-      this.right = right;
-      this.subformulas = [left, right];
+      this.left = left
+      this.right = right
+      this.subformulas = [left, right]
     } else {
-      throw new TypeError("And has to contain Formulas");
+      throw new TypeError('And has to contain Formulas')
     }
   }
 
-  unicode() { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
-  latex() { return `${this.left.platex()} \\land ${this.right.platex()}` }
+  unicode () { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
+  latex () { return `${this.left.platex()} \\land ${this.right.platex()}` }
 }
 
-
 class Or extends Formula {
-
-  constructor(left, right) {
-    super();
+  constructor (left, right) {
+    super()
     if (left instanceof Formula && right instanceof Formula) {
-      this.left = left;
-      this.right = right;
-      this.subformulas = [left, right];
+      this.left = left
+      this.right = right
+      this.subformulas = [left, right]
     } else {
-      throw new TypeError("Or has to contain Formulas");
+      throw new TypeError('Or has to contain Formulas')
     }
   }
 
-  unicode() { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
-  latex() { return `${this.left.platex()} \\lor ${this.right.platex()}` }
+  unicode () { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
+  latex () { return `${this.left.platex()} \\lor ${this.right.platex()}` }
 }
 
 class Implies extends Formula {
-
-  constructor(left, right) {
-    super();
+  constructor (left, right) {
+    super()
     if (left instanceof Formula && right instanceof Formula) {
-      this.left = left;
-      this.right = right;
-      this.subformulas = [left, right];
+      this.left = left
+      this.right = right
+      this.subformulas = [left, right]
     } else {
-      throw new TypeError("Implies has to contain Formulas");
+      throw new TypeError('Implies has to contain Formulas')
     }
   }
 
-  unicode() { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
-  latex() { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
+  unicode () { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
+  latex () { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
 }
 
 class Not extends Formula {
-
-  constructor(one) {
-    super();
+  constructor (one) {
+    super()
     if (one instanceof Formula) {
-      this.one = one;
-      this.subformulas = [one];
+      this.one = one
+      this.subformulas = [one]
     } else {
-      throw new TypeError("Not has to contain a Formula");
+      throw new TypeError('Not has to contain a Formula')
     }
   }
 
-  unicode() { return `¬ ${this.one.punicode()}` }
-  latex() { return `\\lnot ${this.one.platex()}` }
+  unicode () { return `¬ ${this.one.punicode()}` }
+  latex () { return `\\lnot ${this.one.platex()}` }
 }
 
 class Relation extends Formula {
-  constructor(name, args) {
+  constructor (name, args) {
     super()
     if (isString(name) && arrayOf(args, Term)) {
-      this.name = name;
-      this.args = args;
-      this.subformulas = [];
+      this.name = name
+      this.args = args
+      this.subformulas = []
     } else {
-      throw new TypeError("Relation has to contain a String and Terms");
+      throw new TypeError('Relation has to contain a String and Terms')
     }
   }
-  unicode() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
-  latex() { return `${this.name}(${this.args.map(x => x.unicode()).join(", ")})`; }
+  unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
+  latex () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
 }
 
-
 class Forall extends Formula {
-
-  constructor(v, one) {
-    super();
+  constructor (v, one) {
+    super()
     if (v instanceof TermVar && one instanceof Formula) {
-      this.v = v;
-      this.one = one;
-      this.subformulas = [one];
+      this.v = v
+      this.one = one
+      this.subformulas = [one]
     } else {
-      throw new TypeError("Forall has to contain a TermVar and a Formula");
+      throw new TypeError('Forall has to contain a TermVar and a Formula')
     }
   }
 
-  unicode() { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
-  latex() { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
+  unicode () { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
+  latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
 }
 
 class Exists extends Formula {
-
-  constructor(v, one) {
-    super();
+  constructor (v, one) {
+    super()
     if (v instanceof TermVar && one instanceof Formula) {
-      this.v = v;
-      this.one = one;
-      this.subformulas = [one];
+      this.v = v
+      this.one = one
+      this.subformulas = [one]
     } else {
-      throw new TypeError("Exists has to contain a TermVar and a Formula");
+      throw new TypeError('Exists has to contain a TermVar and a Formula')
     }
   }
 
-  unicode() { return `∃ ${this.v.unicode()}. (${this.one.unicode()})` }
-  latex() { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
+  unicode () { return `∃ ${this.v.unicode()}. (${this.one.unicode()})` }
+  latex () { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
 }
 
-
-//////////SEQUENT CLASS //////////////
+/// ///////SEQUENT CLASS //////////////
 
 class Sequent {
-
-  constructor(precedents, antecedents) {
+  constructor (precedents, antecedents) {
     if (arrayOf(precedents, Formula) && arrayOf(antecedents, Formula)) {
-      this.precedents = precedents;
-      this.antecedents = antecedents;
+      this.precedents = precedents
+      this.antecedents = antecedents
     } else {
-      throw new TypeError("Sequent has to contain Formulas");
+      throw new TypeError('Sequent has to contain Formulas')
     }
   }
 
-  unicode() {
-    const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(", ") + " " : ""
+  unicode () {
+    const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(', ') + ' ' : ''
     const right = this.antecedents.map(f => f.unicode())
     return `${left}⊢ ${right}`
   }
 
-  latex() {
-    const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(", ") + " " : ""
+  latex () {
+    const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(', ') + ' ' : ''
     const right = this.antecedents.map(f => f.latex())
     return `${left}\\vdash ${right}`
   }
 
-  isQuantifierFree() {
+  isQuantifierFree () {
     return this.precedents.every(p => p.isQuantifierFree()) &&
-           this.antecedents.every(q => q.isQuantifierFree());
+           this.antecedents.every(q => q.isQuantifierFree())
   }
 }
 
-
-//////PROOFTREE ABSTRACT CLASS AND CHILDREN ////////
+/// ///PROOFTREE ABSTRACT CLASS AND CHILDREN ////////
 
 class ProofTree {
-  constructor() {
+  constructor () {
     if (new.target === ProofTree) {
-      throw new TypeError("Cannot construct ProofTree instances directly");
+      throw new TypeError('Cannot construct ProofTree instances directly')
     }
   }
 
@@ -310,24 +290,23 @@ class ProofTree {
 % where you want to have the proof tree
 \\begin{prooftree}
 ${this.latex()}
-\\end{prooftree}`;
+\\end{prooftree}`
   }
 }
 
-
 class LKProofTree extends ProofTree {
-  constructor(premises, conclusion) {
-    super();
+  constructor (premises, conclusion) {
+    super()
     if (arrayOf(premises, LKProofTree) && conclusion instanceof Sequent) {
-      this.premises = premises;
-      this.conclusion = conclusion;
+      this.premises = premises
+      this.conclusion = conclusion
     } else {
-      throw new TypeError("LKProofTree has to contain ProofTrees and a Sequent");
+      throw new TypeError('LKProofTree has to contain ProofTrees and a Sequent')
     }
   }
 
-  latex() {
-    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+  latex () {
+    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
     switch (this.premises.length) {
       case 0:
         return `${rule}
@@ -342,7 +321,7 @@ ${this.premises[1].latex()}
 ${rule}
 \\BinaryC{$${this.conclusion.latex()}$}`
       default:
-        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
+        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
   }
 }
@@ -354,17 +333,17 @@ ${rule}
   Γ ⊢ Δ, ⊤
 */
 class TruthRight extends LKProofTree {
-  constructor(conclusion, conclusionFormulaIndex) {
-    super([], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.unicodeName = "⊤-R"
-    this.latexName = "\\top_R"
-    this.connective = Truth;
+  constructor (conclusion, conclusionFormulaIndex) {
+    super([], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.unicodeName = '⊤-R'
+    this.latexName = '\\top_R'
+    this.connective = Truth
     if (conclusion.antecedents[conclusionFormulaIndex] instanceof Truth) {
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -374,42 +353,42 @@ class TruthRight extends LKProofTree {
   Γ, ⊥ ⊢ Δ
 */
 class FalsityLeft extends LKProofTree {
-  constructor(conclusion, conclusionFormulaIndex) {
-    super([], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.unicodeName = "⊥-L"
-    this.latexName = "\\bot_L"
-    this.connective = Falsity;
+  constructor (conclusion, conclusionFormulaIndex) {
+    super([], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.unicodeName = '⊥-L'
+    this.latexName = '\\bot_L'
+    this.connective = Falsity
     if (conclusion.precedents[conclusionFormulaIndex] instanceof Falsity) {
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
 
 const getPremiseFormula = (premises, isInPrecedent, premiseIndex, premiseFormulaIndex) =>
-  premises[premiseIndex]["conclusion"][isInPrecedent ? "precedents" : "antecedents"][premiseFormulaIndex]
+  premises[premiseIndex]['conclusion'][isInPrecedent ? 'precedents' : 'antecedents'][premiseFormulaIndex]
 
 /*
   −−−−−−−−−−−− I
   Γ, F ⊢ Δ, F
 */
 class Identity extends LKProofTree {
-  constructor(conclusion, conclusionFormulaIndex1, conclusionFormulaIndex2) {
-    super([], conclusion);
-    this.isLeft = false;
-    this.isRight = false;
-    this.connective = null;
-    this.unicodeName = "Id"
-    this.latexName = "Id"
+  constructor (conclusion, conclusionFormulaIndex1, conclusionFormulaIndex2) {
+    super([], conclusion)
+    this.isLeft = false
+    this.isRight = false
+    this.connective = null
+    this.unicodeName = 'Id'
+    this.latexName = 'Id'
 
     if (deepEqual(conclusion.precedents[conclusionFormulaIndex1], conclusion.antecedents[conclusionFormulaIndex2])) {
-      this.conclusionFormulaIndex1 = conclusionFormulaIndex1;
-      this.conclusionFormulaIndex2 = conclusionFormulaIndex2;
+      this.conclusionFormulaIndex1 = conclusionFormulaIndex1
+      this.conclusionFormulaIndex2 = conclusionFormulaIndex2
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -420,22 +399,22 @@ class Identity extends LKProofTree {
   Γ, F ∧ G ⊢ Δ
 */
 class AndLeft extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = And;
-    this.unicodeName = "∧-L"
-    this.latexName = "\\land_L"
+  constructor (premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = And
+    this.unicodeName = '∧-L'
+    this.latexName = '\\land_L'
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex2)
 
     if (deepEqual(new And(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -446,22 +425,22 @@ class AndLeft extends LKProofTree {
       Γ ⊢ Δ, F ∧ G
 */
 class AndRight extends LKProofTree {
-  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise1, premise2], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.connective = And;
-    this.unicodeName = "∧-R"
-    this.latexName = "\\land_R"
+  constructor (premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = And
+    this.unicodeName = '∧-R'
+    this.latexName = '\\land_R'
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 1, premiseFormulaIndex2)
 
     if (deepEqual(new And(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -472,25 +451,25 @@ class AndRight extends LKProofTree {
       Γ, F ⇒ G ⊢ Δ
 */
 class ImpliesLeft extends LKProofTree {
-  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise1, premise2], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = Implies;
-    this.unicodeName = "⇒-L"
-    this.latexName = "\\Rightarrow_L"
+  constructor (premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = Implies
+    this.unicodeName = '⇒-L'
+    this.latexName = '\\Rightarrow_L'
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
-	// changed false to true
+    // changed false to true
     const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
-	console.log((new Implies(f1, f2)).unicode())
-	console.log(conclusion.precedents[conclusionFormulaIndex].unicode())
+    console.log((new Implies(f1, f2)).unicode())
+    console.log(conclusion.precedents[conclusionFormulaIndex].unicode())
 
     if (deepEqual(new Implies(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -501,21 +480,21 @@ class ImpliesLeft extends LKProofTree {
   Γ ⊢ Δ, F ⇒ G
 */
 class ImpliesRight extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.connective = Implies;
-    this.unicodeName = "⇒-R"
-    this.latexName = "\\Rightarrow_R"
+  constructor (premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = Implies
+    this.unicodeName = '⇒-R'
+    this.latexName = '\\Rightarrow_R'
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
     if (deepEqual(new Implies(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -526,22 +505,22 @@ class ImpliesRight extends LKProofTree {
       Γ, F ∨ G ⊢ Δ
 */
 class OrLeft extends LKProofTree {
-  constructor(premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise1, premise2], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = Or;
-    this.unicodeName = "∨-L"
-    this.latexName = "\\lor_L"
+  constructor (premise1, premise2, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise1, premise2], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = Or
+    this.unicodeName = '∨-L'
+    this.latexName = '\\lor_L'
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
 
     if (deepEqual(new Or(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -552,22 +531,22 @@ class OrLeft extends LKProofTree {
   Γ ⊢ Δ, F ∨ G
 */
 class OrRight extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
-    super([premise], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.connective = Or;
-    this.unicodeName = "∨-R"
-    this.latexName = "\\lor_R"
+  constructor (premise, conclusion, premiseFormulaIndex1, premiseFormulaIndex2, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = Or
+    this.unicodeName = '∨-R'
+    this.latexName = '\\lor_R'
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     const f2 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex2)
 
     if (deepEqual(new Or(f1, f2), conclusion.antecedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex1 = premiseFormulaIndex1;
-      this.premiseFormulaIndex2 = premiseFormulaIndex2;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex1 = premiseFormulaIndex1
+      this.premiseFormulaIndex2 = premiseFormulaIndex2
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -578,20 +557,20 @@ class OrRight extends LKProofTree {
   Γ, ¬ F ⊢ Δ
 */
 class NotLeft extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
-    super([premise], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = Not;
-    this.unicodeName = "¬-L"
-    this.latexName = "\\lnot_L"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = Not
+    this.unicodeName = '¬-L'
+    this.latexName = '\\lnot_L'
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
 
     if (deepEqual(new Not(f1), conclusion.precedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex = premiseFormulaIndex;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
@@ -602,135 +581,131 @@ class NotLeft extends LKProofTree {
   Γ ⊢ ¬ F, Δ
 */
 class NotRight extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
-    super([premise], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.connective = Not;
-    this.unicodeName = "¬-R"
-    this.latexName = "\\lnot_R"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = Not
+    this.unicodeName = '¬-R'
+    this.latexName = '\\lnot_R'
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
 
     if (deepEqual(new Not(f1), conclusion.antecedents[conclusionFormulaIndex])) {
-      this.premiseFormulaIndex = premiseFormulaIndex;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
 
-
-///////////////////// FORALL & EXISTS //////////
+/// ////////////////// FORALL & EXISTS //////////
 
 class ForallLeft extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
-    super([premise], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = Forall;
-    this.unicodeName = "∀-L"
-    this.latexName = "\\forall_L"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
+    super([premise], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = Forall
+    this.unicodeName = '∀-L'
+    this.latexName = '\\forall_L'
 
-	// get the premise function
+    // get the premise function
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
-	const f2 = conclusion.precedents[conclusionFormulaIndex]
+    const f2 = conclusion.precedents[conclusionFormulaIndex]
 
     if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
-      this.premiseFormulaIndex = premiseFormulaIndex;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
-	  this.t = t;
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+      this.t = t
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
 
 class ForallRight extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
-    super([premise], conclusion);
-    this.isLeft = false;
-    this.isRight = true;
-    this.connective = Forall;
-    this.unicodeName = "∀-R"
-    this.latexName = "\\forall_R"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
+    super([premise], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = Forall
+    this.unicodeName = '∀-R'
+    this.latexName = '\\forall_R'
 
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
-	const f2 = conclusion.antecedents[conclusionFormulaIndex]
+    const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
     if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
-      this.premiseFormulaIndex = premiseFormulaIndex;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
-	  this.y = y;
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+      this.y = y
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
-
 
 class ExistsLeft extends LKProofTree {
-  constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
-    super([premise], conclusion);
-    this.isLeft = true;
-    this.isRight = false;
-    this.connective = Exists;
-    this.unicodeName = "∃-L"
-    this.latexName = "\\exists_L"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, y) {
+    super([premise], conclusion)
+    this.isLeft = true
+    this.isRight = false
+    this.connective = Exists
+    this.unicodeName = '∃-L'
+    this.latexName = '\\exists_L'
 
-	// get the premise function
+    // get the premise function
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
-	const f2 = conclusion.precedents[conclusionFormulaIndex]
+    const f2 = conclusion.precedents[conclusionFormulaIndex]
 
     if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
-      this.premiseFormulaIndex = premiseFormulaIndex;
-      this.conclusionFormulaIndex = conclusionFormulaIndex;
-	  this.y = y;
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+      this.y = y
     } else {
-      throw new TypeError("Not the right kind of formula at index");
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
 }
 
-
 class ExistsRight extends LKProofTree {
-    constructor(premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
-      super([premise], conclusion);
-      this.isLeft = false;
-      this.isRight = true;
-      this.connective = Exists;
-      this.unicodeName = "∃-R"
-      this.latexName = "\\exists_R"
+  constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
+    super([premise], conclusion)
+    this.isLeft = false
+    this.isRight = true
+    this.connective = Exists
+    this.unicodeName = '∃-R'
+    this.latexName = '\\exists_R'
 
-      const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
-  	  const f2 = conclusion.antecedents[conclusionFormulaIndex]
+    const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
+    const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
-      if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
-        this.premiseFormulaIndex = premiseFormulaIndex;
-        this.conclusionFormulaIndex = conclusionFormulaIndex;
-  	    this.t = t;
-      } else {
-        throw new TypeError("Not the right kind of formula at index");
-      }
+    if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
+      this.premiseFormulaIndex = premiseFormulaIndex
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+      this.t = t
+    } else {
+      throw new TypeError('Not the right kind of formula at index')
     }
   }
-
+}
 
 class LKIncomplete extends LKProofTree {
-  constructor(conclusion) {
+  constructor (conclusion) {
     super([], conclusion)
-    this.isLeft = false;
-    this.isRight = false;
-    this.connective = null;
-    this.unicodeName = "?"
-    this.latexName = "?"
+    this.isLeft = false
+    this.isRight = false
+    this.connective = null
+    this.unicodeName = '?'
+    this.latexName = '?'
   }
 
-  latex() {
+  latex () {
     if (this.completer) {
       return this.completer.latex()
     } else {
-      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
       return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
     }
   }
@@ -738,237 +713,225 @@ class LKIncomplete extends LKProofTree {
 
 // End of LK rules
 
-
-
-///////////////// HOARE STUFF /////////////////////////////
+/// ////////////// HOARE STUFF /////////////////////////////
 
 class AddTerms extends TermFun {
-    constructor(first, second) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("+", [first, second]);
-      this.first = first;
-	  this.second = second;
-    }
-    unicode() { return `${this.first.unicode()} + ${this.second.unicode()}`; }
-    latex() { return `${this.first.latex()} + ${this.second.latex()}`; }
+  constructor (first, second) {
+    // parent constructor will throw error if arguments are not terms
+    super('+', [first, second])
+    this.first = first
+    this.second = second
+  }
+  unicode () { return `${this.first.unicode()} + ${this.second.unicode()}` }
+  latex () { return `${this.first.latex()} + ${this.second.latex()}` }
 }
 
 class SubtractTerms extends TermFun {
-    constructor(first, second) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("-", [first, second]);
-      this.first = first;
-	  this.second = second;
-    }
-    unicode() { return `${this.first.unicode()} - ${this.second.unicode()}`; }
-    latex() { return `${this.first.latex()} - ${this.second.latex()}`; }
+  constructor (first, second) {
+    // parent constructor will throw error if arguments are not terms
+    super('-', [first, second])
+    this.first = first
+    this.second = second
+  }
+  unicode () { return `${this.first.unicode()} - ${this.second.unicode()}` }
+  latex () { return `${this.first.latex()} - ${this.second.latex()}` }
 }
 
 class MultiplyTerms extends TermFun {
-    constructor(first, second) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("*", [first, second]);
-      this.first = first;
-	  this.second = second;
-    }
-    unicode() { return `${this.first.unicode()} * ${this.second.unicode()}`; }
-    latex() { return `${this.first.latex()} * ${this.second.latex()}`; }
+  constructor (first, second) {
+    // parent constructor will throw error if arguments are not terms
+    super('*', [first, second])
+    this.first = first
+    this.second = second
+  }
+  unicode () { return `${this.first.unicode()} * ${this.second.unicode()}` }
+  latex () { return `${this.first.latex()} * ${this.second.latex()}` }
 }
 
 class DivideTerms extends TermFun {
-    constructor(first, second) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("/", [first, second]);
-      this.first = first;
-	  this.second = second;
-    }
-    unicode() { return `${this.first.unicode()} / ${this.second.unicode()}`; }
-    latex() { return `${this.first.latex()} / ${this.second.latex()}`; }
+  constructor (first, second) {
+    // parent constructor will throw error if arguments are not terms
+    super('/', [first, second])
+    this.first = first
+    this.second = second
+  }
+  unicode () { return `${this.first.unicode()} / ${this.second.unicode()}` }
+  latex () { return `${this.first.latex()} / ${this.second.latex()}` }
 }
 
 class LessThan extends Relation {
-    constructor(lhs, rhs) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("<", [lhs, rhs]);
-      this.lhs = lhs;
-	  this.rhs = rhs;
-    }
-    unicode() { return `${this.lhs.unicode()} < ${this.rhs.unicode()}`; }
-    latex() { return `${this.lhs.latex()} < ${this.rhs.latex()}`; }
+  constructor (lhs, rhs) {
+    // parent constructor will throw error if arguments are not terms
+    super('<', [lhs, rhs])
+    this.lhs = lhs
+    this.rhs = rhs
+  }
+  unicode () { return `${this.lhs.unicode()} < ${this.rhs.unicode()}` }
+  latex () { return `${this.lhs.latex()} < ${this.rhs.latex()}` }
 }
 
 class GreaterThan extends Relation {
-    constructor(lhs, rhs) {
-	  // parent constructor will throw error if arguments are not terms
-	  super(">", [lhs, rhs]);
-      this.lhs = lhs;
-	  this.rhs = rhs;
-    }
-    unicode() { return `${this.lhs.unicode()} > ${this.rhs.unicode()}`; }
-    latex() { return `${this.lhs.latex()} > ${this.rhs.latex()}`; }
+  constructor (lhs, rhs) {
+    // parent constructor will throw error if arguments are not terms
+    super('>', [lhs, rhs])
+    this.lhs = lhs
+    this.rhs = rhs
+  }
+  unicode () { return `${this.lhs.unicode()} > ${this.rhs.unicode()}` }
+  latex () { return `${this.lhs.latex()} > ${this.rhs.latex()}` }
 }
 
 class LeqThan extends Relation {
-    constructor(lhs, rhs) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("<=", [lhs, rhs]);
-      this.lhs = lhs;
-	  this.rhs = rhs;
-    }
-    unicode() { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}`; }
-    latex() { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}`; }
+  constructor (lhs, rhs) {
+    // parent constructor will throw error if arguments are not terms
+    super('<=', [lhs, rhs])
+    this.lhs = lhs
+    this.rhs = rhs
+  }
+  unicode () { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}` }
+  latex () { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}` }
 }
 
 class GeqThan extends Relation {
-    constructor(lhs, rhs) {
-	  // parent constructor will throw error if arguments are not terms
-	  super(">=", [lhs, rhs]);
-      this.lhs = lhs;
-	  this.rhs = rhs;
-    }
-    unicode() { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}`; }
-    latex() { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}`; }
+  constructor (lhs, rhs) {
+    // parent constructor will throw error if arguments are not terms
+    super('>=', [lhs, rhs])
+    this.lhs = lhs
+    this.rhs = rhs
+  }
+  unicode () { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}` }
+  latex () { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}` }
 }
 
 class Equal extends Relation {
-    constructor(lhs, rhs) {
-	  // parent constructor will throw error if arguments are not terms
-	  super("=", [lhs, rhs]);
-      this.lhs = lhs;
-	  this.rhs = rhs;
-    }
-    unicode() { return `${this.lhs.unicode()} = ${this.rhs.unicode()}`; }
-    latex() { return `${this.lhs.latex()} = ${this.rhs.latex()}`; }
+  constructor (lhs, rhs) {
+    // parent constructor will throw error if arguments are not terms
+    super('=', [lhs, rhs])
+    this.lhs = lhs
+    this.rhs = rhs
+  }
+  unicode () { return `${this.lhs.unicode()} = ${this.rhs.unicode()}` }
+  latex () { return `${this.lhs.latex()} = ${this.rhs.latex()}` }
 }
 
-
-///////////////// COMMANDS /////////////////////////////
+/// ////////////// COMMANDS /////////////////////////////
 
 class Command {
-
-  constructor() {
+  constructor () {
     if (new.target === Command) {
-      throw new TypeError("Cannot construct Command instances directly");
+      throw new TypeError('Cannot construct Command instances directly')
     }
   }
 }
 
 class CmdAssign extends Command {
-
-  constructor(v, t) {
-    super();
-    this.subcommands = [];
+  constructor (v, t) {
+    super()
+    this.subcommands = []
     if (v instanceof TermVar && t instanceof Term) {
-      this.v = v;
-	  this.t = t;
+      this.v = v
+      this.t = t
     } else {
-      throw new TypeError("Assign has to contain a variable and a term");
+      throw new TypeError('Assign has to contain a variable and a term')
     }
   }
 
-  unicode() { return `${this.v.unicode()} := ${this.t.unicode()}` }
-  latex() { return `${this.v.latex()} := ${this.t.latex()}` }
+  unicode () { return `${this.v.unicode()} := ${this.t.unicode()}` }
+  latex () { return `${this.v.latex()} := ${this.t.latex()}` }
 }
 
 class CmdSeq extends Command {
-
-  constructor(first, second) {
-    super();
+  constructor (first, second) {
+    super()
     if (first instanceof Command && second instanceof Command) {
-      this.first = first;
-      this.second = second;
-      this.subcommands = [first, second];
+      this.first = first
+      this.second = second
+      this.subcommands = [first, second]
     } else {
-      throw new TypeError("Seq has to contain Commands");
+      throw new TypeError('Seq has to contain Commands')
     }
   }
 
-  unicode() { return `${this.first.unicode()} ; ${this.second.unicode()}` }
-  latex() { return `${this.first.latex()} ; ${this.second.latex()}` }
+  unicode () { return `${this.first.unicode()} ; ${this.second.unicode()}` }
+  latex () { return `${this.first.latex()} ; ${this.second.latex()}` }
 }
 
 class CmdIf extends Command {
-
-  constructor(condition, btrue, bfalse) {
-    super();
+  constructor (condition, btrue, bfalse) {
+    super()
     if (btrue instanceof Command && bfalse instanceof Command && condition instanceof Formula) {
-      this.condition = condition;
-      this.btrue = btrue;
-	  this.bfalse = bfalse;
-      this.subcommands = [btrue, bfalse];
+      this.condition = condition
+      this.btrue = btrue
+      this.bfalse = bfalse
+      this.subcommands = [btrue, bfalse]
     } else {
-      throw new TypeError("If has to contain Commands and a Formula");
+      throw new TypeError('If has to contain Commands and a Formula')
     }
   }
 
-  unicode() { return `if (${this.condition.unicode()}) then (${this.btrue.unicode()}) else (${this.bfalse.unicode()})` }
-  latex() { return `if (${this.condition.latex()}) then (${this.btrue.latex()}) else (${this.bfalse.latex()})` }
+  unicode () { return `if (${this.condition.unicode()}) then (${this.btrue.unicode()}) else (${this.bfalse.unicode()})` }
+  latex () { return `if (${this.condition.latex()}) then (${this.btrue.latex()}) else (${this.bfalse.latex()})` }
 }
 
 class CmdWhile extends Command {
-
-  constructor(condition, body) {
-    super();
+  constructor (condition, body) {
+    super()
     if (body instanceof Command && condition instanceof Formula) {
-      this.condition = condition;
-      this.body = body;
-      this.subcommands = [body];
+      this.condition = condition
+      this.body = body
+      this.subcommands = [body]
     } else {
-      throw new TypeError("While has to contain Commands and a Formula");
+      throw new TypeError('While has to contain Commands and a Formula')
     }
   }
 
-  unicode() { return `while (${this.condition.unicode()}) do (${this.body.unicode()})` }
-  latex() { return `while (${this.condition.latex()}) do (${this.body.latex()})` }
+  unicode () { return `while (${this.condition.unicode()}) do (${this.body.unicode()})` }
+  latex () { return `while (${this.condition.latex()}) do (${this.body.latex()})` }
 }
 
-
-///////////////// HOARE TRIPLE /////////////////////////////
+/// ////////////// HOARE TRIPLE /////////////////////////////
 
 class HoareTriple {
-
-  constructor(pre, command, post) {
+  constructor (pre, command, post) {
     if (pre instanceof Formula && post instanceof Formula && command instanceof Command) {
-      this.pre = pre;
-      this.post = post;
-	  this.command = command;
+      this.pre = pre
+      this.post = post
+      this.command = command
     } else {
-      throw new TypeError("Hoare Triple has to contain Formulas and a Command");
+      throw new TypeError('Hoare Triple has to contain Formulas and a Command')
     }
   }
 
-  unicode() {
+  unicode () {
     return `⊢ {${this.pre.unicode()}} ${this.command.unicode()} {${this.post.unicode()}}`
   }
 
-  latex() {
+  latex () {
     return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.post.latex()}}`
   }
 }
 
-///////////////// HOARE PROOF TREE /////////////////////////////
+/// ////////////// HOARE PROOF TREE /////////////////////////////
 
 class HoareProofTree extends ProofTree {
-  constructor(premises, conclusion) {
-    super();
-	if (premises.length === 0 && conclusion == null) {
-		this.premises = []
-		this.conclusion = null
-	}
-    else if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
-      this.premises = premises;
-      this.conclusion = conclusion;
+  constructor (premises, conclusion) {
+    super()
+    if (premises.length === 0 && conclusion == null) {
+      this.premises = []
+      this.conclusion = null
+    } else if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
+      this.premises = premises
+      this.conclusion = conclusion
     } else {
-		throw new TypeError("HoareProofTree must have trees and a triple")
+      throw new TypeError('HoareProofTree must have trees and a triple')
     }
   }
 
-
-  latex() {
-    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
-	if (this.premises.length === 0 && this.conclusion == null) {
-		return ""
-	}
+  latex () {
+    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
+    if (this.premises.length === 0 && this.conclusion == null) {
+      return ''
+    }
     switch (this.premises.length) {
       case 0:
         return `${rule}
@@ -989,190 +952,185 @@ ${this.premises[2].latex()}
 ${rule}
 \\TernaryC{$${this.conclusion.latex()}$}`
       default:
-        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`);
+        throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
   }
 }
 
 class ChangeCondition extends HoareProofTree {
-    constructor(left, right) {
-	  super([], null)
-	  this.left = left
-	  this.right = right
-      this.unicodeName = ""
-      this.latexName = ""
-      this.command = null;
-    }
+  constructor (left, right) {
+    super([], null)
+    this.left = left
+    this.right = right
+    this.unicodeName = ''
+    this.latexName = ''
+    this.command = null
+  }
 
-	unicode() {return `${this.left.unicode()} ⊢ ${this.right.unicode()}`}
-	latex() { return `${this.left.latex()} \\vdash ${this.right.latex()}`}
+  unicode () { return `${this.left.unicode()} ⊢ ${this.right.unicode()}` }
+  latex () { return `${this.left.latex()} \\vdash ${this.right.latex()}` }
 }
-
 
 // formula classes: Truth, Falsity, Var, And, Or, Implies, Not, Exists, Forall, Relation
 // term classes: TermVar, TermFun, TermInt
 
 // v has to be a termvar
-function substituteTerm(formula, v, term) {
-	if (! (v instanceof TermVar && term instanceof Term)) {
-		throw new TypeError("Substitution can only be done using terms.")
-	}
+function substituteTerm (formula, v, term) {
+  if (!(v instanceof TermVar && term instanceof Term)) {
+    throw new TypeError('Substitution can only be done using terms.')
+  }
 
-	// base cases
-	if (formula instanceof Truth) {
-		return new Truth();
-	}
-	if (formula instanceof Falsity) {
-		return new Falsity();
-	}
-	if (formula instanceof Var) {
-		return new Var(formula.v);
-	}
+  // base cases
+  if (formula instanceof Truth) {
+    return new Truth()
+  }
+  if (formula instanceof Falsity) {
+    return new Falsity()
+  }
+  if (formula instanceof Var) {
+    return new Var(formula.v)
+  }
 
-	if (formula instanceof And) {
-		return new And(substituteTerm(formula.left, v, term),
-						substituteTerm(formula.right, v, term));
-	}
-	if (formula instanceof Or) {
-		return new Or(substituteTerm(formula.left, v, term),
-				substituteTerm(formula.right, v, term));
-	}
-	if (formula instanceof Implies) {
-		return new Implies(substituteTerm(formula.left, v, term),
-				substituteTerm(formula.right, v, term));
-	}
-	if (formula instanceof Not) {
-		return new Not(substituteTerm(clone.one, v, term));
-	}
+  if (formula instanceof And) {
+    return new And(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Or) {
+    return new Or(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Implies) {
+    return new Implies(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Not) {
+    return new Not(substituteTerm(clone.one, v, term))
+  }
 
-	if (formula instanceof LessThan) {
-		var args = formula.args
-		var newargs = args.slice()
-		var newRelation = new LessThan(formula.lhs, formula.rhs)
+  if (formula instanceof LessThan) {
+    var args = formula.args
+    var newargs = args.slice()
+    var newRelation = new LessThan(formula.lhs, formula.rhs)
 
-		if (deepEqual(v, formula.lhs)) {
-			newRelation.lhs = term;
-		}
-		if (deepEqual(v, formula.rhs)) {
-			newRelation.rhs = term;
-		}
+    if (deepEqual(v, formula.lhs)) {
+      newRelation.lhs = term
+    }
+    if (deepEqual(v, formula.rhs)) {
+      newRelation.rhs = term
+    }
 
-		newRelation.args = [newRelation.lhs, newRelation.rhs]
+    newRelation.args = [newRelation.lhs, newRelation.rhs]
 
-		return newRelation
-	}
-	if (formula instanceof GreaterThan) {
-		var args = formula.args
-		var newargs = args.slice()
-		var newRelation = new GreaterThan(formula.lhs, formula.rhs)
+    return newRelation
+  }
+  if (formula instanceof GreaterThan) {
+    var args = formula.args
+    var newargs = args.slice()
+    var newRelation = new GreaterThan(formula.lhs, formula.rhs)
 
-		if (deepEqual(v, formula.lhs)) {
-			newRelation.lhs = term;
-		}
-		if (deepEqual(v, formula.rhs)) {
-			newRelation.rhs = term;
-		}
+    if (deepEqual(v, formula.lhs)) {
+      newRelation.lhs = term
+    }
+    if (deepEqual(v, formula.rhs)) {
+      newRelation.rhs = term
+    }
 
-		newRelation.args = [newRelation.lhs, newRelation.rhs]
+    newRelation.args = [newRelation.lhs, newRelation.rhs]
 
-		return newRelation
+    return newRelation
+  }
+  if (formula instanceof LeqThan) {
+    var args = formula.args
+    var newargs = args.slice()
+    var newRelation = new LeqThan(formula.lhs, formula.rhs)
 
-	}
-	if (formula instanceof LeqThan) {
-		var args = formula.args
-		var newargs = args.slice()
-		var newRelation = new LeqThan(formula.lhs, formula.rhs)
+    if (deepEqual(v, formula.lhs)) {
+      newRelation.lhs = term
+    }
+    if (deepEqual(v, formula.rhs)) {
+      newRelation.rhs = term
+    }
 
-		if (deepEqual(v, formula.lhs)) {
-			newRelation.lhs = term;
-		}
-		if (deepEqual(v, formula.rhs)) {
-			newRelation.rhs = term;
-		}
+    newRelation.args = [newRelation.lhs, newRelation.rhs]
 
-		newRelation.args = [newRelation.lhs, newRelation.rhs]
+    return newRelation
+  }
+  if (formula instanceof GeqThan) {
+    var args = formula.args
+    var newargs = args.slice()
+    var newRelation = new GeqThan(formula.lhs, formula.rhs)
 
-		return newRelation
+    if (deepEqual(v, formula.lhs)) {
+      newRelation.lhs = term
+    }
+    if (deepEqual(v, formula.rhs)) {
+      newRelation.rhs = term
+    }
 
-	}
-	if (formula instanceof GeqThan) {
-		var args = formula.args
-		var newargs = args.slice()
-		var newRelation = new GeqThan(formula.lhs, formula.rhs)
+    newRelation.args = [newRelation.lhs, newRelation.rhs]
 
-		if (deepEqual(v, formula.lhs)) {
-			newRelation.lhs = term;
-		}
-		if (deepEqual(v, formula.rhs)) {
-			newRelation.rhs = term;
-		}
+    return newRelation
+  }
 
-		newRelation.args = [newRelation.lhs, newRelation.rhs]
+  if (formula instanceof Relation) {
+    var args = formula.args
+    var newargs = args.slice()
 
-		return newRelation
+    for (var i = 0; i < args.length; i++) {
+      element = args[i]
+      if (deepEqual(v, element)) {
+        newargs[i] = term
+      }
+    }
 
-	}
+    return new Relation(formula.name, newargs)
+  }
 
-	if (formula instanceof Relation) {
-		var args = formula.args
-		var newargs = args.slice()
+  if (formula instanceof Exists) {
+    var quantvar = clone.v
+    var body = clone.one
 
-		for (var i = 0; i < args.length; i++) {
-			element = args[i];
-			if (deepEqual(v, element)) {
-				newargs[i] = term;
-			}
-		}
+    if (deepEqual(v, quantvar)) {
+      // case: replace one var with another
+      if (term instanceof TermVar) {
+        return new Exists(term, substituteTerm(body, v, term))
+      } else {
+        return substituteTerm(body, v, term)
+      }
+    } else {
+      return new Exists(formula.v, substituteTerm(body, v, term))
+    }
+  }
 
-		return new Relation(formula.name, newargs)
-	}
+  if (formula instanceof Forall) {
+    var quantvar = clone.v
+    var body = clone.one
 
-	if (formula instanceof Exists) {
-		var quantvar = clone.v
-		var body = clone.one
-
-		if (deepEqual(v, quantvar)) {
-			// case: replace one var with another
-			if (term instanceof TermVar) {
-				return new Exists(term, substituteTerm(body, v, term))
-			} else {
-				return substituteTerm(body, v, term)
-			}
-		} else {
-			return new Exists(formula.v, substituteTerm(body, v, term))
-		}
-	}
-
-	if (formula instanceof Forall) {
-		var quantvar = clone.v
-		var body = clone.one
-
-		if (deepEqual(v, quantvar)) {
-			// case: replace one var with another
-			if (term instanceof TermVar) {
-				return new Forall(term, substituteTerm(body, v, term))
-			} else {
-				return substituteTerm(body, v, term)
-			}
-		} else {
-			return new Forall(formula.v, substituteTerm(body, v, term))
-		}
-	}
+    if (deepEqual(v, quantvar)) {
+      // case: replace one var with another
+      if (term instanceof TermVar) {
+        return new Forall(term, substituteTerm(body, v, term))
+      } else {
+        return substituteTerm(body, v, term)
+      }
+    } else {
+      return new Forall(formula.v, substituteTerm(body, v, term))
+    }
+  }
 }
-
 
 /*
   −−−−−−−−−---------------  ASGN
   ⊢ {F[v -> t]} v := t {F}
 */
 class Assignment extends HoareProofTree {
-  constructor(conclusion) {
-    super([], conclusion);
-    this.unicodeName = "ASGN"
-    this.latexName = "ASGN"
-    this.command = CmdAssign;
-    if (!conclusion.command instanceof CmdAssign) {
-      throw new TypeError("Not the right kind of Command");
+  constructor (conclusion) {
+    super([], conclusion)
+    this.unicodeName = 'ASGN'
+    this.latexName = 'ASGN'
+    this.command = CmdAssign
+    if (!(conclusion.command instanceof CmdAssign)) {
+      throw new TypeError('Not the right kind of Command')
     }
   }
 }
@@ -1180,120 +1138,115 @@ class Assignment extends HoareProofTree {
 /*
   ⊢ {F} S1 {F'}  ⊢ {F'} S2 {F''}
   −−−−−−−−−−−−------------------- SEQ
-  		⊢ {F} S1; S2 {F''}
+      ⊢ {F} S1; S2 {F''}
 */
 class Sequencing extends HoareProofTree {
-  constructor(premise1, premise2, conclusion) {
-    super([premise1, premise2], conclusion);
-    this.command = CmdSeq;
-    this.unicodeName = "SEQ"
-    this.latexName = "SEQ"
+  constructor (premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion)
+    this.command = CmdSeq
+    this.unicodeName = 'SEQ'
+    this.latexName = 'SEQ'
 
-	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.first) &&
-		deepEqual(premise2.conclusion.command, conclusion.command.second) &&
-		deepEqual(premise1.conclusion.pre, conclusion.pre) &&
-		deepEqual(premise2.conclusion.post, conclusion.post) &&
-		deepEqual(premise1.conclusion.post, premise2.conclusion.pre))) {
-			throw new TypeError("Commands and conditions don't match up");
-		}
+    if (!(deepEqual(premise1.conclusion.command, conclusion.command.first) &&
+    deepEqual(premise2.conclusion.command, conclusion.command.second) &&
+    deepEqual(premise1.conclusion.pre, conclusion.pre) &&
+    deepEqual(premise2.conclusion.post, conclusion.post) &&
+    deepEqual(premise1.conclusion.post, premise2.conclusion.pre))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
   }
 }
 
 /*
-  F ⊢ F'	⊢ {F'} S {G'}	G' ⊢ G
+  F ⊢ F'  ⊢ {F'} S {G'} G' ⊢ G
   −−−−−−−−−−−−---------------------- CONS
-  			⊢ {F} S {G}
+        ⊢ {F} S {G}
 */
 class Consequence extends HoareProofTree {
-  constructor(premise1, premise2, premise3, conclusion) {
-    super([premise1, premise2, premise3], conclusion);
-	if (arrayOf([premise1, premise3], ChangeCondition)) {
-	    this.command = conclusion.command;
-	    this.unicodeName = "CONS"
-	    this.latexName = "CONS"
-	} else {
-		throw new TypeError("First and last premise must be ChangeCondition");
-	}
+  constructor (premise1, premise2, premise3, conclusion) {
+    super([premise1, premise2, premise3], conclusion)
+    if (arrayOf([premise1, premise3], ChangeCondition)) {
+      this.command = conclusion.command
+      this.unicodeName = 'CONS'
+      this.latexName = 'CONS'
+    } else {
+      throw new TypeError('First and last premise must be ChangeCondition')
+    }
 
-	if ( ! (deepEqual(premise2.conclusion.command, conclusion.command) &&
-		deepEqual(premise1.left, conclusion.pre) &&
-		deepEqual(premise3.right, conclusion.post) &&
-		deepEqual(premise1.right, premise2.conclusion.pre) &&
-		deepEqual(premise3.left, premise2.conclusion.post))) {
-			throw new TypeError("Commands and conditions don't match up");
-		}
+    if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
+    deepEqual(premise1.left, conclusion.pre) &&
+    deepEqual(premise3.right, conclusion.post) &&
+    deepEqual(premise1.right, premise2.conclusion.pre) &&
+    deepEqual(premise3.left, premise2.conclusion.post))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
   }
 }
 
 /*
   ⊢ {F ∧ c} S {F'}    ⊢ {F ∧ ¬c} S' {F'}
   −−−−−−−−−−−−---------------------------- COND
-  	⊢ {F} if c then S else S' {F'}
+    ⊢ {F} if c then S else S' {F'}
 */
 
 class Conditional extends HoareProofTree {
-  constructor(premise1, premise2, conclusion) {
-    super([premise1, premise2], conclusion);
-    this.command = CmdIf;
-    this.unicodeName = "COND"
-    this.latexName = "COND"
+  constructor (premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion)
+    this.command = CmdIf
+    this.unicodeName = 'COND'
+    this.latexName = 'COND'
 
-	var c = conclusion.command.condition;
+    var c = conclusion.command.condition
 
-	if ( ! (deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
-		deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
-		deepEqual(premise1.conclusion.post, conclusion.post) &&
-		deepEqual(premise2.conclusion.post, conclusion.post) &&
-		deepEqual(premise1.conclusion.pre, new And(conclusion.pre, c)) &&
-		deepEqual(premise2.conclusion.pre, new And(conclusion.pre, new Not(c))))) {
-			throw new TypeError("Commands and conditions don't match up");
-		}
-  }
-}
-
-/*
-  		  ⊢ {F ∧ c} S {F}
-  −−−−−−−−−−−−------------------- LOOP
-  	⊢ {F} while c do S {F ∧ ¬c}
-*/
-
-class Loop extends HoareProofTree {
-  constructor(premise, conclusion) {
-    super([premise], conclusion);
-    this.command = CmdWhile;
-    this.unicodeName = "LOOP"
-    this.latexName = "LOOP"
-
-	var c = conclusion.command.condition;
-
-	if ( ! (deepEqual(premise.conclusion.command, conclusion.command.body) &&
-		deepEqual(premise.conclusion.post, conclusion.pre)  &&
-		deepEqual(premise.conclusion.pre, new And(conclusion.pre, c)) &&
-		deepEqual(conclusion.post, new And(conclusion.pre, new Not(c))))) {
-			throw new TypeError("Commands and conditions don't match up");
-		}
-  }
-}
-
-
-class HoareIncomplete extends HoareProofTree {
-  constructor(conclusion) {
-    super([], conclusion)
-    this.connective = null;
-    this.unicodeName = "?"
-    this.latexName = "?"
-  }
-
-  latex() {
-    if (this.completer) {
-      return this.completer.latex()
-    } else {
-      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
-      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    if (!(deepEqual(premise1.conclusion.command, conclusion.command.btrue) &&
+    deepEqual(premise2.conclusion.command, conclusion.command.bfalse) &&
+    deepEqual(premise1.conclusion.post, conclusion.post) &&
+    deepEqual(premise2.conclusion.post, conclusion.post) &&
+    deepEqual(premise1.conclusion.pre, new And(conclusion.pre, c)) &&
+    deepEqual(premise2.conclusion.pre, new And(conclusion.pre, new Not(c))))) {
+      throw new TypeError("Commands and conditions don't match up")
     }
   }
 }
 
+/*
+        ⊢ {F ∧ c} S {F}
+  −−−−−−−−−−−−------------------- LOOP
+    ⊢ {F} while c do S {F ∧ ¬c}
+*/
 
+class Loop extends HoareProofTree {
+  constructor (premise, conclusion) {
+    super([premise], conclusion)
+    this.command = CmdWhile
+    this.unicodeName = 'LOOP'
+    this.latexName = 'LOOP'
 
+    var c = conclusion.command.condition
 
+    if (!(deepEqual(premise.conclusion.command, conclusion.command.body) &&
+    deepEqual(premise.conclusion.post, conclusion.pre) &&
+    deepEqual(premise.conclusion.pre, new And(conclusion.pre, c)) &&
+    deepEqual(conclusion.post, new And(conclusion.pre, new Not(c))))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
+  }
+}
+
+class HoareIncomplete extends HoareProofTree {
+  constructor (conclusion) {
+    super([], conclusion)
+    this.connective = null
+    this.unicodeName = '?'
+    this.latexName = '?'
+  }
+
+  latex () {
+    if (this.completer) {
+      return this.completer.latex()
+    } else {
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
+      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
+  }
+}
