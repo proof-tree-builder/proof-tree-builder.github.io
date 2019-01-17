@@ -725,6 +725,15 @@ class LKIncomplete extends LKProofTree {
     this.unicodeName = "?"
     this.latexName = "?"
   }
+
+  latex() {
+    if (this.completer) {
+      return this.completer.latex()
+    } else {
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
+  }
 }
 
 // End of LK rules
@@ -1012,116 +1021,116 @@ function substituteTerm(formula, v, term) {
 	// base cases
 	if (formula instanceof Truth) {
 		return new Truth();
-	} 
+	}
 	if (formula instanceof Falsity) {
 		return new Falsity();
-	} 
+	}
 	if (formula instanceof Var) {
 		return new Var(formula.v);
 	}
-	
+
 	if (formula instanceof And) {
-		return new And(substituteTerm(formula.left, v, term), 
+		return new And(substituteTerm(formula.left, v, term),
 						substituteTerm(formula.right, v, term));
 	}
 	if (formula instanceof Or) {
-		return new Or(substituteTerm(formula.left, v, term), 
+		return new Or(substituteTerm(formula.left, v, term),
 				substituteTerm(formula.right, v, term));
-	} 
+	}
 	if (formula instanceof Implies) {
-		return new Implies(substituteTerm(formula.left, v, term), 
+		return new Implies(substituteTerm(formula.left, v, term),
 				substituteTerm(formula.right, v, term));
 	}
 	if (formula instanceof Not) {
 		return new Not(substituteTerm(clone.one, v, term));
 	}
-	
+
 	if (formula instanceof LessThan) {
 		var args = formula.args
 		var newargs = args.slice()
 		var newRelation = new LessThan(formula.lhs, formula.rhs)
-		
+
 		if (deepEqual(v, formula.lhs)) {
 			newRelation.lhs = term;
 		}
 		if (deepEqual(v, formula.rhs)) {
 			newRelation.rhs = term;
 		}
-		
+
 		newRelation.args = [newRelation.lhs, newRelation.rhs]
-		
+
 		return newRelation
 	}
 	if (formula instanceof GreaterThan) {
 		var args = formula.args
 		var newargs = args.slice()
 		var newRelation = new GreaterThan(formula.lhs, formula.rhs)
-		
+
 		if (deepEqual(v, formula.lhs)) {
 			newRelation.lhs = term;
 		}
 		if (deepEqual(v, formula.rhs)) {
 			newRelation.rhs = term;
 		}
-		
+
 		newRelation.args = [newRelation.lhs, newRelation.rhs]
-		
+
 		return newRelation
-		
+
 	}
 	if (formula instanceof LeqThan) {
 		var args = formula.args
 		var newargs = args.slice()
 		var newRelation = new LeqThan(formula.lhs, formula.rhs)
-		
+
 		if (deepEqual(v, formula.lhs)) {
 			newRelation.lhs = term;
 		}
 		if (deepEqual(v, formula.rhs)) {
 			newRelation.rhs = term;
 		}
-		
+
 		newRelation.args = [newRelation.lhs, newRelation.rhs]
-		
+
 		return newRelation
-		
+
 	}
 	if (formula instanceof GeqThan) {
 		var args = formula.args
 		var newargs = args.slice()
 		var newRelation = new GeqThan(formula.lhs, formula.rhs)
-		
+
 		if (deepEqual(v, formula.lhs)) {
 			newRelation.lhs = term;
 		}
 		if (deepEqual(v, formula.rhs)) {
 			newRelation.rhs = term;
 		}
-		
+
 		newRelation.args = [newRelation.lhs, newRelation.rhs]
-		
+
 		return newRelation
-		
+
 	}
 
 	if (formula instanceof Relation) {
 		var args = formula.args
 		var newargs = args.slice()
-	
+
 		for (var i = 0; i < args.length; i++) {
 			element = args[i];
 			if (deepEqual(v, element)) {
 				newargs[i] = term;
 			}
 		}
-		
+
 		return new Relation(formula.name, newargs)
 	}
-	
+
 	if (formula instanceof Exists) {
 		var quantvar = clone.v
 		var body = clone.one
-		
+
 		if (deepEqual(v, quantvar)) {
 			// case: replace one var with another
 			if (term instanceof TermVar) {
@@ -1133,13 +1142,13 @@ function substituteTerm(formula, v, term) {
 			return new Exists(formula.v, substituteTerm(body, v, term))
 		}
 	}
-	
+
 	if (formula instanceof Forall) {
 		var quantvar = clone.v
 		var body = clone.one
-		
+
 		if (deepEqual(v, quantvar)) {
-			// case: replace one var with another 
+			// case: replace one var with another
 			if (term instanceof TermVar) {
 				return new Forall(term, substituteTerm(body, v, term))
 			} else {
@@ -1273,6 +1282,15 @@ class HoareIncomplete extends HoareProofTree {
     this.connective = null;
     this.unicodeName = "?"
     this.latexName = "?"
+  }
+
+  latex() {
+    if (this.completer) {
+      return this.completer.latex()
+    } else {
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`;
+      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
   }
 }
 
