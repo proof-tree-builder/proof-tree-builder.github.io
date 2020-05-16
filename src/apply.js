@@ -20,11 +20,19 @@
 //
 // iff = new CmdIf(pre, a, a)
 
-/* `uservar` is a field used for the forall and exists quantifier rules.
-   It is a `TermVar` that we use in the application of the rule. */
+/* `uservar` is a field used for the cut rule and forall and exists quantifier rules.
+   In the former case it is a `Formula`; in the latter it is a `TermVar` that we use in 
+   the application of the rule. */
 const applyLK = (sequent, rule, uservar) => {
   let lhs = sequent.precedents
   let rhs = sequent.antecedents
+
+  if (rule === CutOne) {
+    if (!(uservar instanceof Formula)) throw new TypeError('Cut rule needs a Formula')
+    premise1 = new LKIncomplete(new Sequent(lhs, [uservar]))
+    premise2 = new LKIncomplete(new Sequent([...lhs, uservar], rhs))
+    return new CutOne(premise1, premise2, sequent)
+  }
 
   // what kind of formula are we looking for
   let formula = Formula

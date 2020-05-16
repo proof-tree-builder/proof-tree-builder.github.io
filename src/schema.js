@@ -691,6 +691,14 @@ class ExistsRight extends LKProofTree {
   }
 }
 
+class CutOne extends LKProofTree {
+  constructor (premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion)
+    this.unicodeName = 'Cut'
+    this.latexName = '\\textrm{Cut}'
+  }
+}
+
 class LKIncomplete extends LKProofTree {
   constructor (conclusion) {
     super([], conclusion)
