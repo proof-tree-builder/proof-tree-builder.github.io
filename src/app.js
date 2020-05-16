@@ -195,8 +195,9 @@ ProofTree.prototype.image = function (root) {
                          <p>Other rules:</p>
                          <p>
                            <button value="Identity">Id</button>
-                           <button value="CutOne">Cut</button>
-                           <button value="'Weaken'">Weak</button>
+                           <button value="Cut">Cut</button>
+                           <button value="'WeakL'">WeakL</button>
+                           <button value="'WeakR'">WeakR</button>
                          </p>
                        </div>`)[0]
 
@@ -228,12 +229,17 @@ ProofTree.prototype.image = function (root) {
           let rule = eval(but.value)
           let updated
           if (this instanceof LKIncomplete) {
-            if (rule === 'Weaken') {
+            if (rule === 'WeakL') {
               let t = prompt('Select a formula to drop:')
               if (t === null) { return }
               let parsed = peg.parse(t, { startRule: 'Formula' })
               this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
-            } else if (rule === CutOne) {
+            } else if (rule === 'WeakR') {
+              let t = prompt('Select a formula to drop:')
+              if (t === null) { return }
+              let parsed = peg.parse(t, { startRule: 'Formula' })
+              this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
+            } else if (rule === Cut) {
               let t = prompt('Enter the formula to prove:')
               if (t === null) { return }
               let parsed = peg.parse(t, { startRule: 'Formula' })

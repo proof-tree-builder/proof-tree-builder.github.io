@@ -691,7 +691,7 @@ class ExistsRight extends LKProofTree {
   }
 }
 
-class CutOne extends LKProofTree {
+class Cut extends LKProofTree {
   constructor (premise1, premise2, conclusion) {
     super([premise1, premise2], conclusion)
     this.unicodeName = 'Cut'

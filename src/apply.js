@@ -27,11 +27,11 @@ const applyLK = (sequent, rule, uservar) => {
   let lhs = sequent.precedents
   let rhs = sequent.antecedents
 
-  if (rule === CutOne) {
+  if (rule === Cut) {
     if (!(uservar instanceof Formula)) throw new TypeError('Cut rule needs a Formula')
-    premise1 = new LKIncomplete(new Sequent(lhs, [uservar]))
+    premise1 = new LKIncomplete(new Sequent(lhs, [uservar, ...rhs]))
     premise2 = new LKIncomplete(new Sequent([...lhs, uservar], rhs))
-    return new CutOne(premise1, premise2, sequent)
+    return new Cut(premise1, premise2, sequent)
   }
 
   // what kind of formula are we looking for
