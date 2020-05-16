@@ -105,14 +105,16 @@ const addProof = (pf) => {
 
 document.getElementById('addLKGoal').addEventListener('click', function () {
   var input = prompt('Enter a LK goal sequent:')
-  var parsed = peg.parse(input, { startRule: 'Sequent' })
+  if (input === null) { return }
+  var parsed = peg.parse(input.trim(), { startRule: 'Sequent' })
   var tree = new LKIncomplete(parsed)
   addProof(tree)
 })
 
 document.getElementById('addHoareGoal').addEventListener('click', function () {
   var input = prompt('Enter a Hoare triple:')
-  var parsed = peg.parse(input, { startRule: 'HoareTriple' })
+  if (input === null) { return }
+  var parsed = peg.parse(input.trim(), { startRule: 'HoareTriple' })
   var tree = new HoareIncomplete(parsed)
   addProof(tree)
 })
@@ -221,10 +223,12 @@ ProofTree.prototype.image = function (root) {
           if (this instanceof LKIncomplete) {
             if (rule === ForallLeft || rule === ExistsRight) {
               var t = prompt('Enter the term to substitute for the variable:')
+              if (t === null) { return }
               var parsed = peg.parse(t, { startRule: 'Term' })
               updated = applyLK(this.conclusion, rule, parsed)
             } else if (rule === ForallRight || rule === ExistsLeft) {
               var t = prompt('Enter a fresh variable to substitute for the variable:')
+              if (t === null) { return }
               var parsed = peg.parse(t, { startRule: 'Name' })
               updated = applyLK(this.conclusion, rule, new TermVar(parsed))
             } else {

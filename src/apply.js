@@ -20,14 +20,14 @@
 //
 // iff = new CmdIf(pre, a, a)
 
-// user var is a field used for forall and exists.
-// it is a TermVar that we use in the application of the rule
-function applyLK (sequent, rule, uservar) {
-  lhs = sequent.precedents
-  rhs = sequent.antecedents
+/* `uservar` is a field used for the forall and exists quantifier rules.
+   It is a `TermVar` that we use in the application of the rule. */
+const applyLK = (sequent, rule, uservar) => {
+  let lhs = sequent.precedents
+  let rhs = sequent.antecedents
 
   // what kind of formula are we looking for
-  formula = Formula
+  let formula = Formula
   if (rule === NotLeft || rule === NotRight) {
     formula = Not
   } else if (rule === OrLeft || rule === OrRight) {
@@ -322,36 +322,23 @@ function applyLK (sequent, rule, uservar) {
 
   // if dealing with both sides
   // identity
+  if(rule === Identity) {
+    // at least one of the things on the right should be on the left
+    let l = 0
+    let r = 0
+    const found = lhs.find((left, i) => {
+      l = i
+      return rhs.find((right, j) => {
+        r = j
+        return deepEqual(left, right)
+      })
+    })
 
-  if (rule === Identity) {
-    // for each thing on the right hand side,
-    // we have to find the same thing on the lhs
-    firstmatchidx = -1
-    for (i = 0; i < rhs.length; i++) {
-      formula = rhs[i]
-      found = false
-      // if we find match, stop looking
-      for (j = 0; j < lhs.length; j++) {
-        if (deepEqual(formula, lhs[j])) {
-          found = true
-          // for identity constructor
-          if (i == 0) {
-            firstmatchidx = j
-          }
-          break
-        }
-      }
-      // if any rhs elts have no match, can't apply id
-      // stop looking
-      if (!found) {
-        throw new Error('Rule not applicable.')
-        break
-      }
+    if(found) {
+      return new Identity(sequent, l, r)
+    } else {
+      throw new Error('Rule not applicable.')
     }
-
-    // if all matches found
-    tree = new Identity(sequent, firstmatchidx, 0)
-    return tree
   }
 
   throw new Error('no such rule so far')

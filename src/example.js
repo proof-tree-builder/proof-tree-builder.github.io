@@ -51,5 +51,9 @@ var forallxi = new LKIncomplete(forallx)
 
 var existsx = peg.parse("exists x. g(x) |- exists y. g(y)", {startRule: "Sequent"})
 var existsxi = new LKIncomplete(existsx)
-addProof(existsxi)
+// addProof(existsxi)
 
+
+var peirce = peg.parse("|- ((p -> q) -> p) -> p", {startRule: "Sequent"})
+var peircei = new LKIncomplete(peirce)
+addProof(peircei)
