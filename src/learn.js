@@ -1,15 +1,15 @@
 // hint which rules are applicable (sequent calculus)
 
 function LKapplicable (sequent) {
-  var arr = []
+  let arr = []
 
-  var lhs = sequent.precedents
-  var rhs = sequent.antecedents
+  let lhs = sequent.precedents
+  let rhs = sequent.antecedents
 
   // left rules: falsity, or, and, implies, not
   for (i = 0; i < lhs.length; i++) {
     // get formula
-    var f = lhs[i]
+    let f = lhs[i]
     // add rule to list
     if (f instanceof Falsity) {
       arr.push(FalsityLeft)
@@ -31,7 +31,7 @@ function LKapplicable (sequent) {
   // right rules: truth, or, and, implies, not
   for (i = 0; i < rhs.length; i++) {
     // get formula
-    var f = rhs[i]
+    let f = rhs[i]
     // add rule to list
     if (f instanceof Truth) {
       arr.push(TruthRight)
@@ -52,8 +52,8 @@ function LKapplicable (sequent) {
 
   // other: identity
   for (i = 0; i < rhs.length; i++) {
-    var formula = rhs[i]
-    var found = false
+    let formula = rhs[i]
+    let found = false
     // if we find match, stop looking
     for (j = 0; j < lhs.length; j++) {
       if (deepEqual(formula, lhs[j])) {

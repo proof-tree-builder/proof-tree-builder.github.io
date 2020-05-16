@@ -1,12 +1,12 @@
-var proofs = []
+let proofs = []
 
-var canvas = this.__canvas = new fabric.Canvas('c', { selection: false })
+let canvas = this.__canvas = new fabric.Canvas('c', { selection: false })
 fabric.Object.prototype.transparentCorners = false
 canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
 
-var incompleteColor = '#FFA500'
-var goodColor = 'black'
+let incompleteColor = '#FFA500'
+let goodColor = 'black'
 
 const isLearnMode = () => document.getElementById('mode').checked
 const isAutomateMode = () => !document.getElementById('mode').checked
@@ -17,7 +17,7 @@ const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').bod
 canvas.on('mouse:down', function (opt) {
   document.querySelectorAll('.ruleSelection').forEach(e => e.remove())
 
-  var evt = opt.e
+  let evt = opt.e
   if (evt.altKey === true) {
     this.isDragging = true
     this.selection = false
@@ -27,7 +27,7 @@ canvas.on('mouse:down', function (opt) {
 })
 canvas.on('mouse:move', function (opt) {
   if (this.isDragging) {
-    var e = opt.e
+    let e = opt.e
     this.viewportTransform[4] += e.clientX - this.lastPosX
     this.viewportTransform[5] += e.clientY - this.lastPosY
     this.requestRenderAll()
@@ -42,9 +42,9 @@ canvas.on('mouse:up', function (opt) {
 
 // Zooming to the cursor
 canvas.on('mouse:wheel', function (opt) {
-  var delta = opt.e.deltaY
-  var pointer = canvas.getPointer(opt.e)
-  var zoom = canvas.getZoom()
+  let delta = opt.e.deltaY
+  let pointer = canvas.getPointer(opt.e)
+  let zoom = canvas.getZoom()
   zoom = zoom + delta / 200
   if (zoom > 20) zoom = 20
   if (zoom < 0.01) zoom = 0.01
@@ -63,14 +63,14 @@ const copyToClipboard = str => {
 }
 
 const giveLatex = i => {
-  var pf = proofs[i].proof
-  var code = pf.latex()
+  let pf = proofs[i].proof
+  let code = pf.latex()
   copyToClipboard(code)
   alert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
 }
 
 const removeProof = i => {
-  var pf = proofs[i].proof
+  let pf = proofs[i].proof
   canvas.forEachObject(function (obj) {
     if (!obj.root) return
     if (obj.root == pf) canvas.remove(obj)
@@ -80,7 +80,7 @@ const removeProof = i => {
 }
 
 const refreshList = () => {
-  var ol = document.querySelector('#left-bar ol')
+  let ol = document.querySelector('#left-bar ol')
   ol.innerHTML = ''
   proofs.forEach((entry, i) => {
     ol.innerHTML += `<li value="${i}">
@@ -104,59 +104,64 @@ const addProof = (pf) => {
 // }
 
 document.getElementById('addLKGoal').addEventListener('click', function () {
-  var input = prompt('Enter a LK goal sequent:')
+  let input = prompt('Enter a LK goal sequent:')
   if (input === null) { return }
-  var parsed = peg.parse(input.trim(), { startRule: 'Sequent' })
-  var tree = new LKIncomplete(parsed)
+  let parsed = peg.parse(input.trim(), { startRule: 'Sequent' })
+  let tree = new LKIncomplete(parsed)
   addProof(tree)
 })
 
 document.getElementById('addHoareGoal').addEventListener('click', function () {
-  var input = prompt('Enter a Hoare triple:')
+  let input = prompt('Enter a Hoare triple:')
   if (input === null) { return }
-  var parsed = peg.parse(input.trim(), { startRule: 'HoareTriple' })
-  var tree = new HoareIncomplete(parsed)
+  let parsed = peg.parse(input.trim(), { startRule: 'HoareTriple' })
+  let tree = new HoareIncomplete(parsed)
   addProof(tree)
 })
 
 ProofTree.prototype.image = function (root) {
-  var premiseImages = this.premises.map(p => p.image(root))
+  let premiseImages = this.premises.map(p => p.image(root))
 
   if (this.completer) {
     return this.completer.image(root)
   }
-  var isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
+  let isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
 
+  
+  let maxHeight = Math.max.apply(Math, premiseImages.map(image => image.height))
   premiseImages.forEach((image, i) => {
+    // get max height of all premiseImages, 
+    // then shift image to the bottom by the difference
+    // also shift each to the right a bit for spacing
     if (i === 0) return
 
-    var prev = premiseImages[i - 1]
+    let prev = premiseImages[i - 1]
 
     image.setPositionByOrigin(
-      (new fabric.Point(80, 0)).add(prev.getPointByOrigin('right', 'top')), 'left', 'top')
+      (new fabric.Point(80, maxHeight - image.height)).add(prev.getPointByOrigin('right', 'top')), 'left', 'top')
     premiseImages[i] = image
   })
 
-  var opt = { subTargetCheck: true }
-  var premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
+  let opt = { subTargetCheck: true }
+  let premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
 
-  var text = new fabric.Text(this.conclusion.unicode(), {
+  let text = new fabric.Text(this.conclusion.unicode(), {
     fontFamily: 'Helvetica',
     fontSize: 30
   })
-  var newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
+  let newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
   text.setPositionByOrigin(newTextPt)
 
-  var p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
-  var p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
-  var line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
+  let p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
+  let p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
+  let line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
     fill: isIncomplete ? incompleteColor : goodColor,
     stroke: isIncomplete ? incompleteColor : goodColor,
     strokeWidth: 2,
     selectable: false
   })
 
-  var ruleLabel
+  let ruleLabel
   if (isIncomplete) {
     ruleLabel = new fabric.Text(' + ', {
       fontFamily: 'Helvetica',
@@ -166,7 +171,7 @@ ProofTree.prototype.image = function (root) {
     })
 
     ruleLabel.on('mousedown', (e) => {
-      var box
+      let box
       if (this instanceof LKIncomplete) {
         box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
                          <p>Left rules:</p>
@@ -194,7 +199,7 @@ ProofTree.prototype.image = function (root) {
                        </div>`)[0]
 
         if (isAutomateMode()) {
-          var applicables = LKapplicable(this.conclusion).map(x => x.name)
+          let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (!applicables.includes(but.value)) { but.remove() }
           })
@@ -218,18 +223,18 @@ ProofTree.prototype.image = function (root) {
         but.addEventListener('click', e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()
-          var rule = eval(but.value)
-          var updated
+          let rule = eval(but.value)
+          let updated
           if (this instanceof LKIncomplete) {
             if (rule === ForallLeft || rule === ExistsRight) {
-              var t = prompt('Enter the term to substitute for the variable:')
+              let t = prompt('Enter the term to substitute for the variable:')
               if (t === null) { return }
-              var parsed = peg.parse(t, { startRule: 'Term' })
+              let parsed = peg.parse(t, { startRule: 'Term' })
               updated = applyLK(this.conclusion, rule, parsed)
             } else if (rule === ForallRight || rule === ExistsLeft) {
-              var t = prompt('Enter a fresh variable to substitute for the variable:')
+              let t = prompt('Enter a fresh variable to substitute for the variable:')
               if (t === null) { return }
-              var parsed = peg.parse(t, { startRule: 'Name' })
+              let parsed = peg.parse(t, { startRule: 'Name' })
               updated = applyLK(this.conclusion, rule, new TermVar(parsed))
             } else {
               updated = applyLK(this.conclusion, rule)
@@ -239,7 +244,7 @@ ProofTree.prototype.image = function (root) {
           }
           this.completer = updated
 
-          var entry = proofs.find(entry => root == entry.proof)
+          let entry = proofs.find(entry => root == entry.proof)
           canvas.forEachObject(function (obj) {
             if (!obj.root) return
             if (obj.root == root) canvas.remove(obj)
@@ -260,7 +265,7 @@ ProofTree.prototype.image = function (root) {
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin('right', 'top'), 'left', 'top'))
 
-  var group = new fabric.Group([premiseGroup, line, ruleLabel, text], { selectable: true, subTargetCheck: true })
+  let group = new fabric.Group([premiseGroup, line, ruleLabel, text], { selectable: true, subTargetCheck: true })
 
   group.lockRotation = true
   group.lockScalingX = true
@@ -272,7 +277,7 @@ ProofTree.prototype.image = function (root) {
 }
 
 ProofTree.prototype.draw = function () {
-  var i = this.image(this)
+  let i = this.image(this)
   canvas.add(i)
   i.center()
   return i
