@@ -53,13 +53,14 @@ class TermFun extends Term {
     if (isString(name) && arrayOf(args, Term)) {
       this.name = name
       this.args = args
+      this.primitive = false
     } else {
       throw new TypeError('TermFun has to contain a String and Terms')
     }
   }
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
-  smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
+  smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
 
   getFreeVars () { return this.args.map(arg => arg.getFreeVars()).flat() }
   getFunctions () { return this.args.map(arg => arg.getFunctions()).flat().concat(this) }
@@ -229,13 +230,14 @@ class Relation extends Formula {
       this.name = name
       this.args = args
       this.subformulas = []
+      this.primitive = false
     } else {
       throw new TypeError('Relation has to contain a String and Terms')
     }
   }
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
-  smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
+  smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
 
   getFreeTermVars () { return this.args.map(f => f.getFreeVars()).flat() }
   getRelations () { return [this] }
@@ -259,7 +261,7 @@ class Forall extends Formula {
   unicode () { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
   latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
-  smtlib () { return `(forall (${this.v.latex()} Int) ${this.one.smtlib()})` }
+  smtlib () { return `(forall ((${this.v.latex()} Int)) ${this.one.smtlib()})` }
 
   getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => !deepEqual(fv, this.v)) }
 }
@@ -279,9 +281,9 @@ class Exists extends Formula {
   unicode () { return `∃ ${this.v.unicode()}. (${this.one.unicode()})` }
   latex () { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
-  smtlib () { return `(exists (${this.v.latex()} Int) ${this.one.smtlib()})` }
+  smtlib () { return `(exists ((${this.v.latex()} Int)) ${this.one.smtlib()})` }
 
-  getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => deepEqual(fv, this.v)) }
+  getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => !deepEqual(fv, this.v)) }
 }
 
 /// ///////SEQUENT CLASS //////////////
@@ -315,7 +317,7 @@ class Sequent {
       } else if(formulae.length === 1) {
         return formulae[0].smtlib()
       } else {
-        first = formulae[0]
+        const first = formulae[0]
         formulae.shift()
         return `(${connective} ${first.smtlib()} ${nest(connective, formulae, baseCase)})`
       }
@@ -804,6 +806,7 @@ class AddTerms extends TermFun {
     super('+', [first, second])
     this.first = first
     this.second = second
+    this.primitive = true
   }
   unicode () { return `${this.first.unicode()} + ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} + ${this.second.latex()}` }
@@ -815,6 +818,7 @@ class SubtractTerms extends TermFun {
     super('-', [first, second])
     this.first = first
     this.second = second
+    this.primitive = true
   }
   unicode () { return `${this.first.unicode()} - ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} - ${this.second.latex()}` }
@@ -826,6 +830,7 @@ class MultiplyTerms extends TermFun {
     super('*', [first, second])
     this.first = first
     this.second = second
+    this.primitive = true
   }
   unicode () { return `${this.first.unicode()} * ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} * ${this.second.latex()}` }
@@ -837,6 +842,7 @@ class DivideTerms extends TermFun {
     super('/', [first, second])
     this.first = first
     this.second = second
+    this.primitive = true
   }
   unicode () { return `${this.first.unicode()} / ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} / ${this.second.latex()}` }
@@ -848,6 +854,7 @@ class LessThan extends Relation {
     super('<', [lhs, rhs])
     this.lhs = lhs
     this.rhs = rhs
+    this.primitive = true
   }
   unicode () { return `${this.lhs.unicode()} < ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} < ${this.rhs.latex()}` }
@@ -859,6 +866,7 @@ class GreaterThan extends Relation {
     super('>', [lhs, rhs])
     this.lhs = lhs
     this.rhs = rhs
+    this.primitive = true
   }
   unicode () { return `${this.lhs.unicode()} > ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} > ${this.rhs.latex()}` }
@@ -870,6 +878,7 @@ class LeqThan extends Relation {
     super('<=', [lhs, rhs])
     this.lhs = lhs
     this.rhs = rhs
+    this.primitive = true
   }
   unicode () { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}` }
@@ -881,6 +890,7 @@ class GeqThan extends Relation {
     super('>=', [lhs, rhs])
     this.lhs = lhs
     this.rhs = rhs
+    this.primitive = true
   }
   unicode () { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}` }
@@ -892,6 +902,7 @@ class Equal extends Relation {
     super('=', [lhs, rhs])
     this.lhs = lhs
     this.rhs = rhs
+    this.primitive = true
   }
   unicode () { return `${this.lhs.unicode()} = ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} = ${this.rhs.latex()}` }
