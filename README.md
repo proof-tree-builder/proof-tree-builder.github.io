@@ -12,6 +12,7 @@ You can click the "Add LK goal" button to add a new sequent calculus goal to pro
 * `exists x. g(x) |- exists y. g(y)`
 * `exists x. g(k,x) |- exists y. g(k,y)`
 * `|- ((p -> q) -> p) -> p`
+* `x > 0 |- x > 1` (this one cannot be proved without Z3)
 
 Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as
 

@@ -42,6 +42,9 @@ class TermVar extends Term {
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
+
+  getFreeVars () { return [this] }
+  getFunctions () { return [] }
 }
 
 class TermFun extends Term {
@@ -57,6 +60,9 @@ class TermFun extends Term {
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
+
+  getFreeVars () { return this.args.map(arg => arg.getFreeVars()).flat() }
+  getFunctions () { return this.args.map(arg => arg.getFunctions()).flat().concat(this) }
 }
 
 class TermInt extends Term {
@@ -71,6 +77,9 @@ class TermInt extends Term {
   unicode () { return this.i }
   latex () { return this.i }
   smtlib () { return this.i >= 0 ? this.i : `(- ${-this.i})` }
+
+  getFreeVars () { return [] }
+  getFunctions () { return [] }
 }
 
 /// //////FORMULA CLASS & CHILDREN ///////////
@@ -100,6 +109,11 @@ class Formula {
   isQuantifierFree () {
     return !this.isQuantifier() && this.subformulas.every(f => f.isQuantifierFree())
   }
+
+  getFreeTermVars () { return this.subformulas.map(f => f.getFreeTermVars()).flat() }
+  getFreePropVars () { return this.subformulas.map(f => f.getFreePropVars()).flat() }
+  getRelations () { return this.subformulas.map(f => f.getRelations()).flat() }
+  getFunctions () { return this.subformulas.map(f => f.getFunctions()).flat() }
 }
 
 class Truth extends Formula {
@@ -138,6 +152,7 @@ class Var extends Formula {
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
+  getFreePropVars () { return [this] }
 }
 
 class And extends Formula {
@@ -221,8 +236,14 @@ class Relation extends Formula {
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
+
+  getFreeTermVars () { return this.args.map(f => f.getFreeVars()).flat() }
+  getRelations () { return [this] }
+  getFunctions () { return this.args.map(f => f.getFunctions()).flat() }
 }
 
+let A
+let B
 class Forall extends Formula {
   constructor (v, one) {
     super()
@@ -239,6 +260,8 @@ class Forall extends Formula {
   latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
   smtlib () { return `(forall (${this.v.latex()} Int) ${this.one.smtlib()})` }
+
+  getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => !deepEqual(fv, this.v)) }
 }
 
 class Exists extends Formula {
@@ -257,6 +280,8 @@ class Exists extends Formula {
   latex () { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
   smtlib () { return `(exists (${this.v.latex()} Int) ${this.one.smtlib()})` }
+
+  getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => deepEqual(fv, this.v)) }
 }
 
 /// ///////SEQUENT CLASS //////////////
@@ -304,6 +329,23 @@ class Sequent {
   isQuantifierFree () {
     return this.precedents.every(p => p.isQuantifierFree()) &&
            this.antecedents.every(q => q.isQuantifierFree())
+  }
+
+  getFreeTermVars () { 
+    return this.precedents.map(p => p.getFreeTermVars()).flat()
+            .concat(this.antecedents.map(q => q.getFreeTermVars()).flat())
+  }
+  getFreePropVars () { 
+    return this.precedents.map(p => p.getFreePropVars()).flat()
+            .concat(this.antecedents.map(q => q.getFreePropVars()).flat())
+  }
+  getRelations () { 
+    return this.precedents.map(p => p.getRelations()).flat()
+            .concat(this.antecedents.map(q => q.getRelations()).flat())
+  }
+  getFunctions () { 
+    return this.precedents.map(p => p.getFunctions()).flat()
+            .concat(this.antecedents.map(q => q.getFunctions()).flat())
   }
 }
 
