@@ -142,6 +142,16 @@ ProofTree.prototype.image = function (root) {
     premiseImages[i] = image
   })
 
+  /* We have to do this separately afterwards because the way our rendering
+     algorithm works makes every premise image depend on the previous one. */
+  if(premiseImages.length > 0) {
+    let diff = maxHeight - premiseImages[0].height
+    premiseImages[0].setPositionByOrigin(
+      premiseImages[0]
+        .getPointByOrigin('left','top')
+        .add(new fabric.Point(0, diff)), 'left', 'top')
+  }
+
   let opt = { subTargetCheck: true }
   let premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
 
@@ -152,6 +162,8 @@ ProofTree.prototype.image = function (root) {
   let newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
   text.setPositionByOrigin(newTextPt)
 
+  // TODO line length should be the max of premise image width and conclusion width
+  // couldn't figure out how to get the get only the conclusion text parts of the premise image
   let p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
   let p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
   let line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
