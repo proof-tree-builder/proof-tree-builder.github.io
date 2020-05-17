@@ -41,6 +41,7 @@ class TermVar extends Term {
   }
   unicode () { return this.v }
   latex () { return this.v }
+  smtlib () { return this.v }
 }
 
 class TermFun extends Term {
@@ -54,7 +55,8 @@ class TermFun extends Term {
     }
   }
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
-  latex () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
+  latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
+  smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
 }
 
 class TermInt extends Term {
@@ -68,6 +70,7 @@ class TermInt extends Term {
   }
   unicode () { return this.i }
   latex () { return this.i }
+  smtlib () { return this.i >= 0 ? this.i : `(- ${-this.i})` }
 }
 
 /// //////FORMULA CLASS & CHILDREN ///////////
@@ -107,6 +110,7 @@ class Truth extends Formula {
 
   unicode () { return '⊤' }
   latex () { return '\\top' }
+  smtlib () { return 'true' }
 }
 
 class Falsity extends Formula {
@@ -117,6 +121,7 @@ class Falsity extends Formula {
 
   unicode () { return '⊥' }
   latex () { return '\\bot' }
+  smtlib () { return 'false' }
 }
 
 class Var extends Formula {
@@ -132,6 +137,7 @@ class Var extends Formula {
 
   unicode () { return this.v }
   latex () { return this.v }
+  smtlib () { return this.v }
 }
 
 class And extends Formula {
@@ -148,6 +154,7 @@ class And extends Formula {
 
   unicode () { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\land ${this.right.platex()}` }
+  smtlib () { return `(and ${this.left.smtlib()} ${this.right.smtlib()})` }
 }
 
 class Or extends Formula {
@@ -164,6 +171,7 @@ class Or extends Formula {
 
   unicode () { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\lor ${this.right.platex()}` }
+  smtlib () { return `(or ${this.left.smtlib()} ${this.right.smtlib()})` }
 }
 
 class Implies extends Formula {
@@ -180,6 +188,7 @@ class Implies extends Formula {
 
   unicode () { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
+  smtlib () { return `(=> ${this.left.smtlib()} ${this.right.smtlib()})` }
 }
 
 class Not extends Formula {
@@ -195,6 +204,7 @@ class Not extends Formula {
 
   unicode () { return `¬ ${this.one.punicode()}` }
   latex () { return `\\lnot ${this.one.platex()}` }
+  smtlib () { return `(not ${this.one.smtlib()})` }
 }
 
 class Relation extends Formula {
@@ -209,7 +219,8 @@ class Relation extends Formula {
     }
   }
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
-  latex () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
+  latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
+  smtlib () { return `(${this.name} ${this.args.map(x => x.smtlib()).join(' ')})` }
 }
 
 class Forall extends Formula {
@@ -226,6 +237,8 @@ class Forall extends Formula {
 
   unicode () { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
   latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
+  // TODO right now all quantification we can do is with integers, might wanna change that later
+  smtlib () { return `(forall (${this.v.latex()} Int) ${this.one.smtlib()})` }
 }
 
 class Exists extends Formula {
@@ -242,6 +255,8 @@ class Exists extends Formula {
 
   unicode () { return `∃ ${this.v.unicode()}. (${this.one.unicode()})` }
   latex () { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
+  // TODO right now all quantification we can do is with integers, might wanna change that later
+  smtlib () { return `(exists (${this.v.latex()} Int) ${this.one.smtlib()})` }
 }
 
 /// ///////SEQUENT CLASS //////////////
@@ -266,6 +281,24 @@ class Sequent {
     const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(', ') + ' ' : ''
     const right = this.antecedents.map(f => f.latex())
     return `${left}\\vdash ${right}`
+  }
+
+  smtlib () {
+    const nest = (connective, formulae, baseCase) => {
+      if(formulae.length === 0) {
+        return baseCase
+      } else if(formulae.length === 1) {
+        return formulae[0].smtlib()
+      } else {
+        first = formulae[0]
+        formulae.shift()
+        return `(${connective} ${first.smtlib()} ${nest(connective, formulae, baseCase)})`
+      }
+    }
+
+    const left = nest("and", this.precedents, "true")
+    const right = nest("or", this.antecedents, "false")
+    return `(=> ${left} ${right})`
   }
 
   isQuantifierFree () {

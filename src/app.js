@@ -210,12 +210,14 @@ ProofTree.prototype.image = function (root) {
                            <button value="Cut">Cut</button>
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
+                           <button value="Solver" class="solver">Z3</button>
                          </p>
                        </div>`)[0]
 
         if (isAutomateMode()) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
+            if (but.value === "Solver") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
@@ -235,6 +237,7 @@ ProofTree.prototype.image = function (root) {
       box.style.left = `${e.pointer.x}px`
       box.style.visibility = 'visible'
       box.querySelectorAll('button').forEach(but => {
+        if (but.value === "Solver") { return }
         but.addEventListener('click', e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()
