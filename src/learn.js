@@ -11,7 +11,9 @@ function LKapplicable (sequent) {
     // get formula
     let f = lhs[i]
     // add rule to list
-    if (f instanceof Falsity) {
+    if (f instanceof Truth) {
+      arr.push({name: "'WeakL'"})
+    } else if (f instanceof Falsity) {
       arr.push(FalsityLeft)
     } else if (f instanceof Or) {
       arr.push(OrLeft)
@@ -35,6 +37,8 @@ function LKapplicable (sequent) {
     // add rule to list
     if (f instanceof Truth) {
       arr.push(TruthRight)
+    } else if (f instanceof Falsity) {
+      arr.push({name: "'WeakR'"})
     } else if (f instanceof Or) {
       arr.push(OrRight)
     } else if (f instanceof And) {
@@ -67,5 +71,98 @@ function LKapplicable (sequent) {
     }
   }
 
+  // Can always apply cut rule
+  arr.push(Cut)
+
   return arr
 }
+
+/*
+
+Color code rules in decreasing order of safety
+
+(1) Rules that immediately solve the goal
+
+  Assumption
+
+
+    ———————— Identity
+    Γ, A ⊢ A
+
+  Truth values
+
+     
+    ———————— FalsityLeft
+    Γ, ⊥ ⊢ Δ
+
+
+    ———————— TruthRight
+    Γ ⊢ T, Δ
+
+(2) Invertible rules that produce 1 subgoal
+
+  Truth values
+
+     Γ ⊢ Δ
+    ———————— WeakL
+    Γ, T ⊢ Δ
+
+     Γ ⊢ Δ
+    ———————— WeakR
+    Γ ⊢ ⊥, Δ
+
+  Negation
+
+     Γ ⊢ A, Δ
+    —————————— NotLeft
+    Γ, ¬ A ⊢ Δ
+
+     Γ, A ⊢ Δ
+    —————————— NotRight
+    Γ, ⊢ ¬ A, Δ
+
+  Conjunction
+
+    Γ, A, B ⊢ Δ
+    ———————————— AndLeft
+    Γ, A ∧ B ⊢ Δ
+
+  Disjunction
+
+    Γ ⊢ Δ, A, B
+    ———————————— OrRight
+    Γ ⊢ Δ, A ∨ B
+
+  Implication
+
+    Γ, A ⊢ B, Δ
+    ———————————— ImpliesRight
+    Γ ⊢ A → B, Δ
+
+  Forall
+
+    Γ ⊢ P[y/x], Δ
+    ————————————— (y fresh) ForallRight
+    Γ ⊢ ∀ x. P, Δ
+
+  Exists
+
+    Γ, P[y/x] ⊢ Δ
+    ————————————— (y fresh) ExistsLeft
+    Γ, ∃ x. P ⊢ Δ
+
+(2) Invertible rules that produce 2 subgoals
+
+  Conjunction
+
+    Γ ⊢ A, Δ    Γ ⊢ B, Δ
+    ———————————————————— AndRight
+       Γ ⊢ A ∧ B, Δ
+
+  Disjunction
+
+    Γ, A ⊢ Δ    Γ, B ⊢ Δ
+    ———————————————————— OrLeft
+       Γ, A ∨ B ⊢ Δ
+
+*/
