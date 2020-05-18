@@ -292,7 +292,22 @@ ProofTree.prototype.image = function (root) {
               updated = applyLK(this.conclusion, rule)
             }
           } else if (this instanceof HoareIncomplete) {
-            updated = applyHoare(this.conclusion, rule)
+            if (rule === Consequence) {
+              let t1 = prompt('Enter the first middle formula for the consequence rule:')
+              if (t1 === null) { return }
+              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+              let t2 = prompt('Enter the second middle formula for the consequence rule:')
+              if (t2 === null) { return }
+              let parsed2 = peg.parse(t1, { startRule: 'Formula' })
+              updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
+            } else if (rule === Sequencing) {
+              let t1 = prompt('Enter the middle formula for the sequencing rule:')
+              if (t1 === null) { return }
+              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+              updated = applyHoare(this.conclusion, rule, parsed1)
+            } else {
+              updated = applyHoare(this.conclusion, rule)
+            }
           }
           this.completer = updated
 
