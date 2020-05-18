@@ -233,6 +233,7 @@ ProofTree.prototype.image = function (root) {
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
                            <button value="Z3Rule" class="solver">Z3</button>
+                           <button value="'Decompose'" class="solver">Decompose</button>
                          </p>
                        </div>`)[0]
 
@@ -240,6 +241,7 @@ ProofTree.prototype.image = function (root) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (but.value === "Z3Rule") { return }
+            if (but.value === "'Decompose'") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
@@ -265,7 +267,10 @@ ProofTree.prototype.image = function (root) {
           let rule = eval(but.value)
           let updated
           if (this instanceof LKIncomplete) {
-            if (rule === 'WeakL') {
+            if (rule === 'Decompose') {
+              let decomposed = decompose(this)
+              updated = this === decomposed ? null : decomposed
+            } else if (rule === 'WeakL') {
               let t = prompt('Select a formula to drop:')
               if (t === null) { return }
               let parsed = peg.parse(t, { startRule: 'Formula' })
@@ -311,7 +316,7 @@ ProofTree.prototype.image = function (root) {
               updated = applyHoare(this.conclusion, rule)
             }
           }
-          this.completer = updated
+          if (updated !== null) this.completer = updated
 
           let entry = proofs.find(entry => root == entry.proof)
           canvas.forEachObject(function (obj) {

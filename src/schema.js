@@ -362,7 +362,6 @@ class ProofTree {
   wrappedLatex () {
     return `% in the preamble
 \\usepackage{bussproofs}
-
 % where you want to have the proof tree
 \\begin{prooftree}
 ${this.latex()}
