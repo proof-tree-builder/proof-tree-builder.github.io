@@ -6,12 +6,17 @@ canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
 
 let incompleteColor = '#FFA500'
+let successColor = '#00CC84'
+let failureColor = '#FF2500'
 let goodColor = 'black'
 
 const isLearnMode = () => document.getElementById('mode').checked
 const isAutomateMode = () => !document.getElementById('mode').checked
 
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
+
+const setLoading = () => { document.getElementById("loading").style = "display: inline" }
+const unsetLoading = () => { document.getElementById("loading").style = "display: none" }
 
 // Panning with ALT + drag
 canvas.on('mouse:down', function (opt) {
@@ -162,13 +167,28 @@ ProofTree.prototype.image = function (root) {
   let newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
   text.setPositionByOrigin(newTextPt)
 
+
+  let color = goodColor
+  if(isIncomplete) {
+    color = incompleteColor
+  }
+  if(this instanceof Z3Rule) {
+    if(this.z3Response === true) {
+      color = successColor
+    } else if(this.z3Response === false) {
+      color = failureColor
+    } else {
+      color = incompleteColor
+    }
+  }
+
   // TODO line length should be the max of premise image width and conclusion width
   // couldn't figure out how to get the get only the conclusion text parts of the premise image
   let p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
   let p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
   let line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
-    fill: isIncomplete ? incompleteColor : goodColor,
-    stroke: isIncomplete ? incompleteColor : goodColor,
+    fill: color,
+    stroke: color,
     strokeWidth: 2,
     selectable: false
   })
@@ -212,14 +232,14 @@ ProofTree.prototype.image = function (root) {
                            <button value="Cut">Cut</button>
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
-                           <button value="Solver" class="solver">Z3</button>
+                           <button value="Z3Rule" class="solver">Z3</button>
                          </p>
                        </div>`)[0]
 
         if (isAutomateMode()) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
-            if (but.value === 'Solver') { return }
+            if (but.value === "Z3Rule") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
@@ -239,7 +259,6 @@ ProofTree.prototype.image = function (root) {
       box.style.left = `${e.pointer.x}px`
       box.style.visibility = 'visible'
       box.querySelectorAll('button').forEach(but => {
-        if (but.value === "Solver") { return }
         but.addEventListener('click', e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()
@@ -275,7 +294,22 @@ ProofTree.prototype.image = function (root) {
               updated = applyLK(this.conclusion, rule)
             }
           } else if (this instanceof HoareIncomplete) {
-            updated = applyHoare(this.conclusion, rule)
+            if (rule === Consequence) {
+              let t1 = prompt('Enter the first middle formula for the consequence rule:')
+              if (t1 === null) { return }
+              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+              let t2 = prompt('Enter the second middle formula for the consequence rule:')
+              if (t2 === null) { return }
+              let parsed2 = peg.parse(t1, { startRule: 'Formula' })
+              updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
+            } else if (rule === Sequencing) {
+              let t1 = prompt('Enter the middle formula for the sequencing rule:')
+              if (t1 === null) { return }
+              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+              updated = applyHoare(this.conclusion, rule, parsed1)
+            } else {
+              updated = applyHoare(this.conclusion, rule)
+            }
           }
           this.completer = updated
 
@@ -293,7 +327,7 @@ ProofTree.prototype.image = function (root) {
     ruleLabel = new fabric.Text(this.unicodeName, {
       fontFamily: 'Helvetica',
       fontSize: 10,
-      stroke: goodColor
+      stroke: color
     })
   }
 

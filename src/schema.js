@@ -318,8 +318,7 @@ class Sequent {
         return formulae[0].smtlib()
       } else {
         const first = formulae[0]
-        formulae.shift()
-        return `(${connective} ${first.smtlib()} ${nest(connective, formulae, baseCase)})`
+        return `(${connective} ${first.smtlib()} ${nest(connective, formulae.slice(1), baseCase)})`
       }
     }
 
@@ -773,6 +772,43 @@ class Cut extends LKProofTree {
     super([premise1, premise2], conclusion)
     this.unicodeName = 'Cut'
     this.latexName = '\\textrm{Cut}'
+  }
+}
+
+class Z3Rule extends LKProofTree {
+  constructor (conclusion) {
+    super([], conclusion)
+    this.conclusion = conclusion
+    this.isLeft = false
+    this.isRight = false
+    this.connective = null
+    this.unicodeName = 'Z3'
+    this.latexName = 'Z3'
+    this.z3Response = "checking"
+
+    checkWithZ3(conclusion, result => {
+      this.z3Response = result
+      if(!result) {
+        alert("Z3 says no!")
+        // throw new TypeError('Z3 does not accept this sequent!')
+      }
+
+      // FIXME
+      canvas.forEachObject(function (obj) {
+        canvas.remove(obj)
+      })
+      proofs.map(p => p.proof.draw())
+
+    })
+  }
+
+  latex () {
+    if (this.completer) {
+      return this.completer.latex()
+    } else {
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
+      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
   }
 }
 

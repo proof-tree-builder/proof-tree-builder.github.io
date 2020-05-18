@@ -349,6 +349,10 @@ const applyLK = (sequent, rule, uservar) => {
     }
   }
 
+  if(rule === Z3Rule) {
+    return new Z3Rule(sequent)
+  }
+
   throw new Error('no such rule so far')
 }
 
