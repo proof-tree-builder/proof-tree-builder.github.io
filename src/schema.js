@@ -776,6 +776,33 @@ class Cut extends LKProofTree {
   }
 }
 
+class Z3Rule extends LKProofTree {
+  constructor (conclusion) {
+    super([], conclusion)
+    this.isLeft = false
+    this.isRight = false
+    this.connective = null
+    this.unicodeName = 'Z3'
+    this.latexName = 'Z3'
+
+    checkWithZ3(conclusion, result => {
+      if(!result) {
+        alert("Z3 says no!")
+        throw new TypeError('Z3 does not accept this sequent!')
+      }
+    })
+  }
+
+  latex () {
+    if (this.completer) {
+      return this.completer.latex()
+    } else {
+      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
+      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
+  }
+}
+
 class LKIncomplete extends LKProofTree {
   constructor (conclusion) {
     super([], conclusion)

@@ -13,6 +13,9 @@ const isAutomateMode = () => !document.getElementById('mode').checked
 
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
 
+const setLoading = () => { document.getElementById("loading").style = "display: inline" }
+const unsetLoading = () => { document.getElementById("loading").style = "display: none" }
+
 // Panning with ALT + drag
 canvas.on('mouse:down', function (opt) {
   document.querySelectorAll('.ruleSelection').forEach(e => e.remove())
@@ -210,7 +213,7 @@ ProofTree.prototype.image = function (root) {
                            <button value="Cut">Cut</button>
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
-                           <button value="Solver" class="solver">Z3</button>
+                           <button value="Z3Rule" class="solver">Z3</button>
                          </p>
                        </div>`)[0]
 
@@ -237,7 +240,6 @@ ProofTree.prototype.image = function (root) {
       box.style.left = `${e.pointer.x}px`
       box.style.visibility = 'visible'
       box.querySelectorAll('button').forEach(but => {
-        if (but.value === "Solver") { return }
         but.addEventListener('click', e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()

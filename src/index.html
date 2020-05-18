@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Proof Tree Builder</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.4.4/fabric.min.js"></script>
+    <script type="text/javascript" src="parser.js"></script>
     <style type="text/css">
       * { margin: 0; padding: 0;}
 
@@ -150,6 +151,7 @@
     <div id="top-bar">
       <button type="button" id="addLKGoal">Add LK goal</button>
       <button type="button" id="addHoareGoal">Add Hoare logic goal</button>
+      <img src="loading.gif" alt="Loading..." id="loading" style="display: none">
       <label class="switch" alt="Switch between Learn and Automate modes">
         <input type="checkbox" id="mode" checked>
         <div class="slider"><span class="on">Learn</span>
@@ -166,6 +168,7 @@
 
     <canvas id="c" width="800" height="450"></canvas>
 
+    <script type="text/javascript" src="protocol.js"></script>
     <script type="text/javascript" src="schema.js"></script>
     <script type="text/javascript" src="parser.js"></script>
     <script type="text/javascript" src="apply.js"></script>
@@ -174,6 +177,9 @@
     <script type="text/javascript" src="app.js"></script>
     <script type="text/javascript" src="example.js"></script>
     <script type="text/javascript" src="learn.js"></script>
+    <script type="text/javascript">
+      setupZ3Worker()
+    </script>
   </body>
 
 </html>
