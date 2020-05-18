@@ -1049,11 +1049,11 @@ class HoareProofTree extends ProofTree {
     if (premises.length === 0 && conclusion == null) {
       this.premises = []
       this.conclusion = null
-    } else if (arrayOf(premises, HoareProofTree) && conclusion instanceof HoareTriple) {
+    } else if (arrayOf(premises, ProofTree) && conclusion instanceof HoareTriple) {
       this.premises = premises
       this.conclusion = conclusion
     } else {
-      throw new TypeError('HoareProofTree must have trees and a triple')
+      throw new TypeError('HoareProofTree must have proof trees and a Hoare triple')
     }
   }
 
@@ -1295,21 +1295,22 @@ class Sequencing extends HoareProofTree {
 class Consequence extends HoareProofTree {
   constructor (premise1, premise2, premise3, conclusion) {
     super([premise1, premise2, premise3], conclusion)
-    if (arrayOf([premise1, premise3], ChangeCondition)) {
+    if (arrayOf([premise1, premise3], LKProofTree)) {
       this.command = conclusion.command
       this.unicodeName = 'CONS'
       this.latexName = 'CONS'
     } else {
-      throw new TypeError('First and last premise must be ChangeCondition')
+      throw new TypeError('First and last premise must be LK proof trees')
     }
 
-    if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
-    deepEqual(premise1.left, conclusion.pre) &&
-    deepEqual(premise3.right, conclusion.post) &&
-    deepEqual(premise1.right, premise2.conclusion.pre) &&
-    deepEqual(premise3.left, premise2.conclusion.post))) {
-      throw new TypeError("Commands and conditions don't match up")
-    }
+    // FIXME checks for the consequence rule
+    // if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
+    // deepEqual(premise1.left, conclusion.pre) &&
+    // deepEqual(premise3.right, conclusion.post) &&
+    // deepEqual(premise1.right, premise2.conclusion.pre) &&
+    // deepEqual(premise3.left, premise2.conclusion.post))) {
+    //   throw new TypeError("Commands and conditions don't match up")
+    // }
   }
 }
 

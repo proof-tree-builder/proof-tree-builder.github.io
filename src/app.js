@@ -300,7 +300,7 @@ ProofTree.prototype.image = function (root) {
               let parsed1 = peg.parse(t1, { startRule: 'Formula' })
               let t2 = prompt('Enter the second middle formula for the consequence rule:')
               if (t2 === null) { return }
-              let parsed2 = peg.parse(t1, { startRule: 'Formula' })
+              let parsed2 = peg.parse(t2, { startRule: 'Formula' })
               updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
             } else if (rule === Sequencing) {
               let t1 = prompt('Enter the middle formula for the sequencing rule:')
