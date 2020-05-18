@@ -121,6 +121,7 @@ const applyLK = (sequent, rule, uservar) => {
 
     // CASE: AND
     } else if (rule === AndLeft) {
+      console.log(lhs, rhs, idx)
       // original AND formula
       og = lhs[idx]
       // subformulas
@@ -129,11 +130,10 @@ const applyLK = (sequent, rule, uservar) => {
 
       // make premise
       plhs = lhs.slice()
-      delete plhs[idx]
+      //delete plhs[idx]
       plhs[idx] = right
-      plhs.unshift(left)
+      plhs.splice(idx, 0, left)
       premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
-      console.log(idx)
 
       tree = new AndLeft(premise, sequent, idx, idx + 1, idx)
       return tree
@@ -246,9 +246,9 @@ const applyLK = (sequent, rule, uservar) => {
 
       // make premise
       prhs = rhs.slice()
-      delete prhs[idx]
-      prhs[idx] = left
-      prhs.push(right)
+      //delete prhs[idx]
+      prhs[idx] = right
+      prhs.splice(idx, 0, left)
       premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
 
       tree = new OrRight(premise, sequent, idx, idx + 1, idx)

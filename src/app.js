@@ -188,25 +188,27 @@ ProofTree.prototype.image = function (root) {
         box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
                          <p>Left rules:</p>
                          <p>
-                           <button value="AndLeft">∧</button>
-                           <button value="OrLeft">∨</button>
+                           <button value="AndLeft" class="invertible1">∧</button>
+                           <button value="OrLeft" class="invertible2">∨</button>
+                           <button value="NotLeft" class="invertible1">¬</button>
                            <button value="ImpliesLeft">⇒</button>
-                           <button value="FalsityLeft">⊥</button>
+                           <button value="FalsityLeft" class="invertible0">⊥</button>
                            <button value="ForallLeft">∀</button>
-                           <button value="ExistsLeft">∃</button>
+                           <button value="ExistsLeft" class="invertible1">∃</button>
                          </p>
                          <p>Right rules:</p>
                          <p>
-                           <button value="AndRight">∧</button>
-                           <button value="OrRight">∨</button>
-                           <button value="ImpliesRight">⇒</button>
-                           <button value="TruthRight">⊤</button>
-                           <button value="ForallRight">∀</button>
+                           <button value="AndRight" class="invertible2">∧</button>
+                           <button value="OrRight" class="invertible1">∨</button>
+                           <button value="NotRight" class="invertible1">¬</button>
+                           <button value="ImpliesRight" class="invertible1">⇒</button>
+                           <button value="TruthRight" class="invertible0">⊤</button>
+                           <button value="ForallRight" class="invertible1">∀</button>
                            <button value="ExistsRight">∃</button>
                          </p>
                          <p>Other rules:</p>
                          <p>
-                           <button value="Identity">Id</button>
+                           <button value="Identity" class="invertible0">Id</button>
                            <button value="Cut">Cut</button>
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
@@ -217,7 +219,7 @@ ProofTree.prototype.image = function (root) {
         if (isAutomateMode()) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
-            if (but.value === "Solver") { return }
+            if (but.value === 'Solver') { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
