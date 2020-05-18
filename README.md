@@ -14,6 +14,7 @@ You can click the "Add LK goal" button to add a new sequent calculus goal to pro
 * `|- ((p -> q) -> p) -> p`
 * `x > 1 |- x > 0` (needs Z3)
 * `x <= y, y <= z |- x <= z` (needs Z3)
+* `|- (P(0) && (forall x. (P(x) => P(x + 1)))) => P(3)` (needs Z3)
 
 Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as
 

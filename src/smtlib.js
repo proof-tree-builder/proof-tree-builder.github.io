@@ -29,6 +29,7 @@ const checkWithZ3 = (sequent, cb) => {
   lastResult = ``
   isLoaded = false
   let input = generateSmtlib(sequent)
+  console.log(input);
   let args = ['-smt2']
   verification_start = window.performance.now();
   postZ3Message(queries.VERIFY, { args: args, input: input });
@@ -36,6 +37,10 @@ const checkWithZ3 = (sequent, cb) => {
   let wait = setInterval(() => { 
     if (isLoaded) { 
       clearInterval(wait) 
+      if((/Failed to verify/).test(lastResult)) {
+        alert(`Bug in the Z3 build: ${lastResult}`)
+        return
+      }
       cb((/unsat/).test(lastResult))
     } 
   }, 100)

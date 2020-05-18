@@ -6,6 +6,8 @@ canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
 
 let incompleteColor = '#FFA500'
+let successColor = '#00CC84'
+let failureColor = '#FF2500'
 let goodColor = 'black'
 
 const isLearnMode = () => document.getElementById('mode').checked
@@ -165,13 +167,28 @@ ProofTree.prototype.image = function (root) {
   let newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
   text.setPositionByOrigin(newTextPt)
 
+
+  let color = goodColor
+  if(isIncomplete) {
+    color = incompleteColor
+  }
+  if(this instanceof Z3Rule) {
+    if(this.z3Response === true) {
+      color = successColor
+    } else if(this.z3Response === false) {
+      color = failureColor
+    } else {
+      color = incompleteColor
+    }
+  }
+
   // TODO line length should be the max of premise image width and conclusion width
   // couldn't figure out how to get the get only the conclusion text parts of the premise image
   let p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
   let p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
   let line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
-    fill: isIncomplete ? incompleteColor : goodColor,
-    stroke: isIncomplete ? incompleteColor : goodColor,
+    fill: color,
+    stroke: color,
     strokeWidth: 2,
     selectable: false
   })
@@ -220,7 +237,7 @@ ProofTree.prototype.image = function (root) {
         if (isAutomateMode()) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
-            if (but.value === "Solver") { return }
+            if (but.value === "Z3Rule") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
@@ -293,7 +310,7 @@ ProofTree.prototype.image = function (root) {
     ruleLabel = new fabric.Text(this.unicodeName, {
       fontFamily: 'Helvetica',
       fontSize: 10,
-      stroke: goodColor
+      stroke: color
     })
   }
 
