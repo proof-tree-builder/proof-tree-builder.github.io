@@ -209,7 +209,7 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
     }
 
     // if more than one, ambiguous
-    if (indices.length > 1) {
+    if (indices.length > 1 && strict) {
       throw new Error('Rule application ambiguous.')
     }
 
