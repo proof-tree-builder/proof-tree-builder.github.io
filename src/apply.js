@@ -386,9 +386,9 @@ function applyHoare (triple, rule, uservar, uservar2) {
     tree = new Sequencing(premise1, premise2, triple)
     return tree
   } else if (rule === Consequence) {
-    premise1 = new ChangeCondition(pre, uservar)
+    premise1 = new LKIncomplete(new Sequent([pre], [uservar]))
     premise2 = new HoareIncomplete(new HoareTriple(uservar, command, uservar2))
-    premise3 = new ChangeCondition(uservar2, post)
+    premise3 = new LKIncomplete(new Sequent([uservar2], [post]))
 
     tree = new Consequence(premise1, premise2, premise3, triple)
     return tree
