@@ -381,20 +381,21 @@ class LKProofTree extends ProofTree {
   }
 
   latex () {
-    var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
+    var prefix = this.premises.length === 0 ? '\\AxiomC{}' : ''
+    var rule = prefix + `\\RightLabel{\\scriptsize $${this.latexName}$}`
     switch (this.premises.length) {
       case 0:
         return `${rule}
-\\AxiomC{$${this.conclusion.latex()}$}`
+\\UnaryInfC{$${this.conclusion.latex()}$}`
       case 1:
         return `${this.premises[0].latex()}
 ${rule}
-\\UnaryC{$${this.conclusion.latex()}$}`
+\\UnaryInfC{$${this.conclusion.latex()}$}`
       case 2:
         return `${this.premises[0].latex()}
 ${this.premises[1].latex()}
 ${rule}
-\\BinaryC{$${this.conclusion.latex()}$}`
+\\BinaryInfC{$${this.conclusion.latex()}$}`
       default:
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
@@ -805,8 +806,8 @@ class Z3Rule extends LKProofTree {
     if (this.completer) {
       return this.completer.latex()
     } else {
-      var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
-      return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+      var rule = `\\AxiomC{}\\RightLabel{\\scriptsize $${this.latexName}$}`
+      return `${rule}\n\\UnaryInfC{$${this.conclusion.latex()}$}`
     }
   }
 }
@@ -1068,18 +1069,18 @@ class HoareProofTree extends ProofTree {
       case 1:
         return `${this.premises[0].latex()}
 ${rule}
-\\UnaryC{$${this.conclusion.latex()}$}`
+\\UnaryInfC{$${this.conclusion.latex()}$}`
       case 2:
         return `${this.premises[0].latex()}
 ${this.premises[1].latex()}
 ${rule}
-\\BinaryC{$${this.conclusion.latex()}$}`
+\\BinaryInfC{$${this.conclusion.latex()}$}`
       case 3:
         return `${this.premises[0].latex()}
 ${this.premises[1].latex()}
 ${this.premises[2].latex()}
 ${rule}
-\\TernaryC{$${this.conclusion.latex()}$}`
+\\TrinaryInfC{$${this.conclusion.latex()}$}`
       default:
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
