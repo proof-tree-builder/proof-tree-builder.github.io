@@ -69,6 +69,7 @@ class TermFun extends Term {
 class TermInt extends Term {
   constructor (i) {
     super()
+    this.args = []
     if (Number.isInteger(i)) {
       this.i = i
     } else {
@@ -244,8 +245,6 @@ class Relation extends Formula {
   getFunctions () { return this.args.map(f => f.getFunctions()).flat() }
 }
 
-let A
-let B
 class Forall extends Formula {
   constructor (v, one) {
     super()
@@ -536,8 +535,6 @@ class ImpliesLeft extends LKProofTree {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex1)
     // changed false to true
     const f2 = getPremiseFormula(this.premises, true, 1, premiseFormulaIndex2)
-    console.log((new Implies(f1, f2)).unicode())
-    console.log(conclusion.precedents[conclusionFormulaIndex].unicode())
 
     if (deepEqual(new Implies(f1, f2), conclusion.precedents[conclusionFormulaIndex])) {
       this.premiseFormulaIndex1 = premiseFormulaIndex1
@@ -1100,154 +1097,6 @@ class ChangeCondition extends HoareProofTree {
   latex () { return `${this.left.latex()} \\vdash ${this.right.latex()}` }
 }
 
-// formula classes: Truth, Falsity, Var, And, Or, Implies, Not, Exists, Forall, Relation
-// term classes: TermVar, TermFun, TermInt
-
-// v has to be a termvar
-function substituteTerm (formula, v, term) {
-  if (!(v instanceof TermVar && term instanceof Term)) {
-    throw new TypeError('Substitution can only be done using terms.')
-  }
-
-  // base cases
-  if (formula instanceof Truth) {
-    return new Truth()
-  }
-  if (formula instanceof Falsity) {
-    return new Falsity()
-  }
-  if (formula instanceof Var) {
-    return new Var(formula.v)
-  }
-
-  if (formula instanceof And) {
-    return new And(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Or) {
-    return new Or(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Implies) {
-    return new Implies(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Not) {
-    return new Not(substituteTerm(clone.one, v, term))
-  }
-
-  if (formula instanceof LessThan) {
-    var args = formula.args
-    var newargs = args.slice()
-    var newRelation = new LessThan(formula.lhs, formula.rhs)
-
-    if (deepEqual(v, formula.lhs)) {
-      newRelation.lhs = term
-    }
-    if (deepEqual(v, formula.rhs)) {
-      newRelation.rhs = term
-    }
-
-    newRelation.args = [newRelation.lhs, newRelation.rhs]
-
-    return newRelation
-  }
-  if (formula instanceof GreaterThan) {
-    var args = formula.args
-    var newargs = args.slice()
-    var newRelation = new GreaterThan(formula.lhs, formula.rhs)
-
-    if (deepEqual(v, formula.lhs)) {
-      newRelation.lhs = term
-    }
-    if (deepEqual(v, formula.rhs)) {
-      newRelation.rhs = term
-    }
-
-    newRelation.args = [newRelation.lhs, newRelation.rhs]
-
-    return newRelation
-  }
-  if (formula instanceof LeqThan) {
-    var args = formula.args
-    var newargs = args.slice()
-    var newRelation = new LeqThan(formula.lhs, formula.rhs)
-
-    if (deepEqual(v, formula.lhs)) {
-      newRelation.lhs = term
-    }
-    if (deepEqual(v, formula.rhs)) {
-      newRelation.rhs = term
-    }
-
-    newRelation.args = [newRelation.lhs, newRelation.rhs]
-
-    return newRelation
-  }
-  if (formula instanceof GeqThan) {
-    var args = formula.args
-    var newargs = args.slice()
-    var newRelation = new GeqThan(formula.lhs, formula.rhs)
-
-    if (deepEqual(v, formula.lhs)) {
-      newRelation.lhs = term
-    }
-    if (deepEqual(v, formula.rhs)) {
-      newRelation.rhs = term
-    }
-
-    newRelation.args = [newRelation.lhs, newRelation.rhs]
-
-    return newRelation
-  }
-
-  if (formula instanceof Relation) {
-    var args = formula.args
-    var newargs = args.slice()
-
-    for (var i = 0; i < args.length; i++) {
-      element = args[i]
-      if (deepEqual(v, element)) {
-        newargs[i] = term
-      }
-    }
-
-    return new Relation(formula.name, newargs)
-  }
-
-  if (formula instanceof Exists) {
-    var quantvar = clone.v
-    var body = clone.one
-
-    if (deepEqual(v, quantvar)) {
-      // case: replace one var with another
-      if (term instanceof TermVar) {
-        return new Exists(term, substituteTerm(body, v, term))
-      } else {
-        return substituteTerm(body, v, term)
-      }
-    } else {
-      return new Exists(formula.v, substituteTerm(body, v, term))
-    }
-  }
-
-  if (formula instanceof Forall) {
-    var quantvar = clone.v
-    var body = clone.one
-
-    if (deepEqual(v, quantvar)) {
-      // case: replace one var with another
-      if (term instanceof TermVar) {
-        return new Forall(term, substituteTerm(body, v, term))
-      } else {
-        return substituteTerm(body, v, term)
-      }
-    } else {
-      return new Forall(formula.v, substituteTerm(body, v, term))
-    }
-  }
-}
-
 /*
   −−−−−−−−−---------------  ASGN
   ⊢ {F[v -> t]} v := t {F}
@@ -1377,6 +1226,113 @@ class HoareIncomplete extends HoareProofTree {
     } else {
       var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
       return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
+  }
+}
+
+const substituteTermInTerm = (body, v, term) => {
+  if (!(v instanceof TermVar && term instanceof Term)) {
+    throw new TypeError('Substitution can only be done using terms.')
+  }
+  if (body instanceof AddTerms) {
+    return new AddTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
+  }
+  if (body instanceof SubtractTerms) {
+    return new SubtractTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
+  }
+  if (body instanceof MultiplyTerms) {
+    return new MultiplyTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
+  }
+  if (body instanceof DivideTerms) {
+    return new DivideTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
+  }
+  if (body instanceof TermFun) {
+    let subargs = body.args.map(t => substituteTerm(t, v, term))
+    return new TermFun(body.name, subargs)
+  }
+  if (body instanceof TermVar) {
+    return (deepEqual(body, v)) ? term : body
+  }
+  return body // TermInt
+}
+
+const substituteTerm = (formula, v, term) => {
+  if (!(v instanceof TermVar && term instanceof Term)) {
+    throw new TypeError('Substitution can only be done using terms.')
+  }
+
+  // base cases
+  if (formula instanceof Truth) {
+    return new Truth()
+  }
+  if (formula instanceof Falsity) {
+    return new Falsity()
+  }
+  if (formula instanceof Var) {
+    return new Var(formula.v)
+  }
+
+  if (formula instanceof And) {
+    return new And(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Or) {
+    return new Or(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Implies) {
+    return new Implies(substituteTerm(formula.left, v, term),
+      substituteTerm(formula.right, v, term))
+  }
+  if (formula instanceof Not) {
+    return new Not(substituteTerm(clone.one, v, term))
+  }
+
+  if (formula instanceof LessThan) {
+    return new LessThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
+  }
+  if (formula instanceof GreaterThan) {
+    return new GreaterThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
+  }
+  if (formula instanceof LeqThan) {
+    return new LeqThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
+  }
+  if (formula instanceof GeqThan) {
+    return new GeqThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
+  }
+
+  if (formula instanceof Relation) {
+    let newargs = formula.args.map(arg => substituteTermInTerm(arg, v, term)) 
+    return new Relation(formula.name, newargs)
+  }
+
+  if (formula instanceof Exists) {
+    if(deepEqual(formula.v, v)) {
+      return formula
+    } else {
+      let fvs = term.getFreeVars()
+      if(fvs.some(fv => deepEqual(fv, formula.v))) {
+        // avoid capture
+        let v2 = new TermVar(formula.v.v + "1") // FIXME no guarantee this is fresh
+        return new Exists(v2, substituteTerm(substituteTerm(formula.one, formula.v, v2), v, term))
+      } else {
+        return new Exists(formula.v, substituteTerm(formula.one, v, term))
+      }
+    }
+  }
+
+  if (formula instanceof Forall) {
+    if(deepEqual(formula.v, v)) {
+      return formula
+    } else {
+      let fvs = term.getFreeVars()
+      if(fvs.some(fv => deepEqual(fv, formula.v))) {
+        // avoid capture
+        let v2 = new TermVar(formula.v.v + "1") // FIXME no guarantee this is fresh
+        return new Forall(v2, substituteTerm(substituteTerm(formula.one, formula.v, v2), v, term))
+      } else {
+        return new Forall(formula.v, substituteTerm(formula.one, v, term))
+      }
     }
   }
 }
