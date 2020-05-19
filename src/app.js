@@ -233,7 +233,7 @@ ProofTree.prototype.image = function (root) {
                            <button value="'WeakL'">WeakL</button>
                            <button value="'WeakR'">WeakR</button>
                            <button value="Z3Rule" class="solver">Z3</button>
-                           <button value="'Decompose'" class="solver">Decompose</button>
+                           <button value="'Auto'" class="solver">Auto</button>
                          </p>
                        </div>`)[0]
 
@@ -241,7 +241,7 @@ ProofTree.prototype.image = function (root) {
           let applicables = LKapplicable(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (but.value === "Z3Rule") { return }
-            if (but.value === "'Decompose'") { return }
+            if (but.value === "'Auto'") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
@@ -267,7 +267,7 @@ ProofTree.prototype.image = function (root) {
           let rule = eval(but.value)
           let updated
           if (this instanceof LKIncomplete) {
-            if (rule === 'Decompose') {
+            if (rule === 'Auto') {
               let decomposed = decompose(this)
               updated = this === decomposed ? null : decomposed
             } else if (rule === 'WeakL') {
