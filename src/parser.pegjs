@@ -13,7 +13,7 @@ Formula = Formula1
 
 // implies is right associative, unlike others
 Formula1
-  = head:Formula2 _ ("⇒" / "->" / "=>") _ right:Formula1 {
+  = head:Formula2 _ ("⇒" / "→" / "->" / "=>") _ right:Formula1 {
       return new Implies(head, right);
     }
   / Formula2

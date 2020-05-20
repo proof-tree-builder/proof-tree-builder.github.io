@@ -268,8 +268,8 @@ ProofTree.prototype.image = function (root) {
           let updated
           if (this instanceof LKIncomplete) {
             if (rule === 'Auto') {
-              let decomposed = decompose(this)
-              updated = this === decomposed ? null : decomposed
+              updated = auto(this)
+              if(updated === this) { return }
             } else if (rule === 'WeakL') {
               let t = prompt('Select a formula to drop:')
               if (t === null) { return }

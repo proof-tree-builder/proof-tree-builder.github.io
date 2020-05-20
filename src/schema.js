@@ -124,6 +124,8 @@ class Truth extends Formula {
     this.subformulas = []
   }
 
+  subst (v, term) { return this }
+
   unicode () { return '⊤' }
   latex () { return '\\top' }
   smtlib () { return 'true' }
@@ -134,6 +136,8 @@ class Falsity extends Formula {
     super()
     this.subformulas = []
   }
+
+  subst (v, term) { return this }
 
   unicode () { return '⊥' }
   latex () { return '\\bot' }
@@ -151,6 +155,8 @@ class Var extends Formula {
     }
   }
 
+  subst (v, term) { return this }
+
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
@@ -167,6 +173,10 @@ class And extends Formula {
     } else {
       throw new TypeError('And has to contain Formulas')
     }
+  }
+
+  subst (v, term) {
+
   }
 
   unicode () { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
@@ -1286,7 +1296,7 @@ const substituteTerm = (formula, v, term) => {
       substituteTerm(formula.right, v, term))
   }
   if (formula instanceof Not) {
-    return new Not(substituteTerm(clone.one, v, term))
+    return new Not(substituteTerm(formula.one, v, term))
   }
 
   if (formula instanceof LessThan) {

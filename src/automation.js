@@ -1,7 +1,6 @@
-function gen_fresh(sequent) {
-  let letters = 'abcdefghijklmnopqrstuvwxyz'.split('').reverse();
+const genFresh = (sequent) => {
+  let letters = 'abcdefghijklmnopqrstuvwxyz'.split('').reverse()
   let free_vars = sequent.getFreeTermVars().map(x => x.v)
-  console.log(free_vars)
   for (let i = -1; true; ++i) {
     for (let x of letters) {
       let y = x + (i >= 0 ? i.toString() : '')
@@ -11,8 +10,7 @@ function gen_fresh(sequent) {
   }
 }
 
-function decompose(tree) {
-  console.log(tree)
+const auto = (tree) => {
   let applicable = LKapplicable(tree.conclusion)
   let invertible = [
     // 0 subgoals
@@ -26,9 +24,9 @@ function decompose(tree) {
   ]
   for (let r of invertible) {
     if (applicable.includes(r)) {
-      let fresh_var = [ForallRight, ExistsLeft].includes(r) ? gen_fresh(tree.conclusion) : null
+      let fresh_var = [ForallRight, ExistsLeft].includes(r) ? genFresh(tree.conclusion) : null
       let new_tree = applyLK(tree.conclusion, r, fresh_var, false)
-      new_tree.premises = new_tree.premises.map(decompose)
+      new_tree.premises = new_tree.premises.map(auto)
       return new_tree
     }
   }
