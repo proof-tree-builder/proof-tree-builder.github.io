@@ -176,6 +176,11 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
       tree = new ForallLeft(premise, sequent, idx, idx, uservar)
       return tree
     } else if (rule === ExistsLeft) {
+      console.log(sequent);
+      if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
+        alert(`${uservar.v} is not a free variable!`)
+        return null
+      }
       // original Exists formula
       og = lhs[idx]
       // subformulas
@@ -294,6 +299,10 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
       tree = new ImpliesRight(premise, sequent, plhs.length - 1, idx, idx)
       return tree
     } else if (rule === ForallRight) {
+      if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
+        alert(`${uservar.v} is not a free variable!`)
+        return null
+      }
       // original Forall formula
       og = rhs[idx]
       // subformulas

@@ -138,7 +138,7 @@
 
     var peg$FAILED = {},
 
-        peg$startRuleFunctions = { Sequent: peg$parseSequent, Formula: peg$parseFormula, Term: peg$parseTerm, HoareTriple: peg$parseHoareTriple, Command: peg$parseCommand },
+        peg$startRuleFunctions = { Sequent: peg$parseSequent, Formula: peg$parseFormula, Term: peg$parseTerm, HoareTriple: peg$parseHoareTriple, Command: peg$parseCommand, Name: peg$parseName },
         peg$startRuleFunction  = peg$parseSequent,
 
         peg$c0 = "\u22A2",
