@@ -98,15 +98,20 @@ const refreshList = () => {
 }
 
 const addProof = (pf) => {
-  // proofs.push(pf)
-  proofs.push({ proof: pf })
+  proofs.push({ proof: pf, x: window.innerWidth / 2, y: window.innerHeight / 2 })
   pf.draw()
   refreshList()
 }
 
-// const redrawAll = () => {
-//   proofs.forEach
-// }
+const redrawAll = () => {
+  canvas.forEachObject(obj => (canvas.remove(obj)))
+  proofs.forEach(pf => { pf.proof.draw() })
+}
+
+const refreshAll = () => {
+  proofs.forEach(pf => { pf.proof = reorganizeTree(pf.proof) })
+  redrawAll()
+}
 
 document.getElementById('addLKGoal').addEventListener('click', function () {
   let input = prompt('Enter a LK goal sequent:')
@@ -193,7 +198,8 @@ ProofTree.prototype.image = function (root) {
     selectable: false
   })
 
-  let ruleLabel
+  let ruleLabel = null
+  let deleteLabel = null
   if (isIncomplete) {
     ruleLabel = new fabric.Text(' + ', {
       fontFamily: 'Helvetica',
@@ -334,12 +340,34 @@ ProofTree.prototype.image = function (root) {
       fontSize: 10,
       stroke: color
     })
+
+    deleteLabel = new fabric.Text(' - ', {
+      fontFamily: 'Helvetica',
+      fontSize: 11,
+      stroke: 'white',
+      backgroundColor: failureColor
+    })
+
+    deleteLabel.on('mousedown', (e) => {
+      if(confirm("Are you sure you want to unapply this rule and the rules above?")) {
+        this.toDelete = true
+        refreshAll()
+      }
+    })
   }
 
   ruleLabel.setPositionByOrigin(
     (new fabric.Point(15, 0)).add(line.getPointByOrigin('right', 'top'), 'left', 'top'))
 
-  let group = new fabric.Group([premiseGroup, line, ruleLabel, text], { selectable: true, subTargetCheck: true })
+  let groupImages
+  if(deleteLabel) {
+    deleteLabel.setPositionByOrigin(
+      (new fabric.Point(40, 0)).add(text.getPointByOrigin('right', 'top'), 'left', 'top'))
+    groupImages = [premiseGroup, line, ruleLabel, deleteLabel, text]
+  } else {
+    groupImages = [premiseGroup, line, ruleLabel, text]
+  }
+  let group = new fabric.Group(groupImages, { selectable: true, subTargetCheck: true })
 
   group.lockRotation = true
   group.lockScalingX = true
@@ -347,12 +375,26 @@ ProofTree.prototype.image = function (root) {
   group.hasControls = false
   group.set({ borderColor: 'black' })
   group.root = root
+  group.on('moved', e => {
+    proofs.forEach((entry, i) => {
+      if (root == entry.proof) {
+        proofs[i].x = e.target.aCoords.bl.x
+        proofs[i].y = e.target.aCoords.bl.y
+      }
+    })
+  })
   return group
 }
 
 ProofTree.prototype.draw = function () {
   let i = this.image(this)
   canvas.add(i)
-  i.center()
+  proofs.forEach((entry) => {
+    if (this == entry.proof) {
+      i.setPositionByOrigin(new fabric.Point(entry.x, entry.y), 'left', 'bottom')
+    } 
+  })
+  // i.center()
+  i.setCoords()
   return i
 }

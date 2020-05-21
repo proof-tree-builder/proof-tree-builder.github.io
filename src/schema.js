@@ -1347,3 +1347,20 @@ const substituteTerm = (formula, v, term) => {
     }
   }
 }
+
+// If a tree is set as toDelete, delete the tree and its premises
+// If an incomplete tree has a completer, remove the incomplete tree
+const reorganizeTree = (tree) => {
+  if (!tree instanceof ProofTree) {
+    throw new TypeError(`Can't reorganize non-tree structures`)
+  } else if (tree.toDelete && tree instanceof LKProofTree) {
+    return new LKIncomplete(tree.conclusion)
+  } else if (tree.toDelete && tree instanceof HoareProofTree) {
+    return new HoareIncomplete(tree.conclusion)
+  } else if (tree.completer && (tree instanceof LKIncomplete || tree instanceof HoareIncomplete)) {
+    return reorganizeTree(tree.completer)
+  } else {
+    tree.premises = tree.premises.map(reorganizeTree)
+    return tree
+  }
+}
