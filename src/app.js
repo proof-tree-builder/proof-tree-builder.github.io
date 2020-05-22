@@ -17,6 +17,14 @@ const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').bod
 
 const setLoading = () => { document.getElementById("loading").style = "display: inline" }
 const unsetLoading = () => { document.getElementById("loading").style = "display: none" }
+const promptTrim = (s) => {
+  let x = prompt(s)
+  if (x === null) {
+    return null
+  } else {
+    return x.trim()
+  }
+}
 
 // Panning with ALT + drag
 canvas.on('mouse:down', function (opt) {
@@ -114,17 +122,17 @@ const refreshAll = () => {
 }
 
 document.getElementById('addLKGoal').addEventListener('click', function () {
-  let input = prompt('Enter a LK goal sequent:')
+  let input = promptTrim('Enter a LK goal sequent:')
   if (input === null) { return }
-  let parsed = peg.parse(input.trim(), { startRule: 'Sequent' })
+  let parsed = peg.parse(input, { startRule: 'Sequent' })
   let tree = new LKIncomplete(parsed)
   addProof(tree)
 })
 
 document.getElementById('addHoareGoal').addEventListener('click', function () {
-  let input = prompt('Enter a Hoare triple:')
+  let input = promptTrim('Enter a Hoare triple:')
   if (input === null) { return }
-  let parsed = peg.parse(input.trim(), { startRule: 'HoareTriple' })
+  let parsed = peg.parse(input, { startRule: 'HoareTriple' })
   let tree = new HoareIncomplete(parsed)
   addProof(tree)
 })
@@ -300,27 +308,27 @@ ProofTree.prototype.image = function (root) {
                 updated = auto(this)
                 if(updated === this) { return }
               } else if (rule === 'WeakL') {
-                let t = prompt('Select a formula to drop:')
+                let t = promptTrim('Select a formula to drop:')
                 if (t === null) { return }
                 let parsed = peg.parse(t, { startRule: 'Formula' })
                 this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
               } else if (rule === 'WeakR') {
-                let t = prompt('Select a formula to drop:')
+                let t = promptTrim('Select a formula to drop:')
                 if (t === null) { return }
                 let parsed = peg.parse(t, { startRule: 'Formula' })
                 this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
               } else if (rule === Cut) {
-                let t = prompt('Enter the formula to prove:')
+                let t = promptTrim('Enter the formula to prove:')
                 if (t === null) { return }
                 let parsed = peg.parse(t, { startRule: 'Formula' })
                 updated = applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallLeft || rule === ExistsRight) {
-                let t = prompt('Enter the term to substitute for the variable:')
+                let t = promptTrim('Enter the term to substitute for the variable:')
                 if (t === null) { return }
                 let parsed = peg.parse(t, { startRule: 'Term' })
                 updated = applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallRight || rule === ExistsLeft) {
-                let t = prompt('Enter a fresh variable to substitute for the variable:')
+                let t = promptTrim('Enter a fresh variable to substitute for the variable:')
                 if (t === null) { return }
                 let parsed = peg.parse(t, { startRule: 'Name' })
                 updated = applyLK(this.conclusion, rule, new TermVar(parsed))
@@ -329,12 +337,22 @@ ProofTree.prototype.image = function (root) {
               }
             } else if (this instanceof HoareIncomplete) {
               if (rule === Consequence) {
-                let t1 = prompt('Enter the first middle formula for the consequence rule:')
+                let t1 = promptTrim('Enter the first middle formula for the consequence rule: (leave it blank if it is the same as the precondition)')
                 if (t1 === null) { return }
-                let parsed1 = peg.parse(t1, { startRule: 'Formula' })
-                let t2 = prompt('Enter the second middle formula for the consequence rule:')
+                let parsed1
+                if (t1 === "") {
+                  parsed1 = this.conclusion.pre
+                } else {
+                  parsed1 = peg.parse(t1, { startRule: 'Formula' })
+                }
+                let t2 = promptTrim('Enter the second middle formula for the consequence rule: (leave it blank if it is the same as the postcondition)')
                 if (t2 === null) { return }
-                let parsed2 = peg.parse(t2, { startRule: 'Formula' })
+                let parsed2
+                if (t2 === "") {
+                  parsed2 = this.conclusion.post
+                } else {
+                  parsed2 = peg.parse(t2, { startRule: 'Formula' })
+                }
                 updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
               } else if (rule === Sequencing) {
                 let t1 = prompt('Enter the middle formula for the sequencing rule:')

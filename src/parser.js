@@ -1166,7 +1166,7 @@
       if (s1 !== peg$FAILED) {
         s2 = peg$parse_();
         if (s2 !== peg$FAILED) {
-          s3 = peg$parseAtom();
+          s3 = peg$parseFormula5();
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
             s1 = peg$c54(s3);

@@ -1148,14 +1148,18 @@ class Consequence extends HoareProofTree {
       throw new TypeError('First and last premise must be LK proof trees')
     }
 
-    // FIXME checks for the consequence rule
-    // if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
-    // deepEqual(premise1.left, conclusion.pre) &&
-    // deepEqual(premise3.right, conclusion.post) &&
-    // deepEqual(premise1.right, premise2.conclusion.pre) &&
-    // deepEqual(premise3.left, premise2.conclusion.post))) {
-    //   throw new TypeError("Commands and conditions don't match up")
-    // }
+    // checks for the consequence rule
+    if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
+          premise1.conclusion.precedents.length === 1 &&
+          premise1.conclusion.antecedents.length === 1 &&
+          premise3.conclusion.precedents.length === 1 &&
+          premise3.conclusion.antecedents.length === 1 &&
+          deepEqual(premise1.conclusion.precedents[0], conclusion.pre) &&
+          deepEqual(premise3.conclusion.antecedents[0], conclusion.post) &&
+          deepEqual(premise1.conclusion.antecedents[0], premise2.conclusion.pre) &&
+          deepEqual(premise3.conclusion.precedents[0], premise2.conclusion.post))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
   }
 }
 

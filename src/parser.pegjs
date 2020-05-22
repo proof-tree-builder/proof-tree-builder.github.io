@@ -44,7 +44,7 @@ Formula4
     }
 
 Formula5
-  = ("¬" / "!" / "~") _ expr:Atom { return new Not(expr); }
+  = ("¬" / "!" / "~") _ expr:Formula5 { return new Not(expr); }
   / Atom
 
 // Entry point for terms
