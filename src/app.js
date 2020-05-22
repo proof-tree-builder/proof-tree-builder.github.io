@@ -169,7 +169,7 @@ ProofTree.prototype.image = function (root) {
     fontFamily: 'Helvetica',
     fontSize: 30
   })
-  let newTextPt = (new fabric.Point(0, 40)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
+  let newTextPt = (new fabric.Point(0, 30)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
   text.setPositionByOrigin(newTextPt)
 
 
@@ -207,17 +207,20 @@ ProofTree.prototype.image = function (root) {
     linex1 = x1
     linex2 = x2
   } else {
-    // if the conclusion text is wider tha the premises
+    // if the conclusion text is wider than the premises
     linex1 = p1.x
     linex2 = p2.x
   }
 
-  let line = new fabric.Line([ linex1, p1.y, linex2, p2.y ], {
+  let line = new fabric.Line([ linex1, p1.y - 5, linex2, p2.y - 5], {
     fill: color,
     stroke: color,
     strokeWidth: 2,
     selectable: false
   })
+
+  // let newTextPt2 = (new fabric.Point(0, 20)).add(line.getPointByOrigin('center', 'bottom'))
+  // text.setPositionByOrigin(newTextPt2)
 
   let ruleLabel = null
   let deleteLabel = null
@@ -370,7 +373,7 @@ ProofTree.prototype.image = function (root) {
     })
 
     deleteLabel.on('mousedown', (e) => {
-      if(confirm("Are you sure you want to unapply this rule and the rules above?")) {
+      if(confirm("Are you sure you want to unapply this rule and the rules applied after/above?")) {
         this.toDelete = true
         refreshAll()
       }
