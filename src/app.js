@@ -138,29 +138,14 @@ ProofTree.prototype.image = function (root) {
   let isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
 
   
-  let maxHeight = Math.max.apply(Math, premiseImages.map(image => image.height))
   premiseImages.forEach((image, i) => {
-    // get max height of all premiseImages, 
-    // then shift image to the bottom by the difference
-    // also shift each to the right a bit for spacing
     if (i === 0) return
 
     let prev = premiseImages[i - 1]
-
     image.setPositionByOrigin(
-      (new fabric.Point(80, maxHeight - image.height)).add(prev.getPointByOrigin('right', 'top')), 'left', 'top')
+      (new fabric.Point(80, 0)).add(prev.getPointByOrigin('right', 'bottom')), 'left', 'bottom')
     premiseImages[i] = image
   })
-
-  /* We have to do this separately afterwards because the way our rendering
-     algorithm works makes every premise image depend on the previous one. */
-  if(premiseImages.length > 0) {
-    let diff = maxHeight - premiseImages[0].height
-    premiseImages[0].setPositionByOrigin(
-      premiseImages[0]
-        .getPointByOrigin('left','top')
-        .add(new fabric.Point(0, diff)), 'left', 'top')
-  }
 
   let opt = { subTargetCheck: true }
   let premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
@@ -219,8 +204,9 @@ ProofTree.prototype.image = function (root) {
     selectable: false
   })
 
-  // let newTextPt2 = (new fabric.Point(0, 20)).add(line.getPointByOrigin('center', 'bottom'))
-  // text.setPositionByOrigin(newTextPt2)
+  // TODO for centering the text along the rule line:
+  let newTextPt2 = (new fabric.Point(0, 20)).add(line.getPointByOrigin('center', 'bottom'))
+  text.setPositionByOrigin(newTextPt2)
 
   let ruleLabel = null
   let deleteLabel = null
