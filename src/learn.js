@@ -1,6 +1,6 @@
 // hint which rules are applicable (sequent calculus)
 
-function LKapplicable (sequent) {
+const applicableLK = (sequent) => {
   let arr = []
 
   let lhs = sequent.precedents
@@ -74,6 +74,23 @@ function LKapplicable (sequent) {
   // Can always apply cut rule
   arr.push(Cut)
 
+  return arr
+}
+
+const applicableHoare = (hoareTriple) => {
+  let arr = []
+  if (hoareTriple.command instanceof CmdAssign) {
+    arr.push(Assignment)
+  } else if (hoareTriple.command instanceof CmdSeq) {
+    arr.push(Sequencing)
+  } else if (hoareTriple.command instanceof CmdIf) {
+    arr.push(Conditional)
+  } else if (hoareTriple.command instanceof CmdWhile) {
+    arr.push(Loop)
+  }
+
+  // Can always apply cut rule
+  arr.push(Consequence)
   return arr
 }
 

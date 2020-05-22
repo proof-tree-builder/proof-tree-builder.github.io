@@ -11,7 +11,7 @@ const genFresh = (sequent) => {
 }
 
 const auto = (tree) => {
-  let applicable = LKapplicable(tree.conclusion)
+  let applicable = applicableLK(tree.conclusion)
   let invertible = [
     // 0 subgoals
     Identity, FalsityLeft, TruthRight, 

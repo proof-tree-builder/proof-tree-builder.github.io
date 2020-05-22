@@ -242,19 +242,22 @@ ProofTree.prototype.image = function (root) {
                            <button value="ForallRight" class="invertible1">∀</button>
                            <button value="ExistsRight">∃</button>
                          </p>
+                         <p>Structural rules:</p>
+                         <p>
+                           <button value="'WeakL'">WeakL</button>
+                           <button value="'WeakR'">WeakR</button>
+                         </p>
                          <p>Other rules:</p>
                          <p>
                            <button value="Identity" class="invertible0">Id</button>
                            <button value="Cut">Cut</button>
-                           <button value="'WeakL'">WeakL</button>
-                           <button value="'WeakR'">WeakR</button>
                            <button value="Z3Rule" class="solver">Z3</button>
                            <button value="'Auto'" class="solver">Auto</button>
                          </p>
                        </div>`)[0]
 
         if (isAutomateMode()) {
-          let applicables = LKapplicable(this.conclusion).map(x => x.name)
+          let applicables = applicableLK(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (but.value === "Z3Rule") { return }
             if (but.value === "'Auto'") { return }
@@ -263,15 +266,24 @@ ProofTree.prototype.image = function (root) {
         }
       } else if (this instanceof HoareIncomplete) {
         box = toNodes(`<div id="hoareRuleSelection" class="ruleSelection">
-                         <p>Rules:</p>
+                         <p>Command rules:</p>
                          <p>
                            <button value="Assignment">Assn</button>
                            <button value="Sequencing">Seq</button>
-                           <button value="Consequence">Cons</button>
                            <button value="Conditional">Cond</button>
                            <button value="Loop">Loop</button>
                          </p>
+                         <p>Logical rules:</p>
+                         <p>
+                           <button value="Consequence">Cons</button>
+                         </p>
                        </div>`)[0]
+        if (isAutomateMode()) {
+          let applicables = applicableHoare(this.conclusion).map(x => x.name)
+          box.querySelectorAll('button').forEach(but => {
+            if (!applicables.includes(but.value)) { but.remove() }
+          })
+        }
       }
       box.style.top = `${e.pointer.y}px`
       box.style.left = `${e.pointer.x}px`
@@ -280,66 +292,72 @@ ProofTree.prototype.image = function (root) {
         but.addEventListener('click', e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()
-          let rule = eval(but.value)
-          let updated
-          if (this instanceof LKIncomplete) {
-            if (rule === 'Auto') {
-              updated = auto(this)
-              if(updated === this) { return }
-            } else if (rule === 'WeakL') {
-              let t = prompt('Select a formula to drop:')
-              if (t === null) { return }
-              let parsed = peg.parse(t, { startRule: 'Formula' })
-              this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
-            } else if (rule === 'WeakR') {
-              let t = prompt('Select a formula to drop:')
-              if (t === null) { return }
-              let parsed = peg.parse(t, { startRule: 'Formula' })
-              this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
-            } else if (rule === Cut) {
-              let t = prompt('Enter the formula to prove:')
-              if (t === null) { return }
-              let parsed = peg.parse(t, { startRule: 'Formula' })
-              updated = applyLK(this.conclusion, rule, parsed)
-            } else if (rule === ForallLeft || rule === ExistsRight) {
-              let t = prompt('Enter the term to substitute for the variable:')
-              if (t === null) { return }
-              let parsed = peg.parse(t, { startRule: 'Term' })
-              updated = applyLK(this.conclusion, rule, parsed)
-            } else if (rule === ForallRight || rule === ExistsLeft) {
-              let t = prompt('Enter a fresh variable to substitute for the variable:')
-              if (t === null) { return }
-              let parsed = peg.parse(t, { startRule: 'Name' })
-              updated = applyLK(this.conclusion, rule, new TermVar(parsed))
-            } else {
-              updated = applyLK(this.conclusion, rule)
+          try {
+            let rule = eval(but.value)
+            let updated
+            if (this instanceof LKIncomplete) {
+              if (rule === 'Auto') {
+                updated = auto(this)
+                if(updated === this) { return }
+              } else if (rule === 'WeakL') {
+                let t = prompt('Select a formula to drop:')
+                if (t === null) { return }
+                let parsed = peg.parse(t, { startRule: 'Formula' })
+                this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
+              } else if (rule === 'WeakR') {
+                let t = prompt('Select a formula to drop:')
+                if (t === null) { return }
+                let parsed = peg.parse(t, { startRule: 'Formula' })
+                this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
+              } else if (rule === Cut) {
+                let t = prompt('Enter the formula to prove:')
+                if (t === null) { return }
+                let parsed = peg.parse(t, { startRule: 'Formula' })
+                updated = applyLK(this.conclusion, rule, parsed)
+              } else if (rule === ForallLeft || rule === ExistsRight) {
+                let t = prompt('Enter the term to substitute for the variable:')
+                if (t === null) { return }
+                let parsed = peg.parse(t, { startRule: 'Term' })
+                updated = applyLK(this.conclusion, rule, parsed)
+              } else if (rule === ForallRight || rule === ExistsLeft) {
+                let t = prompt('Enter a fresh variable to substitute for the variable:')
+                if (t === null) { return }
+                let parsed = peg.parse(t, { startRule: 'Name' })
+                updated = applyLK(this.conclusion, rule, new TermVar(parsed))
+              } else {
+                updated = applyLK(this.conclusion, rule)
+              }
+            } else if (this instanceof HoareIncomplete) {
+              if (rule === Consequence) {
+                let t1 = prompt('Enter the first middle formula for the consequence rule:')
+                if (t1 === null) { return }
+                let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+                let t2 = prompt('Enter the second middle formula for the consequence rule:')
+                if (t2 === null) { return }
+                let parsed2 = peg.parse(t2, { startRule: 'Formula' })
+                updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
+              } else if (rule === Sequencing) {
+                let t1 = prompt('Enter the middle formula for the sequencing rule:')
+                if (t1 === null) { return }
+                let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+                updated = applyHoare(this.conclusion, rule, parsed1)
+              } else {
+                updated = applyHoare(this.conclusion, rule)
+              }
             }
-          } else if (this instanceof HoareIncomplete) {
-            if (rule === Consequence) {
-              let t1 = prompt('Enter the first middle formula for the consequence rule:')
-              if (t1 === null) { return }
-              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
-              let t2 = prompt('Enter the second middle formula for the consequence rule:')
-              if (t2 === null) { return }
-              let parsed2 = peg.parse(t2, { startRule: 'Formula' })
-              updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
-            } else if (rule === Sequencing) {
-              let t1 = prompt('Enter the middle formula for the sequencing rule:')
-              if (t1 === null) { return }
-              let parsed1 = peg.parse(t1, { startRule: 'Formula' })
-              updated = applyHoare(this.conclusion, rule, parsed1)
-            } else {
-              updated = applyHoare(this.conclusion, rule)
-            }
-          }
-          if (updated !== null) this.completer = updated
+            if (updated !== null) this.completer = updated
 
-          let entry = proofs.find(entry => root == entry.proof)
-          canvas.forEachObject(function (obj) {
-            if (!obj.root) return
-            if (obj.root == root) canvas.remove(obj)
-          })
-          entry.proof.draw()
+            let entry = proofs.find(entry => root == entry.proof)
+            canvas.forEachObject(function (obj) {
+              if (!obj.root) return
+              if (obj.root == root) canvas.remove(obj)
+            })
+            entry.proof.draw()
+          } catch(err) {
+            alert(`Rule not applicable!`)
+            // TODO better error messages
+            console.log(err.message);
+          }
         })
       })
       document.body.appendChild(box)

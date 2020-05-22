@@ -1094,20 +1094,6 @@ ${rule}
   }
 }
 
-class ChangeCondition extends HoareProofTree {
-  constructor (left, right) {
-    super([], null)
-    this.left = left
-    this.right = right
-    this.unicodeName = ''
-    this.latexName = ''
-    this.command = null
-  }
-
-  unicode () { return `${this.left.unicode()} ⊢ ${this.right.unicode()}` }
-  latex () { return `${this.left.latex()} \\vdash ${this.right.latex()}` }
-}
-
 /*
   −−−−−−−−−---------------  ASGN
   ⊢ {F[v -> t]} v := t {F}
