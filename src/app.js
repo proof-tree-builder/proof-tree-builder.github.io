@@ -98,7 +98,7 @@ const refreshList = () => {
 }
 
 const addProof = (pf) => {
-  proofs.push({ proof: pf, x: window.innerWidth / 2, y: window.innerHeight / 2 })
+  proofs.push({ proof: pf, x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 })
   pf.draw()
   refreshList()
 }
@@ -187,11 +187,32 @@ ProofTree.prototype.image = function (root) {
     }
   }
 
-  // TODO line length should be the max of premise image width and conclusion width
-  // couldn't figure out how to get the get only the conclusion text parts of the premise image
+  // line length should be the max of premise image conclusion text width and conclusion width
+  let premiseTexts = premiseImages.map(g => {
+    let l = g.getObjects()
+    let o = l[l.length - 1]
+    let point = { x: -o.width/2, y: o.height/2 };
+    let pointOnCanvas = fabric.util.transformPoint(point, o.calcTransformMatrix())
+    return {left: pointOnCanvas.x, right: pointOnCanvas.x + o.width}
+  })
+  let x1 = Math.min.apply(Math, premiseTexts.map(t => t.left))
+  let x2 = Math.max.apply(Math, premiseTexts.map(t => t.right))
   let p1 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('left', 'top'))
   let p2 = (new fabric.Point(0, 0)).add(text.getPointByOrigin('right', 'top'))
-  let line = new fabric.Line([ p1.x, p1.y, p2.x, p2.y ], {
+
+  let linex1
+  let linex2
+  if(x2 - x1 > p2.x - p1.x) {
+    // if the premises are wider than the conclusion text
+    linex1 = x1
+    linex2 = x2
+  } else {
+    // if the conclusion text is wider tha the premises
+    linex1 = p1.x
+    linex2 = p2.x
+  }
+
+  let line = new fabric.Line([ linex1, p1.y, linex2, p2.y ], {
     fill: color,
     stroke: color,
     strokeWidth: 2,
@@ -362,7 +383,7 @@ ProofTree.prototype.image = function (root) {
   let groupImages
   if(deleteLabel) {
     deleteLabel.setPositionByOrigin(
-      (new fabric.Point(40, 0)).add(text.getPointByOrigin('right', 'top'), 'left', 'top'))
+      (new fabric.Point(15, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
     groupImages = [premiseGroup, line, ruleLabel, deleteLabel, text]
   } else {
     groupImages = [premiseGroup, line, ruleLabel, text]

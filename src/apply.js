@@ -121,7 +121,6 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
 
     // CASE: AND
     } else if (rule === AndLeft) {
-      console.log(lhs, rhs, idx)
       // original AND formula
       og = lhs[idx]
       // subformulas
@@ -176,7 +175,6 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
       tree = new ForallLeft(premise, sequent, idx, idx, uservar)
       return tree
     } else if (rule === ExistsLeft) {
-      console.log(sequent);
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
         alert(`${uservar.v} is not a free variable!`)
         return null
