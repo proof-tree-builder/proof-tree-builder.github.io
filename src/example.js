@@ -56,4 +56,13 @@ let existsxi = new LKIncomplete(existsx)
 
 let peirce = peg.parse("|- ((p -> q) -> p) -> p", {startRule: "Sequent"})
 let peircei = new LKIncomplete(peirce)
-addProof(peircei)
+// addProof(peircei)
+
+let negh = peg.parse("{true} if x < 0 then x := -1 * x else x := x {x >= 0}", {startRule: "HoareTriple"})
+let neghi = new HoareIncomplete(negh)
+// addProof(neghi)
+
+
+let mult = peg.parse("p && q, r && s |- p && s", {startRule: "Sequent"})
+let multi = new LKIncomplete(mult)
+addProof(multi)

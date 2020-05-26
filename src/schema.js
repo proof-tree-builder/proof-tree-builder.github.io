@@ -309,13 +309,13 @@ class Sequent {
 
   unicode () {
     const left = this.precedents.length ? this.precedents.map(f => f.unicode()).join(', ') + ' ' : ''
-    const right = this.antecedents.map(f => f.unicode())
+    const right = this.antecedents.length ? this.antecedents.map(f => f.unicode()).join(', ') + ' ' : ''
     return `${left}⊢ ${right}`
   }
 
   latex () {
     const left = this.precedents.length ? this.precedents.map(f => f.latex()).join(', ') + ' ' : ''
-    const right = this.antecedents.map(f => f.latex())
+    const right = this.antecedents.length ? this.antecedents.map(f => f.latex()).join(', ') + ' ' : ''
     return `${left}\\vdash ${right}`
   }
 

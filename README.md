@@ -24,6 +24,7 @@ Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, su
 
 * `{true} if true then x := 3 else x := 5 {x = 3}`
 * `{true} if x < 0 then x := -1 * x else x := x {x >= 0}`
+* `|- {0 <= n} (r := 0 ; i := 0) ; while i < n do (r := r + 2 ; i := i + 1)  {r = 2 * n}`
 
 Then you can click on the orange plus button to apply proof rules to incomplete proof trees.
 

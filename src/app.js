@@ -121,20 +121,12 @@ const refreshAll = () => {
   redrawAll()
 }
 
-document.getElementById('addLKGoal').addEventListener('click', function () {
-  let input = promptTrim('Enter a LK goal sequent:')
-  if (input === null) { return }
-  let parsed = peg.parse(input, { startRule: 'Sequent' })
-  let tree = new LKIncomplete(parsed)
-  addProof(tree)
+document.getElementById('addLKGoal').addEventListener('click', async () => {
+  addProof(new LKIncomplete(await modalSequentPrompt('Enter an LK goal sequent:')))
 })
 
-document.getElementById('addHoareGoal').addEventListener('click', function () {
-  let input = promptTrim('Enter a Hoare triple:')
-  if (input === null) { return }
-  let parsed = peg.parse(input, { startRule: 'HoareTriple' })
-  let tree = new HoareIncomplete(parsed)
-  addProof(tree)
+document.getElementById('addHoareGoal').addEventListener('click', async () => {
+  addProof(new HoareIncomplete(await modalHoarePrompt('Enter a Hoare triple:')))
 })
 
 ProofTree.prototype.image = function (root) {
@@ -297,7 +289,7 @@ ProofTree.prototype.image = function (root) {
       box.style.left = `${e.pointer.x}px`
       box.style.visibility = 'visible'
       box.querySelectorAll('button').forEach(but => {
-        but.addEventListener('click', e => {
+        but.addEventListener('click', async e => {
           console.log(`${but.value} application for ${this.conclusion.unicode()}`)
           box.remove()
           try {
@@ -305,59 +297,37 @@ ProofTree.prototype.image = function (root) {
             let updated
             if (this instanceof LKIncomplete) {
               if (rule === 'Auto') {
-                updated = auto(this)
+                updated = await auto(this)
                 if(updated === this) { return }
               } else if (rule === 'WeakL') {
-                let t = promptTrim('Select a formula to drop:')
-                if (t === null) { return }
-                let parsed = peg.parse(t, { startRule: 'Formula' })
+                const parsed = await modalFormulaPrompt('Select a formula to drop:')
                 this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
               } else if (rule === 'WeakR') {
-                let t = promptTrim('Select a formula to drop:')
-                if (t === null) { return }
-                let parsed = peg.parse(t, { startRule: 'Formula' })
+                const parsed = await modalFormulaPrompt('Select a formula to drop:')
                 this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
               } else if (rule === Cut) {
-                let t = promptTrim('Enter the formula to prove:')
-                if (t === null) { return }
-                let parsed = peg.parse(t, { startRule: 'Formula' })
-                updated = applyLK(this.conclusion, rule, parsed)
+                const parsed = await modalFormulaPrompt('Enter the formula to prove:')
+                updated = await applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallLeft || rule === ExistsRight) {
-                let t = promptTrim('Enter the term to substitute for the variable:')
-                if (t === null) { return }
-                let parsed = peg.parse(t, { startRule: 'Term' })
-                updated = applyLK(this.conclusion, rule, parsed)
+                const parsed = await modalTermPrompt('Enter the term to substitute for the variable:')
+                updated = await applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallRight || rule === ExistsLeft) {
-                let t = promptTrim('Enter a fresh variable to substitute for the variable:')
-                if (t === null) { return }
-                let parsed = peg.parse(t, { startRule: 'Name' })
-                updated = applyLK(this.conclusion, rule, new TermVar(parsed))
+                const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable:')
+                updated = await applyLK(this.conclusion, rule, new TermVar(parsed))
               } else {
-                updated = applyLK(this.conclusion, rule)
+                updated = await applyLK(this.conclusion, rule)
               }
             } else if (this instanceof HoareIncomplete) {
               if (rule === Consequence) {
-                let t1 = promptTrim('Enter the first middle formula for the consequence rule: (leave it blank if it is the same as the precondition)')
-                if (t1 === null) { return }
-                let parsed1
-                if (t1 === "") {
-                  parsed1 = this.conclusion.pre
-                } else {
-                  parsed1 = peg.parse(t1, { startRule: 'Formula' })
-                }
-                let t2 = promptTrim('Enter the second middle formula for the consequence rule: (leave it blank if it is the same as the postcondition)')
-                if (t2 === null) { return }
-                let parsed2
-                if (t2 === "") {
-                  parsed2 = this.conclusion.post
-                } else {
-                  parsed2 = peg.parse(t2, { startRule: 'Formula' })
-                }
+                const parsed1 = await modalFormulaPromptDefault(
+                    `Enter the first middle formula for the consequence rule: <br>
+                    (leave it blank if it is the same as the precondition ${this.conclusion.pre.unicode()})`, this.conclusion.pre)
+                const parsed2 = await modalFormulaPromptDefault(
+                    `Enter the second middle formula for the consequence rule: <br>
+                    (leave it blank if it is the same as the postcondition ${this.conclusion.post.unicode()})`, this.conclusion.post)
                 updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
               } else if (rule === Sequencing) {
-                let t1 = prompt('Enter the middle formula for the sequencing rule:')
-                if (t1 === null) { return }
-                let parsed1 = peg.parse(t1, { startRule: 'Formula' })
+                const parsed = await modalFormulaPrompt('Enter the middle formula to prove:')
                 updated = applyHoare(this.conclusion, rule, parsed1)
               } else {
                 updated = applyHoare(this.conclusion, rule)

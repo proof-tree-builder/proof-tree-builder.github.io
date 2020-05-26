@@ -23,7 +23,7 @@
 /* `uservar` is a field used for the cut rule and forall and exists quantifier rules.
    In the former case it is a `Formula`; in the latter it is a `TermVar` that we use in 
    the application of the rule. */
-const applyLK = (sequent, rule, uservar, strict=true) => {
+const applyLK = async (sequent, rule, uservar, strict=true) => {
   let lhs = sequent.precedents
   let rhs = sequent.antecedents
 
@@ -68,13 +68,16 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
       throw new Error('Rule not applicable.')
     }
 
+    let idx
     // if more than one, ambiguous
     if (indices.length > 1 && strict) {
-      throw new Error('Rule application ambiguous.')
+      let options = indices.map(index => lhs[index].unicode())
+      const i = await modalRadio(`There are multiple formulas this rule could apply to. Please choose which one you mean.`, options) 
+      idx = indices[i]
+    } else {
+      // this is the index
+      idx = indices[0]
     }
-
-    // this is the index
-    idx = indices[0]
 
     // CASE: FALSITY LEFT
     if (rule === FalsityLeft) {
@@ -211,13 +214,16 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
       throw new Error('Rule not applicable.')
     }
 
+    let idx
     // if more than one, ambiguous
     if (indices.length > 1 && strict) {
-      throw new Error('Rule application ambiguous.')
+      let options = indices.map(index => rhs[index].unicode())
+      const i = await modalRadio(`There are multiple formulas this rule could apply to. Please choose which one you mean.`, options) 
+      idx = indices[i]
+    } else {
+      // this is the index
+      idx = indices[0]
     }
-
-    // this is the index
-    idx = indices[0]
 
     // CASE: TRUTH
     if (rule === TruthRight) {
@@ -363,7 +369,7 @@ const applyLK = (sequent, rule, uservar, strict=true) => {
   throw new Error('no such rule so far')
 }
 
-function applyHoare (triple, rule, uservar, uservar2) {
+const applyHoare = (triple, rule, uservar, uservar2) => {
   pre = triple.pre
   command = triple.command
   post = triple.post
