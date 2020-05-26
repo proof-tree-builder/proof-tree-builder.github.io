@@ -51,7 +51,7 @@ let forallxi = new LKIncomplete(forallx)
 
 let existsx = peg.parse("exists x. g(x) |- exists y. g(y)", {startRule: "Sequent"})
 let existsxi = new LKIncomplete(existsx)
-// addProof(existsxi)
+addProof(existsxi)
 
 
 let peirce = peg.parse("|- ((p -> q) -> p) -> p", {startRule: "Sequent"})
@@ -65,4 +65,4 @@ let neghi = new HoareIncomplete(negh)
 
 let mult = peg.parse("p && q, r && s |- p && s", {startRule: "Sequent"})
 let multi = new LKIncomplete(mult)
-addProof(multi)
+// addProof(multi)
