@@ -201,7 +201,6 @@ document.getElementById('help').addEventListener('click', () => {
   <p>
     The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. Happy proof hacking!
   </p>`)
-  document.querySelector('.modal-content').style = "font-size: 0.85em"
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
     let but = toNodes(`<button>Try this!</button>`)[0]
