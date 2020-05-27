@@ -195,7 +195,14 @@ const help = () => {
   </p>
   <br>
   <p>
-    The proof assistant has two modes: automate and learn modes. Automate mode is the default, but you can switch to learn mode by click on the button on the top right corner. Automate mode hides most rules that obviously cannot be applied, and enables the Auto button for LK. Auto button runs a non-backtracking algorithm to automatically apply a bunch of proof rules, you might be surprised that it can make a lot of progress in your LK proofs. Learn mode shows all the rule buttons, but you have to figure out which rule you can apply. We think the learn mode is useful for students who are just getting into LK and Hoare logic, because they have to think more about why they are applying which rules, while the automate mode is useful for when you want to finish the proof faster.
+  The proof assistant has two modes: <strong>automate</strong> and <strong>learn</strong> mode. Automate mode is the default, but you can switch to learn mode by click on the button on the top right corner. Automate mode hides most rules that obviously cannot be applied, and enables the Auto button for LK. Auto button runs a non-backtracking algorithm to automatically apply a bunch of proof rules, you might be surprised that it can make a lot of progress in your LK proofs.
+  </p>
+  <p>
+    Learn mode shows all the rule buttons, but you have to figure out which rule you can apply. We think the learn mode is useful for students who are just getting into LK and Hoare logic, because they have to think more about why they are applying which rules, while the automate mode is useful for when you want to finish the proof faster.
+  </p>
+  <br>
+  <p>
+    The proof assistant currently cannot evaluate functions or relations. For example, if there is a term <code>1 + 1</code>, it will get stuck, it will not evaluate to <code>2</code>. Therefore you cannot prove <code>P(1 + 1) |- P(2)</code> by normal proof rules. For these cases, you can use the <strong>Z3</strong> pseudo-rule. This rule runs the Z3 theorem prover in the background to check if the goal is valid. You can also use this rule for other logical goals you do not want to write the full proof for, but still want to check.
   </p>
   <br>
   <p>
@@ -366,6 +373,10 @@ ProofTree.prototype.image = function (root) {
             if (but.value === "ContractionRight") { return }
             if (but.value === "'Auto'") { return }
             if (!applicables.includes(but.value)) { but.remove() }
+          })
+        } else {
+          box.querySelectorAll('button').forEach(but => {
+            if (but.value === "'Auto'") { but.remove() }
           })
         }
       } else if (this instanceof HoareIncomplete) {
