@@ -215,3 +215,30 @@ const modalRadio = (s, options) => {
 
   return p
 }
+
+const modalTextWindowBinds = html => {
+  let node = toNodes(modalWindow(html))[0]
+  document.body.appendChild(node)
+  dragModal()
+  node.style.display = "block"
+
+  return new Promise((resolve, reject) => {
+    document.querySelector(".close").onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(null)
+    }
+    window.onclick = e => {
+      if (e.target == document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+        resolve(null)
+      }
+    } 
+  })
+}
+
+const modalTextWindow = s => {
+  let html = `${s}`
+
+  let p = modalTextWindowBinds(html)
+  return p
+}

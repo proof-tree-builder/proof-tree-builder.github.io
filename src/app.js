@@ -129,6 +129,79 @@ document.getElementById('addHoareGoal').addEventListener('click', async () => {
   addProof(new HoareIncomplete(await modalHoarePrompt('Enter a Hoare triple:')))
 })
 
+document.getElementById('help').addEventListener('click', () => {
+  modalTextWindow(
+  `<p>
+    <strong>Proof Tree Builder</strong> is a web-based graphical interactive proof assistant for sequent calculus (LK) and Hoare logic.
+  </p>
+  <br>
+  <p>
+    You can click the "Add LK goal" button to add a new sequent calculus goal to prove. 
+  </p>
+  <p>
+    You can use <code>&&</code> for conjunction, <code>||</code> for disjunction, <code>=></code> for implication, <code>!</code> for negation. <code>exists</code> and <code>forall</code> for quantification.
+  </p>
+  <p>
+    For relations, use the syntax <code>P(x, y)</code>, where <code>P</code> is the relation and <code>x</code> and <code>y</code> are the terms in the relation. There are some primitive relations such as <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&le;</code> and <code>&ge;</code>.
+  </p>
+  <p>
+    For functions, use the syntax <code>f(x, y)</code>, where <code>f</code> is the function and <code>x</code> and <code>y</code> are the terms in the function. There are some primitive functions such as <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>.
+  </p>
+  <p>
+    Other kinds of terms are term variables and integers. However <code>-x</code> is not an integer, it should be written as <code>-1 * x</code>.
+  </p>
+  <p>
+    Any sequent pretty printed by the app can also be parsed back in. Here are some examples of how to write sequents for the app:
+  </p>
+  <p>
+    <ul class="help-examples">
+    <li><code>exists x. g(x) |- exists y. g(y)</code></li>
+    <li><code>exists x. g(k,x) |- exists y. g(k,y)</code></li>
+    <li><code>|- ((p => q) => p) -> p</code></li>
+    <li><code>x > 1 |- x > 0</code></li>
+    <li><code>|- (P(0) && (forall x. (P(x) => P(x + 1)))) => P(3)</code></li>
+    </ul>
+  </p>
+  <br>
+  <p>
+    Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as
+  </p>
+  <p>
+    <ul class="help-examples">
+      <li><code>{true} if true then x := 3 else x := 5 {x = 3}</code></li>
+      <li><code>{true} if x < 0 then x := -1 * x else x := x {x >= 0}</code></li>
+      <li><code>|- {0 <= n} (r := 0 ; i := 0) ; while i < n do (r := r + 2 ; i := i + 1) {r = 2 * n}</code></li>
+    </ul>
+  </p>
+  <p>
+    Then you can click on the orange plus button to apply proof rules to incomplete proof trees.
+  </p>
+  <br>
+  <p>
+    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>.
+  </p>
+  <p>
+    Happy proof hacking!
+  </p>`)
+  let ex = document.querySelectorAll('ul.help-examples')
+  Array.from(ex[0].children).forEach(li => {
+    let but = toNodes(`<button>Try this!</button>`)[0]
+    but.addEventListener('click', e => { 
+      addProof(new LKIncomplete(peg.parse(li.children[0].innerText, { startRule: "Sequent" }) ))
+      but.remove()
+    })
+    li.appendChild(but)
+  })
+  Array.from(ex[1].children).forEach(li => {
+    let but = toNodes(`<button>Try this!</button>`)[0]
+    but.addEventListener('click', e => { 
+      addProof(new HoareIncomplete(peg.parse(li.children[0].innerText, { startRule: "HoareTriple" }) ))
+      but.remove()
+    })
+    li.appendChild(but)
+  })
+})
+
 ProofTree.prototype.image = function (root) {
   let premiseImages = this.premises.map(p => p.image(root))
 

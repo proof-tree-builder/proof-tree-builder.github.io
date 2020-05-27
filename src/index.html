@@ -40,6 +40,23 @@
       button.invertible2 {
         background: #C2DFFF;
       }
+      button#help {
+        background: #00CC84;
+      }
+      .help-examples {
+        margin-left: 1em;
+      }
+      .help-examples li button{
+        background: #FFA500;
+        font-size: 0.8em;
+        height: 1.5em;
+        width: auto;
+        margin-left: 1em;
+      }
+
+      code {
+        font-family: "Lucida Console", Monaco, monospace;
+      }
 
       #top-bar button {
         height: 100%;
@@ -248,6 +265,7 @@
     <div id="top-bar">
       <button type="button" id="addLKGoal">Add LK goal</button>
       <button type="button" id="addHoareGoal">Add Hoare logic goal</button>
+      <button type="button" id="help">Help</button>
       <img src="loading.gif" alt="Loading..." id="loading" style="display: none">
       <label class="switch" alt="Switch between Learn and Automate modes">
         <input type="checkbox" id="mode">
