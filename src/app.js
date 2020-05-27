@@ -158,7 +158,7 @@ const help = () => {
     Functions are written <code>f(x, y)</code>, where <code>f</code> is the function name and <code>x</code> and <code>y</code> are the terms in the function. There are some primitive functions such as <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>. Primitive relations are written <code>x + y</code>.
   </p>
   <p>
-    Term variables like <code>x</code> and integers like <code>5</code> or <code>-5</code> are also terms. However <code>-x</code> is not a term, it should be written as <code>-1 * x</code>.
+    Term variables like <code>x</code> and integers like <code>5</code> or <code>-5</code> are also terms. However <code>-x</code> is not parseable, it should be written as <code>-1 * x</code>.
   </p>
   <p>
     Any sequent pretty printed by the app can also be parsed back in. Here are some example sequents:
@@ -173,6 +173,11 @@ const help = () => {
     <li><code>|- (P(0) && (forall x. (P(x) => P(x + 1)))) => P(3)</code></li>
     </ul>
   </p>
+  <p><button id="showLKRules">Show LK rules</button></p>
+  <div id="LKRules" style="display: none">
+    <p><img src="./rules/propositional.png"></p>
+    <p><img src="./rules/firstOrder.png"></p>
+  </div>
   <br>
   <h2>Hoare logic</h2>
   <p>
@@ -196,10 +201,14 @@ const help = () => {
     <li>and sequences <code>s1 ; s2</code> where <code>s1</code> and <code>s2</code> are statements.</li>
     </ul>
   </p>
+  <p><button id="showHoareRules">Show Hoare logic rules</button></p>
+  <div id="HoareRules" style="display: none">
+    <p><img src="./rules/hoare.png"></p>
+  </div>
   <br>
   <h2>General usage</h2>
   <p>
-    You can click on the orange plus button to apply proof rules to incomplete proof trees, and click on the red minus button to unapply proof rules.
+    You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply. You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
   </p>
   <br>
   <p>
@@ -209,8 +218,15 @@ const help = () => {
     Learn mode shows all the rule buttons, but you have to figure out which rule you can apply. We think the learn mode is useful for students who are just getting into LK and Hoare logic, because they have to think more about why they are applying which rules, while the automate mode is useful for when you want to finish the proof faster.
   </p>
   <br>
+  <h3>Z3 support</h3>
   <p>
-    The proof assistant currently cannot evaluate functions or relations. For example, if there is a term <code>1 + 1</code>, it will get stuck, it will not evaluate to <code>2</code>. Therefore you cannot prove <code>P(1 + 1) |- P(2)</code> by normal proof rules. For these cases, you can use the <strong>Z3</strong> pseudo-rule. This rule runs the Z3 theorem prover in the background to check if the goal is valid. You can also use this rule for other logical goals you do not want to write the full proof for, but still want to check.
+    The proof assistant currently cannot evaluate functions or relations. For example, if there is a term <code>1 + 1</code>, it will get stuck, it will not evaluate to <code>2</code>. Therefore you cannot prove <code>P(1 + 1) |- P(2)</code> by normal proof rules. For these cases, you can use the <strong>Z3</strong> pseudo-rule. This rule runs the Z3 theorem prover in the background to check if the goal is valid. You can also use this rule for other logical goals you do not want to write the full proof for, but still want to check. 
+  </p>
+  <p>
+    If Z3 finds the goal to be valid, it will draw a <span style="color: ${successColor}">green</span> line over it. If Z3 finds the goal to be not valid, it will draw a <span style="color: ${failureColor}">red</span> line over it.
+  </p>
+  <p>
+    Remember that while our proof assistant does not assume the law of excluded middle (P ∨ ¬ P), Z3 does! So there might be goals that our proof assistant cannot prove on purpose, but Z3 will say yes to them.
   </p>
   <br>
   <p>
@@ -218,7 +234,8 @@ const help = () => {
   </p>
   <br>
   <small>
-    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. 
+    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>.<br>
+    Proof Tree Builder is developed by Joomy Korkut, Anastasiya Kravchuk-Kirilyuk and John Li. 2018-2020.
   </small>`)
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
@@ -243,6 +260,14 @@ const help = () => {
     })
     li.appendChild(but)
   })
+  document.querySelector('#showLKRules').onclick = e => {
+    let x = document.querySelector('#LKRules')
+    x.style.display = x.style.display !== "none" ? "none" : "block"
+  }
+  document.querySelector('#showHoareRules').onclick = e => {
+    let x = document.querySelector('#HoareRules')
+    x.style.display = x.style.display !== "none" ? "none" : "block"
+  }
 }
 document.getElementById('help').addEventListener('click', help)
 
