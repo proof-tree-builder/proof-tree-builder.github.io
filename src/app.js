@@ -182,14 +182,20 @@ document.getElementById('help').addEventListener('click', () => {
     </ul>
   </p>
   <p>
-    Then you can click on the orange plus button to apply proof rules to incomplete proof trees.
+    Our Hoare triples are based on a simple imperative language (SIL). 
+    SIL has only 4 kinds of statements: 
+    assignments <code>x := t</code> where <code>t</code> is a term, 
+    conditionals <code>if c then s1 else s2</code> where <code>c</code> is a formula and <code>s1</code> and <code>s2</code> are statements,
+    loops <code>while c do s</code> where <code>c</code> is a formula and <code>s</code> is a statement,
+    and sequences <code>s1;s2</code> where <code>s1</code> and <code>s2</code> are statements.
   </p>
   <br>
   <p>
-    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>.
+    You can click on the orange plus button to apply proof rules to incomplete proof trees, and click on the red minus button to unapply proof rules.
   </p>
+  <br>
   <p>
-    Happy proof hacking!
+    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. Happy proof hacking!
   </p>`)
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
