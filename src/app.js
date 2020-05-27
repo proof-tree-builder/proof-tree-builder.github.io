@@ -138,10 +138,13 @@ document.getElementById('addHoareGoal').addEventListener('click', async () => {
 
 const help = () => {
   modalTextWindow(
-  `<p>
+  `
+  <h2>What is this?</h2>
+  <p>
     <strong>Proof Tree Builder</strong> is a web-based graphical interactive proof assistant for sequent calculus (LK) and Hoare logic.
   </p>
   <br>
+  <h2>Sequent calculus</h2>
   <p>
     You can click the "Add LK goal" button to add a new sequent calculus goal to prove. 
   </p>
@@ -171,6 +174,7 @@ const help = () => {
     </ul>
   </p>
   <br>
+  <h2>Hoare logic</h2>
   <p>
     Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as
   </p>
@@ -190,6 +194,7 @@ const help = () => {
     and sequences <code>s1;s2</code> where <code>s1</code> and <code>s2</code> are statements.
   </p>
   <br>
+  <h2>General usage</h2>
   <p>
     You can click on the orange plus button to apply proof rules to incomplete proof trees, and click on the red minus button to unapply proof rules.
   </p>
@@ -206,8 +211,12 @@ const help = () => {
   </p>
   <br>
   <p>
-    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. Happy proof hacking!
-  </p>`)
+    Happy proof hacking!
+  </p>
+  <br>
+  <small>
+    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. 
+  </small>`)
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
     let but = toNodes(`<button>Try this!</button>`)[0]
