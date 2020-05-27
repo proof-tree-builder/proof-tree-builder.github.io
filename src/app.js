@@ -136,7 +136,7 @@ document.getElementById('addHoareGoal').addEventListener('click', async () => {
   addProof(new HoareIncomplete(await modalHoarePrompt('Enter a Hoare triple:')))
 })
 
-document.getElementById('help').addEventListener('click', () => {
+const help = () => {
   modalTextWindow(
   `<p>
     <strong>Proof Tree Builder</strong> is a web-based graphical interactive proof assistant for sequent calculus (LK) and Hoare logic.
@@ -209,6 +209,7 @@ document.getElementById('help').addEventListener('click', () => {
       but.style.background = successColor
       but.innerText = "✓"
       but.disabled = true
+      setTimeout(() => { document.querySelector('.modal').remove() }, 500)
     })
     li.appendChild(but)
   })
@@ -219,10 +220,12 @@ document.getElementById('help').addEventListener('click', () => {
       but.style.background = successColor
       but.innerText = "✓"
       but.disabled = true
+      setTimeout(() => { document.querySelector('.modal').remove() }, 500)
     })
     li.appendChild(but)
   })
-})
+}
+document.getElementById('help').addEventListener('click', help)
 
 ProofTree.prototype.image = function (root) {
   let premiseImages = this.premises.map(p => p.image(root))

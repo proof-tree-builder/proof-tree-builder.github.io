@@ -181,7 +181,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       return tree
     } else if (rule === ExistsLeft) {
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
-        alert(`${uservar.v} is not a free variable!`)
+        modalAlert(`${uservar.v} is not a free variable!`)
         return null
       }
       // original Exists formula
@@ -306,7 +306,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       return tree
     } else if (rule === ForallRight) {
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
-        alert(`${uservar.v} is not a free variable!`)
+        modalAlert(`${uservar.v} is not a free variable!`)
         return null
       }
       // original Forall formula
