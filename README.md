@@ -1,11 +1,12 @@
 # proof-tree-builder
-A web-based interactive proof tree builder for LK and Hoare logic. 
+A web-based graphical interactive proof assistant for LK and Hoare logic. 
 
 [Live here.](https://joom.github.io/proof-tree-builder/src/)
 
-For the Z3 rule, we are using a version of Z3 compiled to WebAssembly, which we run in browser, thanks to [cpitclaudel/z3.wasm](https://github.com/cpitclaudel/z3.wasm).
+For the Z3 rule, we are using a version of Z3 compiled to WebAssembly, which we run in browser, thanks to Clément Pit-Claudel's [z3.wasm](https://github.com/cpitclaudel/z3.wasm) project.
+For graphics, we use [Fabric.js](http://fabricjs.com/). To generate a parser from a grammar, we use [PEG.js](https://pegjs.org/).
 
-There are still some bugs so please report them by creating issues.
+There might still be some bugs so please report them by creating issues.
 
 Initially written as a class project for Fall 2018 COS516 with Prof. Zak Kincaid, later improved as a class project for Spring 2020 COS598B with Prof. Aarti Gupta.
 
@@ -15,9 +16,9 @@ You can click the "Add LK goal" button to add a new sequent calculus goal to pro
 
 * `exists x. g(x) |- exists y. g(y)`
 * `exists x. g(k,x) |- exists y. g(k,y)`
-* `|- ((p -> q) -> p) -> p`
+* `|- ((p => q) => p) => p`
 * `x > 1 |- x > 0` (needs Z3)
-* `x <= y, y <= z |- x <= z` (needs Z3)
+* `x <= y, y <= z |- x <= z` (needs Z3, currently buggy because of the Z3 build)
 * `|- (P(0) && (forall x. (P(x) => P(x + 1)))) => P(3)` (needs Z3)
 
 Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as

@@ -38,7 +38,7 @@ const checkWithZ3 = (sequent, cb) => {
     if (isLoaded) { 
       clearInterval(wait) 
       if((/Failed to verify/).test(lastResult)) {
-        alert(`Bug in the Z3 build: ${lastResult}`)
+        modalAlert(`<strong>Bug in the Z3 build:</strong> ${lastResult}`)
         return
       }
       cb((/unsat/).test(lastResult))

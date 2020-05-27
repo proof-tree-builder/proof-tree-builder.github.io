@@ -873,7 +873,7 @@ class Z3Rule extends LKProofTree {
     checkWithZ3(conclusion, result => {
       this.z3Response = result
       if(!result) {
-        alert("Z3 says no!")
+        modalAlert("Z3 says no!")
         // throw new TypeError('Z3 does not accept this sequent!')
       }
 
