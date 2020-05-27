@@ -113,7 +113,7 @@ const refreshList = () => {
 }
 
 const addProof = (pf) => {
-  proofs.push({ proof: pf, x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 })
+  proofs.push({ proof: pf, x: null, y: null })
   pf.draw()
   refreshList()
 }
@@ -539,14 +539,17 @@ ProofTree.prototype.image = function (root) {
 }
 
 ProofTree.prototype.draw = function () {
-  let i = this.image(this)
-  canvas.add(i)
-  proofs.forEach((entry) => {
+  let im = this.image(this)
+  canvas.add(im)
+  proofs.forEach((entry, i) => {
     if (this == entry.proof) {
-      i.setPositionByOrigin(new fabric.Point(entry.x, entry.y), 'left', 'bottom')
+      if(entry.x == null || entry.y == null) {
+        proofs[i].x = (window.innerWidth - im.width) / 2
+        proofs[i].y = (window.innerHeight - im.height) / 2
+      }
+      im.setPositionByOrigin(new fabric.Point(proofs[i].x, proofs[i].y), 'left', 'bottom')
     } 
   })
-  // i.center()
-  i.setCoords()
-  return i
+  im.setCoords()
+  return im
 }
