@@ -405,7 +405,13 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
     premise2 = new HoareIncomplete(new HoareTriple(uservar, command, uservar2))
     premise3 = new LKIncomplete(new Sequent([uservar2], [post]))
 
-    tree = new Consequence(premise1, premise2, premise3, triple)
+    if(deepEqual(pre, uservar)) {
+      tree = new ConsequenceNoPre(premise2, premise3, triple)
+    } else if(deepEqual(uservar2, post)) {
+      tree = new ConsequenceNoPost(premise1, premise2, triple)
+    } else {
+      tree = new Consequence(premise1, premise2, premise3, triple)
+    }
     return tree
   } else if (rule === Conditional) {
     if (!(command instanceof CmdIf)) {

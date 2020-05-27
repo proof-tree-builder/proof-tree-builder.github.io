@@ -1201,9 +1201,9 @@ class Sequencing extends HoareProofTree {
 }
 
 /*
-  F ⊢ F'  ⊢ {F'} S {G'} G' ⊢ G
+  F ⊢ F'    ⊢ {F'} S {G'}    G' ⊢ G
   −−−−−−−−−−−−---------------------- CONS
-        ⊢ {F} S {G}
+            ⊢ {F} S {G}
 */
 class Consequence extends HoareProofTree {
   constructor (premise1, premise2, premise3, conclusion) {
@@ -1226,6 +1226,61 @@ class Consequence extends HoareProofTree {
           deepEqual(premise3.conclusion.antecedents[0], conclusion.post) &&
           deepEqual(premise1.conclusion.antecedents[0], premise2.conclusion.pre) &&
           deepEqual(premise3.conclusion.precedents[0], premise2.conclusion.post))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
+  }
+}
+
+/*
+  ⊢ {F} S {G'}     G' ⊢ G
+  −−−−−−−−−−−−----------- CONS*1
+        ⊢ {F} S {G}
+*/
+class ConsequenceNoPre extends HoareProofTree {
+  constructor (premise2, premise3, conclusion) {
+    super([premise2, premise3], conclusion)
+    if (arrayOf([premise3], LKProofTree)) {
+      this.command = conclusion.command
+      this.unicodeName = 'CONS*'
+      this.latexName = 'CONS*'
+    } else {
+      throw new TypeError('The last premise must be an LK proof tree')
+    }
+
+    // checks for the consequence rule
+    if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
+          premise3.conclusion.precedents.length === 1 &&
+          premise3.conclusion.antecedents.length === 1 &&
+          deepEqual(premise2.conclusion.pre, conclusion.pre) && // shortened
+          deepEqual(premise3.conclusion.antecedents[0], conclusion.post) &&
+          deepEqual(premise3.conclusion.precedents[0], premise2.conclusion.post))) {
+      throw new TypeError("Commands and conditions don't match up")
+    }
+  }
+}
+
+/*
+  F ⊢ F'     ⊢ {F'} S {G}     
+  −−−−−−−−−−−−----------- CONS*2
+      ⊢ {F} S {G}
+*/
+class ConsequenceNoPost extends HoareProofTree {
+  constructor (premise1, premise2, conclusion) {
+    super([premise1, premise2], conclusion)
+    if (arrayOf([premise3], LKProofTree)) {
+      this.command = conclusion.command
+      this.unicodeName = 'CONS*'
+      this.latexName = 'CONS*'
+    } else {
+      throw new TypeError('The first premise must be an LK proof tree')
+    }
+
+    if (!(deepEqual(premise2.conclusion.command, conclusion.command) &&
+          premise1.conclusion.precedents.length === 1 &&
+          premise1.conclusion.antecedents.length === 1 &&
+          deepEqual(premise2.conclusion.post, conclusion.post) && // shortened
+          deepEqual(premise1.conclusion.precedents[0], conclusion.pre) &&
+          deepEqual(premise1.conclusion.antecedents[0], premise2.conclusion.pre))) {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
