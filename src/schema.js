@@ -1267,7 +1267,7 @@ class ConsequenceNoPre extends HoareProofTree {
 class ConsequenceNoPost extends HoareProofTree {
   constructor (premise1, premise2, conclusion) {
     super([premise1, premise2], conclusion)
-    if (arrayOf([premise3], LKProofTree)) {
+    if (arrayOf([premise1], LKProofTree)) {
       this.command = conclusion.command
       this.unicodeName = 'CONS*'
       this.latexName = 'CONS*'

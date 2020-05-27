@@ -60,8 +60,8 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
   // or, and, implies, not, falsity, forall, exists
   if (rule.name.includes('Left')) {
     // get all applicable indices
-    indices = []
-    for (i = 0; i < lhs.length; i++) {
+    let indices = []
+    for (let i = 0; i < lhs.length; i++) {
       if (lhs[i] instanceof formula) { indices.push(i) }
     }
 
@@ -88,117 +88,111 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
     // CASE: NOT
     } else if (rule === NotLeft) {
       // original NOT formula
-      og = lhs[idx]
-      inner = og.one
+      let og = lhs[idx]
+      let inner = og.one
       // make shallow copies
-      plhs = lhs.slice()
-      prhs = rhs.slice()
+      let plhs = lhs.slice()
+      let prhs = rhs.slice()
       // remove NOT from lhs
       plhs.splice(idx, 1)
       // add formula to rhs
       prhs.unshift(inner)
-      premise = new LKIncomplete(new Sequent(plhs, prhs))
-      tree = new NotLeft(premise, sequent, 0, idx)
-      return tree
+      let premise = new LKIncomplete(new Sequent(plhs, prhs))
+      return new NotLeft(premise, sequent, 0, idx)
 
     // CASE: OR
     } else if (rule === OrLeft) {
       // original OR formula
-      og = lhs[idx]
+      let og = lhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise1
-      plhs = lhs.slice()
-      delete plhs[idx]
-      plhs[idx] = left
-      premise1 = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let plhs1 = lhs.slice()
+      delete plhs1[idx]
+      plhs1[idx] = left
+      let premise1 = new LKIncomplete(new Sequent(plhs1, rhs.slice()))
 
       // make premise2
-      plhs = lhs.slice()
-      delete plhs[idx]
-      plhs[idx] = right
-      premise2 = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let plhs2 = lhs.slice()
+      delete plhs2[idx]
+      plhs2[idx] = right
+      let premise2 = new LKIncomplete(new Sequent(plhs2, rhs.slice()))
 
-      tree = new OrLeft(premise1, premise2, sequent, idx, idx, idx)
-      return tree
+      return new OrLeft(premise1, premise2, sequent, idx, idx, idx)
 
     // CASE: AND
     } else if (rule === AndLeft) {
       // original AND formula
-      og = lhs[idx]
+      let og = lhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise
-      plhs = lhs.slice()
+      let plhs = lhs.slice()
       //delete plhs[idx]
       plhs[idx] = right
       plhs.splice(idx, 0, left)
-      premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
 
-      tree = new AndLeft(premise, sequent, idx, idx + 1, idx)
-      return tree
+      return new AndLeft(premise, sequent, idx, idx + 1, idx)
     } else if (rule === ImpliesLeft) {
       // original OR formula
-      og = lhs[idx]
+      let og = lhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise1
-      plhs = lhs.slice()
-      plhs.splice(idx, 1)
-      prhs = rhs.slice()
+      let plhs1 = lhs.slice()
+      plhs1.splice(idx, 1)
+      let prhs = rhs.slice()
       prhs.unshift(left)
-      premise1 = new LKIncomplete(new Sequent(plhs, prhs))
+      let premise1 = new LKIncomplete(new Sequent(plhs1, prhs))
 
       // make premise2
-      plhs = lhs.slice()
-      delete plhs[idx]
-      plhs[idx] = right
-      premise2 = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let plhs2 = lhs.slice()
+      delete plhs2[idx]
+      plhs2[idx] = right
+      let premise2 = new LKIncomplete(new Sequent(plhs, rhs.slice()))
 
-      tree = new ImpliesLeft(premise1, premise2, sequent, 0, idx, idx)
-      return tree
+      return new ImpliesLeft(premise1, premise2, sequent, 0, idx, idx)
     } else if (rule === ForallLeft) {
       // original Forall formula
-      og = lhs[idx]
+      let og = lhs[idx]
       // subformulas
-      v = og.v
-      body = og.one
-      newbody = substituteTerm(body, v, uservar)
+      let v = og.v
+      let body = og.one
+      let newbody = substituteTerm(body, v, uservar)
 
       // make premise
-      plhs = lhs.slice()
+      let plhs = lhs.slice()
       delete plhs[idx]
       plhs[idx] = newbody
-      premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
 
-      tree = new ForallLeft(premise, sequent, idx, idx, uservar)
-      return tree
+      return new ForallLeft(premise, sequent, idx, idx, uservar)
     } else if (rule === ExistsLeft) {
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
         modalAlert(`${uservar.v} is not a free variable!`)
         return null
       }
       // original Exists formula
-      og = lhs[idx]
+      let og = lhs[idx]
       // subformulas
-      v = og.v
-      body = og.one
-      newbody = substituteTerm(body, v, uservar)
+      let v = og.v
+      let body = og.one
+      let newbody = substituteTerm(body, v, uservar)
 
       // make premise
-      plhs = lhs.slice()
+      let plhs = lhs.slice()
       delete plhs[idx]
       plhs[idx] = newbody
-      premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let premise = new LKIncomplete(new Sequent(plhs, rhs.slice()))
 
-      tree = new ExistsLeft(premise, sequent, idx, idx, uservar)
-      return tree
+      return new ExistsLeft(premise, sequent, idx, idx, uservar)
     }
   }
 
@@ -206,7 +200,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
   // or, and, implies, not, truth
   if (rule.name.includes('Right')) {
     // get all applicable indices
-    indices = []
+    let indices = []
     for (i = 0; i < rhs.length; i++) {
       if (rhs[i] instanceof formula) { indices.push(i) }
     }
@@ -234,112 +228,109 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
     // CASE: NOT
     } else if (rule === NotRight) {
       // original NOT formula
-      og = rhs[idx]
-      inner = og.one
+      let og = rhs[idx]
+      let inner = og.one
       // make shallow copies
-      plhs = lhs.slice()
-      prhs = rhs.slice()
+      let plhs = lhs.slice()
+      let prhs = rhs.slice()
       // remove NOT from lhs
       prhs.splice(idx, 1)
       // add formula to rhs
       plhs.push(inner)
-      premise = new LKIncomplete(new Sequent(plhs, prhs))
-      tree = new NotRight(premise, sequent, plhs.length - 1, idx)
-      return tree
+      let premise = new LKIncomplete(new Sequent(plhs, prhs))
+      return new NotRight(premise, sequent, plhs.length - 1, idx)
 
     // CASE: OR
     } else if (rule === OrRight) {
       // original OR formula
-      og = rhs[idx]
+      let og = rhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise
-      prhs = rhs.slice()
+      let prhs = rhs.slice()
       //delete prhs[idx]
       prhs[idx] = right
       prhs.splice(idx, 0, left)
-      premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+      let premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
 
-      tree = new OrRight(premise, sequent, idx, idx + 1, idx)
-      return tree
+      return new OrRight(premise, sequent, idx, idx + 1, idx)
 
     // CASE: AND
     } else if (rule === AndRight) {
       // original AND formula
-      og = rhs[idx]
+      let og = rhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise1
-      prhs = rhs.slice()
-      delete prhs[idx]
-      prhs[idx] = left
-      premise1 = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+      let prhs1 = rhs.slice()
+      delete prhs1[idx]
+      prhs1[idx] = left
+      let premise1 = new LKIncomplete(new Sequent(lhs.slice(), prhs1))
 
       // make premise2
-      prhs = rhs.slice()
-      delete prhs[idx]
-      prhs[idx] = right
-      premise2 = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+      let prhs2 = rhs.slice()
+      delete prhs2[idx]
+      prhs2[idx] = right
+      premise2 = new LKIncomplete(new Sequent(lhs.slice(), prhs2))
 
-      tree = new AndRight(premise1, premise2, sequent, idx, idx, idx)
-      return tree
+      return new AndRight(premise1, premise2, sequent, idx, idx, idx)
+
     } else if (rule === ImpliesRight) {
       // original OR formula
-      og = rhs[idx]
+      let og = rhs[idx]
       // subformulas
-      left = og.left
-      right = og.right
+      let left = og.left
+      let right = og.right
 
       // make premise1
-      plhs = lhs.slice()
+      let plhs = lhs.slice()
       plhs.push(left)
-      prhs = rhs.slice()
+      let prhs = rhs.slice()
       delete prhs[idx]
       prhs[idx] = right
-      premise = new LKIncomplete(new Sequent(plhs, prhs))
+      let premise = new LKIncomplete(new Sequent(plhs, prhs))
 
-      tree = new ImpliesRight(premise, sequent, plhs.length - 1, idx, idx)
-      return tree
+      return new ImpliesRight(premise, sequent, plhs.length - 1, idx, idx)
+
     } else if (rule === ForallRight) {
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
         modalAlert(`${uservar.v} is not a free variable!`)
         return null
       }
       // original Forall formula
-      og = rhs[idx]
+      let og = rhs[idx]
       // subformulas
-      v = og.v
-      body = og.one
-      newbody = substituteTerm(body, v, uservar)
+      let v = og.v
+      let body = og.one
+      let newbody = substituteTerm(body, v, uservar)
 
       // make premise
-      prhs = rhs.slice()
+      let prhs = rhs.slice()
       delete prhs[idx]
       prhs[idx] = newbody
-      premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+      let premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
 
-      tree = new ForallRight(premise, sequent, idx, idx, uservar)
-      return tree
+      return new ForallRight(premise, sequent, idx, idx, uservar)
+
     } else if (rule === ExistsRight) {
       // original Exists formula
-      og = rhs[idx]
+      let og = rhs[idx]
       // subformulas
-      v = og.v
-      body = og.one
-      newbody = substituteTerm(body, v, uservar)
+      let v = og.v
+      let body = og.one
+      let newbody = substituteTerm(body, v, uservar)
 
       // make premise
-      prhs = rhs.slice()
+      let prhs = rhs.slice()
       delete prhs[idx]
       prhs[idx] = newbody
-      premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
+      let premise = new LKIncomplete(new Sequent(lhs.slice(), prhs))
 
-      tree = new ExistsRight(premise, sequent, idx, idx, uservar)
-      return tree
+      return new ExistsRight(premise, sequent, idx, idx, uservar)
     }
   }
 
@@ -372,79 +363,78 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
 }
 
 const applyHoare = (triple, rule, uservar, uservar2) => {
-  pre = triple.pre
-  command = triple.command
-  post = triple.post
+  let pre = triple.pre
+  let command = triple.command
+  let post = triple.post
 
   if (rule === Assignment) {
-    v = command.v
-    term = command.t
+    let v = command.v
+    let term = command.t
 
     if (!(command instanceof CmdAssign) ||
       !deepEqual(substituteTerm(post, v, term), pre)) {
       throw new Error('Rule not applicable.')
     }
 
-    tree = new Assignment(triple)
-    return tree
+    return new Assignment(triple)
+
   } else if (rule === Sequencing) {
     if (!(command instanceof CmdSeq)) {
       throw new Error('Rule not applicable.')
     }
 
-    first = command.first
-    second = command.second
+    let first = command.first
+    let second = command.second
 
-    premise1 = new HoareIncomplete(new HoareTriple(pre, first, uservar))
-    premise2 = new HoareIncomplete(new HoareTriple(uservar, second, post))
+    let premise1 = new HoareIncomplete(new HoareTriple(pre, first, uservar))
+    let premise2 = new HoareIncomplete(new HoareTriple(uservar, second, post))
 
-    tree = new Sequencing(premise1, premise2, triple)
-    return tree
+    return new Sequencing(premise1, premise2, triple)
+
   } else if (rule === Consequence) {
-    premise1 = new LKIncomplete(new Sequent([pre], [uservar]))
-    premise2 = new HoareIncomplete(new HoareTriple(uservar, command, uservar2))
-    premise3 = new LKIncomplete(new Sequent([uservar2], [post]))
+    let premise1 = new LKIncomplete(new Sequent([pre], [uservar]))
+    let premise2 = new HoareIncomplete(new HoareTriple(uservar, command, uservar2))
+    let premise3 = new LKIncomplete(new Sequent([uservar2], [post]))
 
     if(deepEqual(pre, uservar)) {
-      tree = new ConsequenceNoPre(premise2, premise3, triple)
+      return new ConsequenceNoPre(premise2, premise3, triple)
     } else if(deepEqual(uservar2, post)) {
-      tree = new ConsequenceNoPost(premise1, premise2, triple)
+      return new ConsequenceNoPost(premise1, premise2, triple)
     } else {
-      tree = new Consequence(premise1, premise2, premise3, triple)
+      return new Consequence(premise1, premise2, premise3, triple)
     }
-    return tree
+
   } else if (rule === Conditional) {
     if (!(command instanceof CmdIf)) {
       throw new Error('Rule not applicable.')
     }
-    c = command.condition
-    btrue = command.btrue
-    bfalse = command.bfalse
+    let c = command.condition
+    let btrue = command.btrue
+    let bfalse = command.bfalse
 
-    p1 = new And(pre, c)
-    p2 = new And(pre, new Not(c))
+    let p1 = new And(pre, c)
+    let p2 = new And(pre, new Not(c))
 
-    premise1 = new HoareIncomplete(new HoareTriple(p1, btrue, post))
-    premise2 = new HoareIncomplete(new HoareTriple(p2, bfalse, post))
+    let premise1 = new HoareIncomplete(new HoareTriple(p1, btrue, post))
+    let premise2 = new HoareIncomplete(new HoareTriple(p2, bfalse, post))
 
-    tree = new Conditional(premise1, premise2, triple)
-    return tree
+    return new Conditional(premise1, premise2, triple)
+
   } else if (rule === Loop) {
-    c = command.condition
-    body = command.body
+    let c = command.condition
+    let body = command.body
 
     if (!(command instanceof CmdWhile) &&
       !deepEqual(pre, new And(pre, new Not(c)))) {
       throw new Error('Rule not applicable.')
     }
 
-    p1 = new And(pre, c)
-    p2 = new And(pre, new Not(c))
+    let p1 = new And(pre, c)
+    let p2 = new And(pre, new Not(c))
 
-    premise1 = new HoareIncomplete(new HoareTriple(p1, body, pre))
+    let premise1 = new HoareIncomplete(new HoareTriple(p1, body, pre))
 
-    tree = new Conditional(premise1, premise2, triple)
-    return tree
+    return new Conditional(premise1, premise2, triple)
   }
 
   throw new Error('No rule specified or rule does not exist.')
