@@ -195,8 +195,13 @@ document.getElementById('help').addEventListener('click', () => {
   </p>
   <br>
   <p>
+    The proof assistant has two modes: automate and learn modes. Automate mode is the default, but you can switch to learn mode by click on the button on the top right corner. Automate mode hides most rules that obviously cannot be applied, and enables the Auto button for LK. Auto button runs a non-backtracking algorithm to automatically apply a bunch of proof rules, you might be surprised that it can make a lot of progress in your LK proofs. Learn mode shows all the rule buttons, but you have to figure out which rule you can apply. We think the learn mode is useful for students who are just getting into LK and Hoare logic, because they have to think more about why they are applying which rules, while the automate mode is useful for when you want to finish the proof faster.
+  </p>
+  <br>
+  <p>
     The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>. Happy proof hacking!
   </p>`)
+  document.querySelector('.modal-content').style = "font-size: 0.85em"
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
     let but = toNodes(`<button>Try this!</button>`)[0]
