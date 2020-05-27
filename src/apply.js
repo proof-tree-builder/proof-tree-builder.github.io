@@ -156,7 +156,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       let plhs2 = lhs.slice()
       delete plhs2[idx]
       plhs2[idx] = right
-      let premise2 = new LKIncomplete(new Sequent(plhs, rhs.slice()))
+      let premise2 = new LKIncomplete(new Sequent(plhs2, rhs.slice()))
 
       return new ImpliesLeft(premise1, premise2, sequent, 0, idx, idx)
     } else if (rule === ForallLeft) {
