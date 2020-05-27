@@ -1,5 +1,5 @@
 # proof-tree-builder
-A web-based graphical interactive proof assistant for LK and Hoare logic. 
+A web-based graphical proof assistant for LK and Hoare logic. 
 
 [Live here.](https://joom.github.io/proof-tree-builder/src/)
 
@@ -14,6 +14,7 @@ Initially written as a class project for Fall 2018 COS516 with Prof. Zak Kincaid
 
 You can click the "Add LK goal" button to add a new sequent calculus goal to prove, such as
 
+* `|- p => q => r => p && q && r`
 * `exists x. g(x) |- exists y. g(y)`
 * `exists x. g(k,x) |- exists y. g(k,y)`
 * `|- ((p => q) => p) => p`

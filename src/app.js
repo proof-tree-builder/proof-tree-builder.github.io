@@ -155,7 +155,7 @@ const help = () => {
     Relations are written <code>P(x, y)</code>, where <code>P</code> is the relation name and <code>x</code> and <code>y</code> are the terms in the relation. There are some primitive relations such as <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&le;</code> and <code>&ge;</code>. Primitive relations are written <code>x &lt; y</code>.
   </p>
   <p>
-    Functions are written <code>f(x, y)</code>, where <code>f</code> is the function name and <code>x</code> and <code>y</code> are the terms in the function. There are some primitive functions such as <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>. Primitive relations are written <code>x + y</code>.
+    Functions are written <code>f(x, y)</code>, where <code>f</code> is the function name and <code>x</code> and <code>y</code> are the terms in the function. There are some primitive functions such as <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>. Primitive functions are written <code>x + y</code>.
   </p>
   <p>
     Term variables like <code>x</code> and integers like <code>5</code> or <code>-5</code> are also terms. However <code>-x</code> is not parseable, it should be written as <code>-1 * x</code>.
