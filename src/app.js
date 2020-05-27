@@ -222,7 +222,7 @@ ProofTree.prototype.image = function (root) {
       let box
       if (this instanceof LKIncomplete) {
         box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
-                         <p>Left rules:</p>
+                         <p>Left connective rules:</p>
                          <p>
                            <button value="AndLeft" class="invertible1">∧</button>
                            <button value="OrLeft" class="invertible2">∨</button>
@@ -232,7 +232,7 @@ ProofTree.prototype.image = function (root) {
                            <button value="ForallLeft">∀</button>
                            <button value="ExistsLeft" class="invertible1">∃</button>
                          </p>
-                         <p>Right rules:</p>
+                         <p>Right connective rules:</p>
                          <p>
                            <button value="AndRight" class="invertible2">∧</button>
                            <button value="OrRight" class="invertible1">∨</button>
@@ -243,12 +243,14 @@ ProofTree.prototype.image = function (root) {
                            <button value="ExistsRight">∃</button>
                          </p>
                          <p>Structural rules:</p>
-                         <p>
-                           <button value="'WeakL'">WeakL</button>
-                           <button value="'WeakR'">WeakR</button>
+                         <p class="text-rules">
+                           <button value="WeakeningLeft">Weak-L</button>
+                           <button value="WeakeningRight">Weak-R</button>
+                           <button value="ContractionLeft">Cont-L</button>
+                           <button value="ContractionRight">Cont-R</button>
                          </p>
                          <p>Other rules:</p>
-                         <p>
+                         <p class="text-rules">
                            <button value="Identity" class="invertible0">Id</button>
                            <button value="Cut">Cut</button>
                            <button value="Z3Rule" class="solver">Z3</button>
@@ -260,21 +262,25 @@ ProofTree.prototype.image = function (root) {
           let applicables = applicableLK(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (but.value === "Z3Rule") { return }
+            if (but.value === "WeakeningLeft") { return }
+            if (but.value === "WeakeningRight") { return }
+            if (but.value === "ContractionLeft") { return }
+            if (but.value === "ContractionRight") { return }
             if (but.value === "'Auto'") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
         }
       } else if (this instanceof HoareIncomplete) {
-        box = toNodes(`<div id="hoareRuleSelection" class="ruleSelection">
+        box = toNodes(`<div class="ruleSelection">
                          <p>Command rules:</p>
-                         <p>
+                         <p class="text-rules">
                            <button value="Assignment">Assn</button>
                            <button value="Sequencing">Seq</button>
                            <button value="Conditional">Cond</button>
                            <button value="Loop">Loop</button>
                          </p>
                          <p>Logical rules:</p>
-                         <p>
+                         <p class="text-rules">
                            <button value="Consequence">Cons</button>
                          </p>
                        </div>`)[0]
@@ -299,12 +305,18 @@ ProofTree.prototype.image = function (root) {
               if (rule === 'Auto') {
                 updated = await auto(this)
                 if(updated === this) { return }
-              } else if (rule === 'WeakL') {
-                const parsed = await modalFormulaPrompt('Select a formula to drop:')
-                this.conclusion.precedents = this.conclusion.precedents.filter(p => !deepEqual(p, parsed))
-              } else if (rule === 'WeakR') {
-                const parsed = await modalFormulaPrompt('Select a formula to drop:')
-                this.conclusion.antecedents = this.conclusion.antecedents.filter(p => !deepEqual(p, parsed))
+              } else if (rule === WeakeningLeft) {
+                const i = await modalRadio('For weakening, select a formula from the left side to drop:', this.conclusion.precedents.map(x => x.unicode()))
+                updated = await applyLK(this.conclusion, rule, i)
+              } else if (rule === WeakeningRight) {
+                const i = await modalRadio('For weakening, select a formula from the right side to drop:', this.conclusion.antecedents.map(x => x.unicode()))
+                updated = await applyLK(this.conclusion, rule, i)
+              } else if (rule === ContractionLeft) {
+                const i = await modalRadio('For contraction, select a formula from the left side to repeat:', this.conclusion.precedents.map(x => x.unicode()))
+                updated = await applyLK(this.conclusion, rule, i)
+              } else if (rule === ContractionRight) {
+                const i = await modalRadio('For contraction, select a formula from the right side to repeat:', this.conclusion.antecedents.map(x => x.unicode()))
+                updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === Cut) {
                 const parsed = await modalFormulaPrompt('Enter the formula to prove:')
                 updated = await applyLK(this.conclusion, rule, parsed)
@@ -345,6 +357,7 @@ ProofTree.prototype.image = function (root) {
             alert(`Rule not applicable!`)
             // TODO better error messages
             console.log(err.message);
+            console.log(err);
           }
         })
       })

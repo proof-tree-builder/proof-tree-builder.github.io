@@ -782,6 +782,83 @@ class Cut extends LKProofTree {
   }
 }
 
+/*
+  Γ ⊢ Δ
+  −−−−−−−−− W_L
+  Γ, F ⊢ Δ
+*/
+class WeakeningLeft extends LKProofTree {
+  constructor (premise, conclusion, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.unicodeName = 'Weak-L'
+    this.latexName = '\\textrm{Weak}_L'
+
+    if (conclusion.precedents[conclusionFormulaIndex] instanceof Formula) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+    } else {
+      throw new TypeError('Not an LK formula at index')
+    }
+  }
+}
+
+/*
+  Γ ⊢ Δ
+  −−−−−−−−− W_R
+  Γ ⊢ Δ, F
+*/
+class WeakeningRight extends LKProofTree {
+  constructor (premise, conclusion, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.unicodeName = 'Weak-R'
+    this.latexName = '\\textrm{Weak}_R'
+
+    if (conclusion.antecedents[conclusionFormulaIndex] instanceof Formula) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+    } else {
+      throw new TypeError('Not an LK formula at index')
+    }
+  }
+}
+
+/*
+  −−−−−−−−−-- C_L
+  Γ, F, F ⊢ Δ
+  Γ, F ⊢ Δ
+*/
+class ContractionLeft extends LKProofTree {
+  constructor (premise, conclusion, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.unicodeName = 'Cont-L'
+    this.latexName = '\\textrm{Cont}_L'
+
+    if (conclusion.precedents[conclusionFormulaIndex] instanceof Formula) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+    } else {
+      throw new TypeError('Not an LK formula at index')
+    }
+  }
+}
+
+/*
+  Γ ⊢ Δ, F, F
+  −−−−−−−−−-- C_R
+  Γ ⊢ Δ, F
+*/
+class ContractionRight extends LKProofTree {
+  constructor (premise, conclusion, conclusionFormulaIndex) {
+    super([premise], conclusion)
+    this.unicodeName = 'Cont-L'
+    this.latexName = '\\textrm{Cont}_L'
+
+    if (conclusion.antecedents[conclusionFormulaIndex] instanceof Formula) {
+      this.conclusionFormulaIndex = conclusionFormulaIndex
+    } else {
+      throw new TypeError('Not an LK formula at index')
+    }
+  }
+}
+
+
 class Z3Rule extends LKProofTree {
   constructor (conclusion) {
     super([], conclusion)
@@ -807,15 +884,6 @@ class Z3Rule extends LKProofTree {
       proofs.map(p => p.proof.draw())
 
     })
-  }
-
-  latex () {
-    if (this.completer) {
-      return this.completer.latex()
-    } else {
-      var rule = `\\AxiomC{}\\RightLabel{\\scriptsize $${this.latexName}$}`
-      return `${rule}\n\\UnaryInfC{$${this.conclusion.latex()}$}`
-    }
   }
 }
 

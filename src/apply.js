@@ -1,25 +1,3 @@
-// pq = new And(new Var("p"), new Var("q"))
-// qp = new And(new Var("q"), new Var("p"))
-// sk = new Implies(new Var("s"), new Var("k"))
-// p = new Var("p")
-// notp = new Not(p)
-//
-// x = new TermVar("x")
-// y = new TermVar("y")
-// z = new TermInt(5)
-//
-// fl = new Forall(x, new LessThan(y, new TermInt(0)))
-//
-// seq = new Sequent([pq, notp], [notp, pq])
-//
-// a = new CmdAssign(x, new TermInt(5))
-// pre = new GreaterThan(new TermInt(5), new TermInt(0))
-// post = new GreaterThan(x, new TermInt(0))
-// t = new HoareTriple(pre, a, pre)
-// mid = new GreaterThan(x, new TermInt(5))
-//
-// iff = new CmdIf(pre, a, a)
-
 /* `uservar` is a field used for the cut rule and forall and exists quantifier rules.
    In the former case it is a `Formula`; in the latter it is a `TermVar` that we use in 
    the application of the rule. */
@@ -29,9 +7,33 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
 
   if (rule === Cut) {
     if (!(uservar instanceof Formula)) throw new TypeError('Cut rule needs a Formula')
-    premise1 = new LKIncomplete(new Sequent(lhs, [uservar, ...rhs]))
-    premise2 = new LKIncomplete(new Sequent([...lhs, uservar], rhs))
+    let premise1 = new LKIncomplete(new Sequent(lhs, [uservar, ...rhs]))
+    let premise2 = new LKIncomplete(new Sequent([...lhs, uservar], rhs))
     return new Cut(premise1, premise2, sequent)
+  }
+  if (rule === WeakeningLeft) {
+    if (!(lhs[uservar] instanceof Formula)) throw new TypeError('WeakeningLeft rule needs a Formula')
+    const newLhs = lhs.filter((p, i) => i !== uservar)
+    let premise = new LKIncomplete(new Sequent(newLhs, rhs))
+    return new WeakeningLeft(premise, sequent, uservar)
+  }
+  if (rule === WeakeningRight) {
+    if (!(rhs[uservar] instanceof Formula)) throw new TypeError('WeakeningRight rule needs a Formula')
+    const newRhs = rhs.filter((p, i) => i !== uservar)
+    let premise = new LKIncomplete(new Sequent(lhs, newRhs))
+    return new WeakeningRight(premise, sequent, uservar)
+  }
+  if (rule === ContractionLeft) {
+    if (!(lhs[uservar] instanceof Formula)) throw new TypeError('ContractionLeft rule needs a Formula')
+    const newLhs = lhs.filter((p, i) => i <= uservar).concat([lhs[uservar]]).concat(lhs.filter((p, i) => i > uservar))
+    let premise = new LKIncomplete(new Sequent(newLhs, rhs))
+    return new ContractionLeft(premise, sequent, uservar)
+  }
+  if (rule === ContractionRight) {
+    if (!(rhs[uservar] instanceof Formula)) throw new TypeError('ContractionRight rule needs a Formula')
+    const newRhs = rhs.filter((p, i) => i <= uservar).concat([rhs[uservar]]).concat(rhs.filter((p, i) => i > uservar))
+    let premise = new LKIncomplete(new Sequent(lhs, newRhs))
+    return new ContractionRight(premise, sequent, uservar)
   }
 
   // what kind of formula are we looking for
