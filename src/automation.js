@@ -27,7 +27,6 @@ const auto = async (tree) => {
       let fresh_var = [ForallRight, ExistsLeft].includes(r) ? genFresh(tree.conclusion) : null
       let new_tree = await applyLK(tree.conclusion, r, fresh_var, false)
       new_tree.premises = await Promise.all(new_tree.premises.map(auto))
-      // new_tree.premises = new_tree.premises.map(async p => await auto(p))
       return new_tree
     }
   }

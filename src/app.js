@@ -79,7 +79,7 @@ const giveLatex = i => {
   let pf = proofs[i].proof
   let code = pf.latex()
   copyToClipboard(code)
-  alert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
+  modalAlert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
 }
 
 const removeProof = i => {
@@ -155,6 +155,7 @@ document.getElementById('help').addEventListener('click', () => {
   </p>
   <p>
     <ul class="help-examples">
+    <li><code>|- p => q => r => p && q && r</code></li>
     <li><code>exists x. g(x) |- exists y. g(y)</code></li>
     <li><code>exists x. g(k,x) |- exists y. g(k,y)</code></li>
     <li><code>|- ((p => q) => p) -> p</code></li>
@@ -188,7 +189,9 @@ document.getElementById('help').addEventListener('click', () => {
     let but = toNodes(`<button>Try this!</button>`)[0]
     but.addEventListener('click', e => { 
       addProof(new LKIncomplete(peg.parse(li.children[0].innerText, { startRule: "Sequent" }) ))
-      but.remove()
+      but.style.background = successColor
+      but.innerText = "✓"
+      but.disabled = true
     })
     li.appendChild(but)
   })
@@ -196,7 +199,9 @@ document.getElementById('help').addEventListener('click', () => {
     let but = toNodes(`<button>Try this!</button>`)[0]
     but.addEventListener('click', e => { 
       addProof(new HoareIncomplete(peg.parse(li.children[0].innerText, { startRule: "HoareTriple" }) ))
-      but.remove()
+      but.style.background = successColor
+      but.innerText = "✓"
+      but.disabled = true
     })
     li.appendChild(but)
   })
@@ -297,22 +302,22 @@ ProofTree.prototype.image = function (root) {
         box = toNodes(`<div id="lkRuleSelection" class="ruleSelection">
                          <p>Left connective rules:</p>
                          <p>
-                           <button value="AndLeft" class="invertible1">∧</button>
-                           <button value="OrLeft" class="invertible2">∨</button>
-                           <button value="NotLeft" class="invertible1">¬</button>
+                           <button value="AndLeft">∧</button>
+                           <button value="OrLeft">∨</button>
+                           <button value="NotLeft">¬</button>
                            <button value="ImpliesLeft">⇒</button>
-                           <button value="FalsityLeft" class="invertible0">⊥</button>
+                           <button value="FalsityLeft">⊥</button>
                            <button value="ForallLeft">∀</button>
-                           <button value="ExistsLeft" class="invertible1">∃</button>
+                           <button value="ExistsLeft">∃</button>
                          </p>
                          <p>Right connective rules:</p>
                          <p>
-                           <button value="AndRight" class="invertible2">∧</button>
-                           <button value="OrRight" class="invertible1">∨</button>
-                           <button value="NotRight" class="invertible1">¬</button>
-                           <button value="ImpliesRight" class="invertible1">⇒</button>
-                           <button value="TruthRight" class="invertible0">⊤</button>
-                           <button value="ForallRight" class="invertible1">∀</button>
+                           <button value="AndRight">∧</button>
+                           <button value="OrRight">∨</button>
+                           <button value="NotRight">¬</button>
+                           <button value="ImpliesRight">⇒</button>
+                           <button value="TruthRight">⊤</button>
+                           <button value="ForallRight">∀</button>
                            <button value="ExistsRight">∃</button>
                          </p>
                          <p>Structural rules:</p>
@@ -324,7 +329,7 @@ ProofTree.prototype.image = function (root) {
                          </p>
                          <p>Other rules:</p>
                          <p class="text-rules">
-                           <button value="Identity" class="invertible0">Id</button>
+                           <button value="Identity">Id</button>
                            <button value="Cut">Cut</button>
                            <button value="Z3Rule" class="solver">Z3</button>
                            <button value="'Auto'" class="solver">Auto</button>
@@ -427,7 +432,7 @@ ProofTree.prototype.image = function (root) {
             })
             entry.proof.draw()
           } catch(err) {
-            alert(`Rule not applicable!`)
+            modalAlert(`Rule not applicable!`)
             // TODO better error messages
             console.log(err.message);
             console.log(err);
@@ -450,8 +455,10 @@ ProofTree.prototype.image = function (root) {
       backgroundColor: failureColor
     })
 
-    deleteLabel.on('mousedown', (e) => {
-      if(confirm("Are you sure you want to unapply this rule and the rules applied after/above?")) {
+    deleteLabel.on('mousedown', async (e) => {
+      const msg = `Are you sure you want to unapply the ${this.unicodeName} rule 
+                   for the conclusion ${this.conclusion.unicode()} and the rules applied after/above?`
+      if(await modalConfirm(msg)) {
         this.toDelete = true
         refreshAll()
       }

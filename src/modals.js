@@ -242,3 +242,77 @@ const modalTextWindow = s => {
   let p = modalTextWindowBinds(html)
   return p
 }
+
+
+const modalConfirmBinds = html => {
+  let node = toNodes(modalWindow(html))[0]
+  document.body.appendChild(node)
+  dragModal()
+  node.style.display = "block"
+
+  return new Promise((resolve, reject) => {
+    document.querySelector('button.ok').onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(true)
+    }
+    document.querySelector(".close").onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(false)
+    }
+    document.querySelector('button.cancel').onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(false)
+    }
+    window.onclick = e => {
+      if (e.target == document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+        resolve(false)
+      }
+    } 
+  })
+}
+
+const modalConfirm = s => {
+  let html = `<p>${s}</p>
+              <p>
+                <button class="ok">OK</button>
+                <button class="cancel">Cancel</button>
+              </p>`
+
+  let p = modalConfirmBinds(html)
+  return p
+}
+
+const modalAlertBinds = html => {
+  let node = toNodes(modalWindow(html))[0]
+  document.body.appendChild(node)
+  dragModal()
+  node.style.display = "block"
+
+  return new Promise((resolve, reject) => {
+    document.querySelector('button.ok').onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(true)
+    }
+    document.querySelector(".close").onclick = e => {
+      document.querySelector('.modal').remove()
+      resolve(true)
+    }
+    window.onclick = e => {
+      if (e.target == document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+        resolve(true)
+      }
+    } 
+  })
+}
+
+const modalAlert = s => {
+  let html = `<p>${s}</p>
+              <p>
+                <button class="ok">OK</button>
+              </p>`
+
+  let p = modalAlertBinds(html)
+  return p
+}
