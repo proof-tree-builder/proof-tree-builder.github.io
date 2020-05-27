@@ -69,17 +69,17 @@ const onZ3Message = (event) => {
   var payload = event.data.payload;
   switch (kind) {
   case responses.PROGRESS:
-      setLoading()
+      setLoading(isLoaded ? "Getting data..." : "Downloading Z3...")
       break;
   case responses.READY:
       unsetLoading()
       break;
   case responses.STDOUT:
-      setLoading()
+      setLoading("Getting output from Z3...")
       logOutput(payload);
       break;
   case responses.STDERR:
-      setLoading()
+      setLoading("Encountered Z3 error...")
       logOutput(payload)
       break;
   case responses.VERIFICATION_COMPLETE:

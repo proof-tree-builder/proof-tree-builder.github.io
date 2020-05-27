@@ -15,8 +15,15 @@ const isAutomateMode = () => !document.getElementById('mode').checked
 
 const toNodes = (html) => new DOMParser().parseFromString(html, 'text/html').body.childNodes
 
-const setLoading = () => { document.getElementById("loading").style = "display: inline" }
-const unsetLoading = () => { document.getElementById("loading").style = "display: none" }
+const setLoading = (msg) => {
+  document.getElementById("loading").style = "display: inline"
+  document.getElementById("loadingMsg").innerHTML = msg
+  document.getElementById("loadingMsg").style = "display: inline"
+}
+const unsetLoading = () => {
+  document.getElementById("loading").style = "display: none"
+  document.getElementById("loadingMsg").style = "display: none"
+}
 const promptTrim = (s) => {
   let x = prompt(s)
   if (x === null) {

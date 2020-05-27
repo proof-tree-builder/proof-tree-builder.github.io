@@ -252,6 +252,9 @@
         text-decoration: none;
         cursor: pointer;
       }
+      #loadingMsg {
+        font-size: 0.8em;
+      }
     </style>
   </head>
   <body>
@@ -261,6 +264,7 @@
       <button type="button" id="addHoareGoal">Add Hoare logic goal</button>
       <button type="button" id="help">Help</button>
       <img src="loading.gif" alt="Loading..." id="loading" style="display: none">
+      <span id="loadingMsg"></span>
       <label class="switch" alt="Switch between Learn and Automate modes">
         <input type="checkbox" id="mode">
         <div class="slider"><span class="on">Learn</span>
