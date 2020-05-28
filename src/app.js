@@ -589,7 +589,7 @@ ProofTree.prototype.draw = function () {
     if (this == entry.proof) {
       if(entry.x == null || entry.y == null) {
         proofs[i].x = (window.innerWidth - im.width) / 2
-        proofs[i].y = (window.innerHeight - im.height) / 2
+        proofs[i].y = (window.innerHeight + im.height) / 2
       }
       im.setPositionByOrigin(new fabric.Point(proofs[i].x, proofs[i].y), 'left', 'bottom')
     } 
