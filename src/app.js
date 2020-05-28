@@ -34,7 +34,7 @@ const promptTrim = (s) => {
 }
 
 // Panning with ALT + drag
-canvas.on('mouse:down', function (opt) {
+canvas.on('mouse:down', opt => {
   document.querySelectorAll('.ruleSelection').forEach(e => e.remove())
 
   let evt = opt.e
@@ -45,7 +45,7 @@ canvas.on('mouse:down', function (opt) {
     this.lastPosY = evt.clientY
   }
 })
-canvas.on('mouse:move', function (opt) {
+canvas.on('mouse:move', opt => {
   if (this.isDragging) {
     let e = opt.e
     this.viewportTransform[4] += e.clientX - this.lastPosX
@@ -55,13 +55,13 @@ canvas.on('mouse:move', function (opt) {
     this.lastPosY = e.clientY
   }
 })
-canvas.on('mouse:up', function (opt) {
+canvas.on('mouse:up', opt => {
   this.isDragging = false
   this.selection = true
 })
 
 // Zooming to the cursor
-canvas.on('mouse:wheel', function (opt) {
+canvas.on('mouse:wheel', opt => {
   let delta = opt.e.deltaY
   let pointer = canvas.getPointer(opt.e)
   let zoom = canvas.getZoom()
@@ -91,7 +91,7 @@ const giveLatex = i => {
 
 const removeProof = i => {
   let pf = proofs[i].proof
-  canvas.forEachObject(function (obj) {
+  canvas.forEachObject(obj => {
     if (!obj.root) return
     if (obj.root == pf) canvas.remove(obj)
   })
@@ -494,7 +494,7 @@ ProofTree.prototype.image = function (root) {
             if (updated !== null) this.completer = updated
 
             let entry = proofs.find(entry => root == entry.proof)
-            canvas.forEachObject(function (obj) {
+            canvas.forEachObject(obj => {
               if (!obj.root) return
               if (obj.root == root) canvas.remove(obj)
             })
