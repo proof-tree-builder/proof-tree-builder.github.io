@@ -223,7 +223,13 @@ const help = () => {
   <br>
   <h2>General usage</h2>
   <p>
-    You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply. You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
+    You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply. 
+  </p>
+  <p>
+    You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
+  </p>
+  <p>
+    You can click on the <span style="color: ${incompleteColor}">orange</span> scissors button (✄) to detach a proof, i.e. to create a separate proof tree with the current branch and changing the original one into an incomplete one.
   </p>
   <p>
     As you work on the proof, you can click on the buttons on the left bar to either copy the LaTeX output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
@@ -371,6 +377,7 @@ ProofTree.prototype.image = function (root) {
 
   let ruleLabel = null
   let deleteLabel = null
+  let detachLabel = null
   if (isIncomplete) {
     ruleLabel = new fabric.Text(' + ', {
       fontFamily: 'Helvetica',
@@ -542,10 +549,29 @@ ProofTree.prototype.image = function (root) {
       backgroundColor: failureColor
     })
 
+    detachLabel = new fabric.Text('✄', {
+      fontFamily: 'Helvetica',
+      fontSize: 11,
+      stroke: 'white',
+      backgroundColor: incompleteColor
+    })
+
     deleteLabel.on('mousedown', async (e) => {
-      const msg = `Are you sure you want to unapply the ${this.unicodeName} rule 
+      const msg = `Are you sure you want to <strong>unapply</strong> the ${this.unicodeName} rule
                    for the conclusion <br>${this.conclusion.unicode()}<br> and the rules applied after/above?`
       if(await modalConfirm(msg)) {
+        this.toDelete = true
+        refreshAll()
+      }
+    })
+
+    detachLabel.on('mousedown', async (e) => {
+      const msg = `Are you sure you want to <strong>detach</strong> the proof at the ${this.unicodeName} rule
+                   for the conclusion <br>${this.conclusion.unicode()} ?<br>
+                   This will unapply the ${this.unicodeName} rule in the current proof tree, and also will create an extra proof tree with the ${this.unicodeName} rule at the bottom, followed by the rest of this branch of the proof tree.`
+      if(await modalConfirm(msg)) {
+        let deepCopy = eval(this.reconstructor())
+        addProof(deepCopy)
         this.toDelete = true
         refreshAll()
       }
@@ -556,10 +582,12 @@ ProofTree.prototype.image = function (root) {
     (new fabric.Point(15, 0)).add(line.getPointByOrigin('right', 'top'), 'left', 'top'))
 
   let groupImages
-  if(deleteLabel) {
+  if(deleteLabel && detachLabel) {
     deleteLabel.setPositionByOrigin(
       (new fabric.Point(15, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
-    groupImages = [premiseGroup, line, ruleLabel, deleteLabel, text]
+    detachLabel.setPositionByOrigin(
+      (new fabric.Point(30, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
+    groupImages = [premiseGroup, line, ruleLabel, deleteLabel, detachLabel, text]
   } else {
     groupImages = [premiseGroup, line, ruleLabel, text]
   }
