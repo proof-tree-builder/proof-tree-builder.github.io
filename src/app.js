@@ -99,6 +99,15 @@ const removeProof = i => {
   refreshList()
 }
 
+const saveProof = i => {
+  const goal = proofs[i].proof.conclusion.unicode().trim()
+  const text = `/* Proof for ${goal} */\n${proofs[i].proof.reconstructor()}`
+  var pom = document.createElement('a')
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+  pom.setAttribute('download', `${goal}.proof`)
+  pom.click()
+};
+
 const refreshList = () => {
   let ol = document.querySelector('#left-bar ol')
   ol.innerHTML = ''
@@ -107,7 +116,8 @@ const refreshList = () => {
                         ${entry.proof.conclusion.unicode()}
                         <br>
                         <button onclick="javascript:giveLatex(${i})">LaTeX</button>
-                        <button onclick="javascript:removeProof(${i})">Delete</button>
+                        <button onclick="javascript:removeProof(${i})">✖ Delete</button>
+                        <button onclick="javascript:saveProof(${i})">💾 Save</button>
                      </li>`
   })
 }
@@ -134,6 +144,11 @@ document.getElementById('addLKGoal').addEventListener('click', async () => {
 
 document.getElementById('addHoareGoal').addEventListener('click', async () => {
   addProof(new HoareIncomplete(await modalHoarePrompt('Enter a Hoare triple:')))
+})
+
+document.getElementById('loadProof').addEventListener('click', async () => {
+  // eval is evil, but what can you do sometimes
+  addProof(eval(await modalFilePrompt('Select the proof file you want to load into the proof assistant:')))
 })
 
 const help = () => {
@@ -210,7 +225,11 @@ const help = () => {
   <p>
     You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply. You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
   </p>
+  <p>
+    As you work on the proof, you can click on the buttons on the left bar to either copy the LaTeX output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
+  </p>
   <br>
+  <h3>Modes of usage</h3>
   <p>
   The proof assistant has two modes: <strong>automate</strong> and <strong>learn</strong> mode. Automate mode is the default, but you can switch to learn mode by click on the button on the top right corner. Automate mode hides most rules that obviously cannot be applied, and enables the Auto button for LK. Auto button runs a non-backtracking algorithm to automatically apply a bunch of proof rules, you might be surprised that it can make a lot of progress in your LK proofs.
   </p>

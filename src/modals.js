@@ -316,3 +316,58 @@ const modalAlert = s => {
   let p = modalAlertBinds(html)
   return p
 }
+
+const modalFilePromptBinds = html => {
+  let node = toNodes(modalWindow(html))[0]
+  document.body.appendChild(node)
+  dragModal()
+  node.style.display = "block"
+
+  return new Promise((resolve, reject) => {
+    let okButton = document.querySelector('.modal-content button.ok')
+
+    let fileInput = document.querySelector('.modal-content input[type=file]')
+    fileInput.addEventListener('change', e => {
+      okButton.disabled = false
+    })
+
+    document.querySelector('button.ok').onclick = e => {
+      document.querySelector('.modal').remove()
+      if(fileInput.files.length > 0) {
+        let reader = new FileReader()
+        reader.onload = e => { resolve(e.target.result) }
+        reader.readAsText(fileInput.files[0])
+      } else {
+        reject(new Error("No file!"))
+      }
+    }
+    document.querySelector("button.cancel").onclick = e => {
+      document.querySelector('.modal').remove()
+      reject(new Error("Cancelled file prompt"))
+    }
+    document.querySelector(".close").onclick = e => {
+      document.querySelector('.modal').remove()
+      reject(new Error("Cancelled file prompt"))
+    }
+    window.onclick = e => {
+      if (e.target == document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+        reject(new Error("Cancelled file prompt"))
+      }
+    } 
+  })
+}
+
+const modalFilePrompt = s => {
+  let html = `<p>${s}</p>
+              <p>
+                <input type="file" accept=".proof">
+              </p>
+              <p>
+                <button class="ok" disabled>Load</button>
+                <button class="cancel">Cancel</button>
+              </p>`
+
+  let p = modalFilePromptBinds(html)
+  return p
+}

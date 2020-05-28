@@ -47,6 +47,7 @@ class TermVar extends Term {
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
+  reconstructor () { return `new TermVar("${this.v}")` }
 
   getFreeVars () { return [this] }
   getFunctions () { return [] }
@@ -72,6 +73,7 @@ class TermFun extends Term {
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
+  reconstructor () { return `new TermFun("${this.name}", [${this.args.map(arg => arg.reconstructor()).join(", ")}])` }
 
   getFreeVars () { return this.args.map(arg => arg.getFreeVars()).flat() }
   getFunctions () { return this.args.map(arg => arg.getFunctions()).flat().concat(this) }
@@ -93,6 +95,7 @@ class TermInt extends Term {
   unicode () { return this.i }
   latex () { return this.i }
   smtlib () { return this.i >= 0 ? this.i : `(- ${-this.i})` }
+  reconstructor () { return `new TermInt(${ this.i })` }
 
   getFreeVars () { return [] }
   getFunctions () { return [] }
@@ -143,6 +146,7 @@ class Truth extends Formula {
   unicode () { return '⊤' }
   latex () { return '\\top' }
   smtlib () { return 'true' }
+  reconstructor () { return `new Truth()` }
 }
 
 class Falsity extends Formula {
@@ -156,6 +160,7 @@ class Falsity extends Formula {
   unicode () { return '⊥' }
   latex () { return '\\bot' }
   smtlib () { return 'false' }
+  reconstructor () { return `new Falsity()` }
 }
 
 class Var extends Formula {
@@ -174,6 +179,7 @@ class Var extends Formula {
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
+  reconstructor () { return `new Var("${this.v}")` }
   getFreePropVars () { return [this] }
 }
 
@@ -197,6 +203,7 @@ class And extends Formula {
   unicode () { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\land ${this.right.platex()}` }
   smtlib () { return `(and ${this.left.smtlib()} ${this.right.smtlib()})` }
+  reconstructor () { return `new And(${this.left.reconstructor()}, ${this.right.reconstructor()})` }
 }
 
 class Or extends Formula {
@@ -219,6 +226,7 @@ class Or extends Formula {
   unicode () { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\lor ${this.right.platex()}` }
   smtlib () { return `(or ${this.left.smtlib()} ${this.right.smtlib()})` }
+  reconstructor () { return `new Or(${this.left.reconstructor()}, ${this.right.reconstructor()})` }
 }
 
 class Implies extends Formula {
@@ -241,6 +249,7 @@ class Implies extends Formula {
   unicode () { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
   smtlib () { return `(=> ${this.left.smtlib()} ${this.right.smtlib()})` }
+  reconstructor () { return `new Implies(${this.left.reconstructor()}, ${this.right.reconstructor()})` }
 }
 
 class Not extends Formula {
@@ -261,6 +270,7 @@ class Not extends Formula {
   unicode () { return `¬ ${this.one.punicode()}` }
   latex () { return `\\lnot ${this.one.platex()}` }
   smtlib () { return `(not ${this.one.smtlib()})` }
+  reconstructor () { return `new Not(${this.one.reconstructor()})` }
 }
 
 class Relation extends Formula {
@@ -283,6 +293,7 @@ class Relation extends Formula {
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
+  reconstructor () { return `new Relation("${this.name}", [${this.args.map(arg => arg.reconstructor()).join(", ")}])` }
 
   getFreeTermVars () { return this.args.map(f => f.getFreeVars()).flat() }
   getRelations () { return [this] }
@@ -321,6 +332,7 @@ class Forall extends Formula {
   latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
   smtlib () { return `(forall ((${this.v.latex()} Int)) ${this.one.smtlib()})` }
+  reconstructor () { return `new Forall(${this.v.reconstructor()}, ${this.one.reconstructor()})` }
 
   getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => !deepEqual(fv, this.v)) }
 }
@@ -356,6 +368,7 @@ class Exists extends Formula {
   latex () { return `\\exists ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
   smtlib () { return `(exists ((${this.v.latex()} Int)) ${this.one.smtlib()})` }
+  reconstructor () { return `new Exists(${this.v.reconstructor()}, ${this.one.reconstructor()})` }
 
   getFreeTermVars () { return this.one.getFreeTermVars().filter(fv => !deepEqual(fv, this.v)) }
 }
@@ -399,6 +412,10 @@ class Sequent {
     const left = nest("and", this.precedents, "true")
     const right = nest("or", this.antecedents, "false")
     return `(=> ${left} ${right})`
+  }
+
+  reconstructor () { 
+    return `new Sequent([${this.precedents.map(f => f.reconstructor()).join(", ")}], [${this.antecedents.map(f => f.reconstructor()).join(", ")}])` 
   }
 
   isQuantifierFree () {
@@ -496,6 +513,10 @@ class TruthRight extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new TruthRight(${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -515,6 +536,10 @@ class FalsityLeft extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new FalsityLeft(${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -540,6 +565,10 @@ class Identity extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new Identity(${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex1}, ${this.conclusionFormulaIndex2})`
   }
 }
 
@@ -567,6 +596,10 @@ class AndLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new AndLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -592,6 +625,10 @@ class AndRight extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new AndRight(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -620,6 +657,10 @@ class ImpliesLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new ImpliesLeft(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -644,6 +685,10 @@ class ImpliesRight extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new ImpliesRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -671,6 +716,10 @@ class OrLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new OrLeft(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -697,6 +746,10 @@ class OrRight extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new OrRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex1}, ${this.premiseFormulaIndex2}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -721,6 +774,10 @@ class NotLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new NotLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -744,6 +801,10 @@ class NotRight extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new NotRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -770,6 +831,11 @@ class ForallLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new ForallLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex}, ${this.t.reconstructor()})`
+  }
+
 }
 
 class ForallRight extends LKProofTree {
@@ -791,6 +857,10 @@ class ForallRight extends LKProofTree {
     } else {
       throw new TypeError('Not the right kind of formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new ForallRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex}, ${this.y.reconstructor()})`
   }
 }
 
@@ -815,6 +885,10 @@ class ExistsLeft extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new ExistsLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex}, ${this.y.reconstructor()})`
+  }
 }
 
 class ExistsRight extends LKProofTree {
@@ -837,6 +911,10 @@ class ExistsRight extends LKProofTree {
       throw new TypeError('Not the right kind of formula at index')
     }
   }
+
+  reconstructor () {
+    return `new ExistsRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.premiseFormulaIndex}, ${this.conclusionFormulaIndex}, ${this.t.reconstructor()})`
+  }
 }
 
 class Cut extends LKProofTree {
@@ -844,6 +922,10 @@ class Cut extends LKProofTree {
     super([premise1, premise2], conclusion)
     this.unicodeName = 'Cut'
     this.latexName = '\\textrm{Cut}'
+  }
+
+  reconstructor () {
+    return `new Cut(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()})`
   }
 }
 
@@ -864,6 +946,10 @@ class WeakeningLeft extends LKProofTree {
       throw new TypeError('Not an LK formula at index')
     }
   }
+
+  reconstructor () {
+    return `new WeakeningLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -882,6 +968,10 @@ class WeakeningRight extends LKProofTree {
     } else {
       throw new TypeError('Not an LK formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new WeakeningRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -902,6 +992,10 @@ class ContractionLeft extends LKProofTree {
       throw new TypeError('Not an LK formula at index')
     }
   }
+
+  reconstructor () {
+    return `new ContractionLeft(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
+  }
 }
 
 /*
@@ -920,6 +1014,10 @@ class ContractionRight extends LKProofTree {
     } else {
       throw new TypeError('Not an LK formula at index')
     }
+  }
+
+  reconstructor () {
+    return `new ContractionRight(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()}, ${this.conclusionFormulaIndex})`
   }
 }
 
@@ -950,6 +1048,10 @@ class Z3Rule extends LKProofTree {
 
     })
   }
+
+  reconstructor () {
+    return `new Z3Rule(${this.conclusion.reconstructor()})`
+  }
 }
 
 class LKIncomplete extends LKProofTree {
@@ -968,6 +1070,14 @@ class LKIncomplete extends LKProofTree {
     } else {
       var rule = `\\RightLabel{\\scriptsize $${this.latexName}$}`
       return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
+    }
+  }
+
+  reconstructor () {
+    if (this.completer) {
+      return this.completer.reconstructor()
+    } else {
+      return `new LKIncomplete(${this.conclusion.reconstructor()})`
     }
   }
 }
@@ -993,6 +1103,9 @@ class AddTerms extends TermFun {
 
   unicode () { return `${this.first.unicode()} + ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} + ${this.second.latex()}` }
+  reconstructor () {
+    return `new AddTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
+  }
 }
 
 class SubtractTerms extends TermFun {
@@ -1012,6 +1125,9 @@ class SubtractTerms extends TermFun {
 
   unicode () { return `${this.first.unicode()} - ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} - ${this.second.latex()}` }
+  reconstructor () {
+    return `new SubtractTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
+  }
 }
 
 class MultiplyTerms extends TermFun {
@@ -1031,6 +1147,9 @@ class MultiplyTerms extends TermFun {
 
   unicode () { return `${this.first.unicode()} * ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} * ${this.second.latex()}` }
+  reconstructor () {
+    return `new MultiplyTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
+  }
 }
 
 class DivideTerms extends TermFun {
@@ -1050,6 +1169,9 @@ class DivideTerms extends TermFun {
 
   unicode () { return `${this.first.unicode()} / ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} / ${this.second.latex()}` }
+  reconstructor () {
+    return `new DivideTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
+  }
 }
 
 class LessThan extends Relation {
@@ -1069,6 +1191,9 @@ class LessThan extends Relation {
 
   unicode () { return `${this.lhs.unicode()} < ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} < ${this.rhs.latex()}` }
+  reconstructor () {
+    return `new LessThan(${this.lhs.reconstructor()}, ${this.rhs.reconstructor()})`
+  }
 }
 
 class GreaterThan extends Relation {
@@ -1088,6 +1213,9 @@ class GreaterThan extends Relation {
 
   unicode () { return `${this.lhs.unicode()} > ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} > ${this.rhs.latex()}` }
+  reconstructor () {
+    return `new GreaterThan(${this.lhs.reconstructor()}, ${this.rhs.reconstructor()})`
+  }
 }
 
 class LeqThan extends Relation {
@@ -1107,6 +1235,9 @@ class LeqThan extends Relation {
 
   unicode () { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}` }
+  reconstructor () {
+    return `new LeqThan(${this.lhs.reconstructor()}, ${this.rhs.reconstructor()})`
+  }
 }
 
 class GeqThan extends Relation {
@@ -1126,6 +1257,9 @@ class GeqThan extends Relation {
 
   unicode () { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}` }
+  reconstructor () {
+    return `new GeqThan(${this.lhs.reconstructor()}, ${this.rhs.reconstructor()})`
+  }
 }
 
 class Equal extends Relation {
@@ -1145,6 +1279,9 @@ class Equal extends Relation {
 
   unicode () { return `${this.lhs.unicode()} = ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} = ${this.rhs.latex()}` }
+  reconstructor () {
+    return `new Equal(${this.lhs.reconstructor()}, ${this.rhs.reconstructor()})`
+  }
 }
 
 /// ////////////// COMMANDS /////////////////////////////
@@ -1171,6 +1308,9 @@ class CmdAssign extends Command {
 
   unicode () { return `${this.v.unicode()} := ${this.t.unicode()}` }
   latex () { return `${this.v.latex()} := ${this.t.latex()}` }
+  reconstructor () {
+    return `new CmdAssign(${this.v.reconstructor()}, ${this.t.reconstructor()})`
+  }
 }
 
 class CmdSeq extends Command {
@@ -1187,6 +1327,9 @@ class CmdSeq extends Command {
 
   unicode () { return `${this.first.unicode()} ; ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} ; ${this.second.latex()}` }
+  reconstructor () {
+    return `new CmdSeq(${this.first.reconstructor()}, ${this.second.reconstructor()})`
+  }
 }
 
 class CmdIf extends Command {
@@ -1204,6 +1347,9 @@ class CmdIf extends Command {
 
   unicode () { return `if (${this.condition.unicode()}) then (${this.btrue.unicode()}) else (${this.bfalse.unicode()})` }
   latex () { return `if (${this.condition.latex()}) then (${this.btrue.latex()}) else (${this.bfalse.latex()})` }
+  reconstructor () {
+    return `new CmdIf(${this.condition.reconstructor()}, ${this.btrue.reconstructor()}, ${this.bfalse.reconstructor()})`
+  }
 }
 
 class CmdWhile extends Command {
@@ -1220,6 +1366,9 @@ class CmdWhile extends Command {
 
   unicode () { return `while (${this.condition.unicode()}) do (${this.body.unicode()})` }
   latex () { return `while (${this.condition.latex()}) do (${this.body.latex()})` }
+  reconstructor () {
+    return `new CmdIf(${this.condition.reconstructor()}, ${this.body.reconstructor()})`
+  }
 }
 
 /// ////////////// HOARE TRIPLE /////////////////////////////
@@ -1241,6 +1390,10 @@ class HoareTriple {
 
   latex () {
     return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.post.latex()}}`
+  }
+
+  reconstructor () {
+    return `new HoareTriple(${this.pre.reconstructor()}, ${this.command.reconstructor()}, ${this.post.reconstructor()})`
   }
 }
 
@@ -1304,6 +1457,10 @@ class Assignment extends HoareProofTree {
       throw new TypeError('Not the right kind of Command')
     }
   }
+
+  reconstructor () {
+    return `new Assignment(${this.conclusion.reconstructor()})`
+  }
 }
 
 /*
@@ -1325,6 +1482,10 @@ class Sequencing extends HoareProofTree {
     deepEqual(premise1.conclusion.post, premise2.conclusion.pre))) {
       throw new TypeError("Commands and conditions don't match up")
     }
+  }
+
+  reconstructor () {
+    return `new Sequencing(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()})`
   }
 }
 
@@ -1357,6 +1518,10 @@ class Consequence extends HoareProofTree {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
+
+  reconstructor () {
+    return `new Consequence(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.premises[2].reconstructor()}, ${this.conclusion.reconstructor()})`
+  }
 }
 
 /*
@@ -1385,6 +1550,10 @@ class ConsequenceNoPre extends HoareProofTree {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
+
+  reconstructor () {
+    return `new ConsequenceNoPre(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()})`
+  }
 }
 
 /*
@@ -1412,6 +1581,10 @@ class ConsequenceNoPost extends HoareProofTree {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
+
+  reconstructor () {
+    return `new ConsequenceNoPost(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()})`
+  }
 }
 
 /*
@@ -1438,6 +1611,10 @@ class Conditional extends HoareProofTree {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
+
+  reconstructor () {
+    return `new Conditional(${this.premises[0].reconstructor()}, ${this.premises[1].reconstructor()}, ${this.conclusion.reconstructor()})`
+  }
 }
 
 /*
@@ -1462,6 +1639,10 @@ class Loop extends HoareProofTree {
       throw new TypeError("Commands and conditions don't match up")
     }
   }
+
+  reconstructor () {
+    return `new Loop(${this.premises[0].reconstructor()}, ${this.conclusion.reconstructor()})`
+  }
 }
 
 class HoareIncomplete extends HoareProofTree {
@@ -1480,32 +1661,14 @@ class HoareIncomplete extends HoareProofTree {
       return `${rule}\n\\AxiomC{$${this.conclusion.latex()}$}`
     }
   }
-}
 
-const substituteTermInTerm = (body, v, term) => {
-  if (!(v instanceof TermVar && term instanceof Term)) {
-    throw new TypeError('Substitution can only be done using terms.')
+  reconstructor () {
+    if (this.completer) {
+      return this.completer.reconstructor()
+    } else {
+      return `new HoareIncomplete(${this.conclusion.reconstructor()})`
+    }
   }
-  if (body instanceof AddTerms) {
-    return new AddTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
-  }
-  if (body instanceof SubtractTerms) {
-    return new SubtractTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
-  }
-  if (body instanceof MultiplyTerms) {
-    return new MultiplyTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
-  }
-  if (body instanceof DivideTerms) {
-    return new DivideTerms(substituteTermInTerm(body.first, v, term), substituteTermInTerm(body.second, v, term))
-  }
-  if (body instanceof TermFun) {
-    let subargs = body.args.map(t => substituteTerm(t, v, term))
-    return new TermFun(body.name, subargs)
-  }
-  if (body instanceof TermVar) {
-    return (deepEqual(body, v)) ? term : body
-  }
-  return body // TermInt
 }
 
 // If a tree is set as toDelete, delete the tree and its premises
