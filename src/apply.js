@@ -165,7 +165,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       // subformulas
       let v = og.v
       let body = og.one
-      let newbody = substituteTerm(body, v, uservar)
+      let newbody = body.subst(v, uservar)
 
       // make premise
       let plhs = lhs.slice()
@@ -184,7 +184,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       // subformulas
       let v = og.v
       let body = og.one
-      let newbody = substituteTerm(body, v, uservar)
+      let newbody = body.subst(v, uservar)
 
       // make premise
       let plhs = lhs.slice()
@@ -306,7 +306,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       // subformulas
       let v = og.v
       let body = og.one
-      let newbody = substituteTerm(body, v, uservar)
+      let newbody = body.subst(v, uservar)
 
       // make premise
       let prhs = rhs.slice()
@@ -322,7 +322,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       // subformulas
       let v = og.v
       let body = og.one
-      let newbody = substituteTerm(body, v, uservar)
+      let newbody = body.subst(v, uservar)
 
       // make premise
       let prhs = rhs.slice()
@@ -372,7 +372,7 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
     let term = command.t
 
     if (!(command instanceof CmdAssign) ||
-      !deepEqual(substituteTerm(post, v, term), pre)) {
+      !deepEqual(post.subst(v, term), pre)) {
       throw new Error('Rule not applicable.')
     }
 

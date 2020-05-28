@@ -525,7 +525,7 @@ ProofTree.prototype.image = function (root) {
 
     deleteLabel.on('mousedown', async (e) => {
       const msg = `Are you sure you want to unapply the ${this.unicodeName} rule 
-                   for the conclusion ${this.conclusion.unicode()} and the rules applied after/above?`
+                   for the conclusion <br>${this.conclusion.unicode()}<br> and the rules applied after/above?`
       if(await modalConfirm(msg)) {
         this.toDelete = true
         refreshAll()

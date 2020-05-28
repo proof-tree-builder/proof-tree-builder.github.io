@@ -39,6 +39,11 @@ class TermVar extends Term {
       throw new TypeError('TermVar has to contain a String')
     }
   }
+
+  subst(v, term) {
+    return (deepEqual(this, v)) ? term : this
+  }
+
   unicode () { return this.v }
   latex () { return this.v }
   smtlib () { return this.v }
@@ -58,6 +63,12 @@ class TermFun extends Term {
       throw new TypeError('TermFun has to contain a String and Terms')
     }
   }
+
+  subst(v, term) {
+    let subargs = this.args.map(t => t.subst(v, term))
+    return new TermFun(this.name, subargs)
+  }
+
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
@@ -76,6 +87,9 @@ class TermInt extends Term {
       throw new TypeError('TermInt has to contain an Integer')
     }
   }
+
+  subst (v, term) { return this }
+
   unicode () { return this.i }
   latex () { return this.i }
   smtlib () { return this.i >= 0 ? this.i : `(- ${-this.i})` }
@@ -176,7 +190,8 @@ class And extends Formula {
   }
 
   subst (v, term) {
-
+    return new And(this.left.subst(v, term),
+                   this.right.subst(v, term))
   }
 
   unicode () { return `${this.left.punicode()} ∧ ${this.right.punicode()}` }
@@ -196,6 +211,11 @@ class Or extends Formula {
     }
   }
 
+  subst (v, term) {
+    return new Or(this.left.subst(v, term),
+                  this.right.subst(v, term))
+  }
+
   unicode () { return `${this.left.punicode()} ∨ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\lor ${this.right.platex()}` }
   smtlib () { return `(or ${this.left.smtlib()} ${this.right.smtlib()})` }
@@ -213,6 +233,11 @@ class Implies extends Formula {
     }
   }
 
+  subst (v, term) {
+    return new Implies(this.left.subst(v, term),
+                       this.right.subst(v, term))
+  }
+
   unicode () { return `${this.left.punicode()} ⇒ ${this.right.punicode()}` }
   latex () { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
   smtlib () { return `(=> ${this.left.smtlib()} ${this.right.smtlib()})` }
@@ -227,6 +252,10 @@ class Not extends Formula {
     } else {
       throw new TypeError('Not has to contain a Formula')
     }
+  }
+
+  subst (v, term) {
+    return new Not(this.one.subst(v, term))
   }
 
   unicode () { return `¬ ${this.one.punicode()}` }
@@ -246,6 +275,11 @@ class Relation extends Formula {
       throw new TypeError('Relation has to contain a String and Terms')
     }
   }
+
+  subst (v, term) {
+    return new Relation(this.name, this.args.map(arg => arg.subst(v, term)))
+  }
+
   unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
   latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
   smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
@@ -267,6 +301,22 @@ class Forall extends Formula {
     }
   }
 
+  subst (v, term) {
+    if(deepEqual(this.v, v)) {
+      return this
+    } else {
+      let fvs = term.getFreeVars()
+      if(fvs.some(fv => deepEqual(fv, this.v))) {
+        // avoid capture
+        let v2 = new TermVar(this.v.v + "1") // FIXME no guarantee this is fresh
+        return new Forall(v2, this.one.subst(this.v, v2).subst(v, term))
+      } else {
+        return new Forall(this.v, this.one.subst(v, term))
+      }
+    }
+  }
+
+
   unicode () { return `∀ ${this.v.unicode()}. (${this.one.unicode()})` }
   latex () { return `\\forall ${this.v.latex()}. (${this.one.latex()})` }
   // TODO right now all quantification we can do is with integers, might wanna change that later
@@ -284,6 +334,21 @@ class Exists extends Formula {
       this.subformulas = [one]
     } else {
       throw new TypeError('Exists has to contain a TermVar and a Formula')
+    }
+  }
+
+  subst (v, term) {
+    if(deepEqual(this.v, v)) {
+      return this
+    } else {
+      let fvs = term.getFreeVars()
+      if(fvs.some(fv => deepEqual(fv, this.v))) {
+        // avoid capture
+        let v2 = new TermVar(this.v.v + "1") // FIXME no guarantee this is fresh
+        return new Exists(v2, this.one.subst(this.v, v2).subst(v, term))
+      } else {
+        return new Exists(this.v, this.one.subst(v, term))
+      }
     }
   }
 
@@ -341,19 +406,19 @@ class Sequent {
            this.antecedents.every(q => q.isQuantifierFree())
   }
 
-  getFreeTermVars () { 
+  getFreeTermVars () {
     return this.precedents.map(p => p.getFreeTermVars()).flat()
             .concat(this.antecedents.map(q => q.getFreeTermVars()).flat())
   }
-  getFreePropVars () { 
+  getFreePropVars () {
     return this.precedents.map(p => p.getFreePropVars()).flat()
             .concat(this.antecedents.map(q => q.getFreePropVars()).flat())
   }
-  getRelations () { 
+  getRelations () {
     return this.precedents.map(p => p.getRelations()).flat()
             .concat(this.antecedents.map(q => q.getRelations()).flat())
   }
-  getFunctions () { 
+  getFunctions () {
     return this.precedents.map(p => p.getFunctions()).flat()
             .concat(this.antecedents.map(q => q.getFunctions()).flat())
   }
@@ -697,7 +762,7 @@ class ForallLeft extends LKProofTree {
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
     const f2 = conclusion.precedents[conclusionFormulaIndex]
 
-    if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
+    if (deepEqual(f2.one.subst(f2.v, t), f1)) {
       this.premiseFormulaIndex = premiseFormulaIndex
       this.conclusionFormulaIndex = conclusionFormulaIndex
       this.t = t
@@ -719,7 +784,7 @@ class ForallRight extends LKProofTree {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
     const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
-    if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
+    if (deepEqual(f2.one.subst(f2.v, y), f1)) {
       this.premiseFormulaIndex = premiseFormulaIndex
       this.conclusionFormulaIndex = conclusionFormulaIndex
       this.y = y
@@ -742,7 +807,7 @@ class ExistsLeft extends LKProofTree {
     const f1 = getPremiseFormula(this.premises, true, 0, premiseFormulaIndex)
     const f2 = conclusion.precedents[conclusionFormulaIndex]
 
-    if (deepEqual(substituteTerm(f2.one, f2.v, y), f1)) {
+    if (deepEqual(f2.one.subst(f2.v, y), f1)) {
       this.premiseFormulaIndex = premiseFormulaIndex
       this.conclusionFormulaIndex = conclusionFormulaIndex
       this.y = y
@@ -764,7 +829,7 @@ class ExistsRight extends LKProofTree {
     const f1 = getPremiseFormula(this.premises, false, 0, premiseFormulaIndex)
     const f2 = conclusion.antecedents[conclusionFormulaIndex]
 
-    if (deepEqual(substituteTerm(f2.one, f2.v, t), f1)) {
+    if (deepEqual(f2.one.subst(f2.v, t), f1)) {
       this.premiseFormulaIndex = premiseFormulaIndex
       this.conclusionFormulaIndex = conclusionFormulaIndex
       this.t = t
@@ -919,6 +984,13 @@ class AddTerms extends TermFun {
     this.second = second
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new AddTerms(
+      this.first.subst(v, term),
+      this.second.subst(v, term))
+  }
+
   unicode () { return `${this.first.unicode()} + ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} + ${this.second.latex()}` }
 }
@@ -931,6 +1003,13 @@ class SubtractTerms extends TermFun {
     this.second = second
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new SubtractTerms(
+      this.first.subst(v, term),
+      this.second.subst(v, term))
+  }
+
   unicode () { return `${this.first.unicode()} - ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} - ${this.second.latex()}` }
 }
@@ -943,6 +1022,13 @@ class MultiplyTerms extends TermFun {
     this.second = second
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new MultiplyTerms(
+      this.first.subst(v, term),
+      this.second.subst(v, term))
+  }
+
   unicode () { return `${this.first.unicode()} * ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} * ${this.second.latex()}` }
 }
@@ -955,6 +1041,13 @@ class DivideTerms extends TermFun {
     this.second = second
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new DivideTerms(
+      this.first.subst(v, term),
+      this.second.subst(v, term))
+  }
+
   unicode () { return `${this.first.unicode()} / ${this.second.unicode()}` }
   latex () { return `${this.first.latex()} / ${this.second.latex()}` }
 }
@@ -967,6 +1060,13 @@ class LessThan extends Relation {
     this.rhs = rhs
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new LessThan(
+      this.lhs.subst(v, term),
+      this.rhs.subst(v, term))
+  }
+
   unicode () { return `${this.lhs.unicode()} < ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} < ${this.rhs.latex()}` }
 }
@@ -979,6 +1079,13 @@ class GreaterThan extends Relation {
     this.rhs = rhs
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new GreaterThan(
+      this.lhs.subst(v, term),
+      this.rhs.subst(v, term))
+  }
+
   unicode () { return `${this.lhs.unicode()} > ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} > ${this.rhs.latex()}` }
 }
@@ -991,6 +1098,13 @@ class LeqThan extends Relation {
     this.rhs = rhs
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new LeqThan(
+      this.lhs.subst(v, term),
+      this.rhs.subst(v, term))
+  }
+
   unicode () { return `${this.lhs.unicode()} ≤ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\leq ${this.rhs.latex()}` }
 }
@@ -1003,6 +1117,13 @@ class GeqThan extends Relation {
     this.rhs = rhs
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new GeqThan(
+      this.lhs.subst(v, term),
+      this.rhs.subst(v, term))
+  }
+
   unicode () { return `${this.lhs.unicode()} ≥ ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} \\geq ${this.rhs.latex()}` }
 }
@@ -1015,6 +1136,13 @@ class Equal extends Relation {
     this.rhs = rhs
     this.primitive = true
   }
+
+  subst (v, term) {
+    return new Equal(
+      this.lhs.subst(v, term),
+      this.rhs.subst(v, term))
+  }
+
   unicode () { return `${this.lhs.unicode()} = ${this.rhs.unicode()}` }
   latex () { return `${this.lhs.latex()} = ${this.rhs.latex()}` }
 }
@@ -1260,7 +1388,7 @@ class ConsequenceNoPre extends HoareProofTree {
 }
 
 /*
-  F ⊢ F'     ⊢ {F'} S {G}     
+  F ⊢ F'     ⊢ {F'} S {G}
   −−−−−−−−−−−−----------- CONS*2
       ⊢ {F} S {G}
 */
@@ -1378,87 +1506,6 @@ const substituteTermInTerm = (body, v, term) => {
     return (deepEqual(body, v)) ? term : body
   }
   return body // TermInt
-}
-
-const substituteTerm = (formula, v, term) => {
-  if (!(v instanceof TermVar && term instanceof Term)) {
-    throw new TypeError('Substitution can only be done using terms.')
-  }
-
-  // base cases
-  if (formula instanceof Truth) {
-    return new Truth()
-  }
-  if (formula instanceof Falsity) {
-    return new Falsity()
-  }
-  if (formula instanceof Var) {
-    return new Var(formula.v)
-  }
-
-  if (formula instanceof And) {
-    return new And(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Or) {
-    return new Or(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Implies) {
-    return new Implies(substituteTerm(formula.left, v, term),
-      substituteTerm(formula.right, v, term))
-  }
-  if (formula instanceof Not) {
-    return new Not(substituteTerm(formula.one, v, term))
-  }
-
-  if (formula instanceof LessThan) {
-    return new LessThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
-  }
-  if (formula instanceof GreaterThan) {
-    return new GreaterThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
-  }
-  if (formula instanceof LeqThan) {
-    return new LeqThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
-  }
-  if (formula instanceof GeqThan) {
-    return new GeqThan(substituteTermInTerm(formula.lhs, v, term), substituteTermInTerm(formula.rhs, v, term))
-  }
-
-  if (formula instanceof Relation) {
-    let newargs = formula.args.map(arg => substituteTermInTerm(arg, v, term)) 
-    return new Relation(formula.name, newargs)
-  }
-
-  if (formula instanceof Exists) {
-    if(deepEqual(formula.v, v)) {
-      return formula
-    } else {
-      let fvs = term.getFreeVars()
-      if(fvs.some(fv => deepEqual(fv, formula.v))) {
-        // avoid capture
-        let v2 = new TermVar(formula.v.v + "1") // FIXME no guarantee this is fresh
-        return new Exists(v2, substituteTerm(substituteTerm(formula.one, formula.v, v2), v, term))
-      } else {
-        return new Exists(formula.v, substituteTerm(formula.one, v, term))
-      }
-    }
-  }
-
-  if (formula instanceof Forall) {
-    if(deepEqual(formula.v, v)) {
-      return formula
-    } else {
-      let fvs = term.getFreeVars()
-      if(fvs.some(fv => deepEqual(fv, formula.v))) {
-        // avoid capture
-        let v2 = new TermVar(formula.v.v + "1") // FIXME no guarantee this is fresh
-        return new Forall(v2, substituteTerm(substituteTerm(formula.one, formula.v, v2), v, term))
-      } else {
-        return new Forall(formula.v, substituteTerm(formula.one, v, term))
-      }
-    }
-  }
 }
 
 // If a tree is set as toDelete, delete the tree and its premises
