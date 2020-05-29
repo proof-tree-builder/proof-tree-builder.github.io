@@ -432,9 +432,9 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
     let p1 = new And(pre, c)
     let p2 = new And(pre, new Not(c))
 
-    let premise1 = new HoareIncomplete(new HoareTriple(p1, body, pre))
+    let premise = new HoareIncomplete(new HoareTriple(p1, body, pre))
 
-    return new Conditional(premise1, premise2, triple)
+    return new Loop(premise, triple)
   }
 
   throw new Error('No rule specified or rule does not exist.')
