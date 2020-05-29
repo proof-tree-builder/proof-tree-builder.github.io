@@ -1367,7 +1367,7 @@ class CmdWhile extends Command {
   unicode () { return `while (${this.condition.unicode()}) do (${this.body.unicode()})` }
   latex () { return `while (${this.condition.latex()}) do (${this.body.latex()})` }
   reconstructor () {
-    return `new CmdIf(${this.condition.reconstructor()}, ${this.body.reconstructor()})`
+    return `new CmdWhile(${this.condition.reconstructor()}, ${this.body.reconstructor()})`
   }
 }
 
