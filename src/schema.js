@@ -1687,3 +1687,23 @@ const reorganizeTree = (tree) => {
     return tree
   }
 }
+
+const fillIncompleteByIndex = (tree, toComplete, i) => {
+  const aux = (tree, toComplete, i) => {
+    if (!tree instanceof ProofTree) {
+      throw new TypeError(`Can't reorganize non-tree structures`)
+    } else if (tree instanceof LKIncomplete || tree instanceof HoareIncomplete) {
+      if (tree.completer || !deepEqual(tree.conclusion, toComplete.conclusion)) {
+        return { t: tree, i: i }
+      // } else if (!deepEqual(tree.conclusion, toComplete.conclusion)) {
+      } else {
+        return { t: (i === 0) ? toComplete : tree, i: i - 1 }
+      }
+    } else {
+      let j = i
+      tree.premises = tree.premises.map(p => { let o = aux(p, toComplete, j); j = o.i; return o.t})
+      return { t: tree, i: j }
+    }
+  }
+  return aux(tree, toComplete, i).t
+}

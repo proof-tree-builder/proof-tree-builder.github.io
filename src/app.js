@@ -34,7 +34,7 @@ const promptTrim = (s) => {
 }
 
 // Panning with ALT + drag
-canvas.on('mouse:down', opt => {
+canvas.on('mouse:down', function (opt) {
   document.querySelectorAll('.ruleSelection').forEach(e => e.remove())
 
   let evt = opt.e
@@ -45,7 +45,7 @@ canvas.on('mouse:down', opt => {
     this.lastPosY = evt.clientY
   }
 })
-canvas.on('mouse:move', opt => {
+canvas.on('mouse:move', function (opt) {
   if (this.isDragging) {
     let e = opt.e
     this.viewportTransform[4] += e.clientX - this.lastPosX
@@ -55,13 +55,13 @@ canvas.on('mouse:move', opt => {
     this.lastPosY = e.clientY
   }
 })
-canvas.on('mouse:up', opt => {
+canvas.on('mouse:up', function (opt) {
   this.isDragging = false
   this.selection = true
 })
 
 // Zooming to the cursor
-canvas.on('mouse:wheel', opt => {
+canvas.on('mouse:wheel', function (opt) {
   let delta = opt.e.deltaY
   let pointer = canvas.getPointer(opt.e)
   let zoom = canvas.getZoom()
@@ -71,6 +71,70 @@ canvas.on('mouse:wheel', opt => {
   canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom)
   opt.e.preventDefault()
   opt.e.stopPropagation()
+})
+
+canvas.on('object:moving', function (opt) {
+  if(opt.transform.action === "drag") {
+    opt.target.opacity = 0.5
+    opt.target.setCoords()
+    proofs.forEach((entry, i) => {
+      entry.incompletes.forEach(inc => {
+        if (opt.target.root == entry.proof) { return }
+        let collision = opt.target.intersectsWithObject(entry.image)
+        if(collision) {
+          opt.target.opacity = 0.8
+          opt.target.set({ borderColor: incompleteColor })
+          opt.target.set({ borderScaleFactor: 5 })
+        } else {
+          opt.target.set({ borderColor: 'black' })
+          opt.target.set({ borderScaleFactor: 1 })
+        }
+      })
+    })
+  }
+})
+canvas.on('object:modified', function (opt) {
+  opt.target.opacity = 1
+  if(opt.transform.action === "drag") {
+    opt.target.set({ borderColor: 'black' })
+    opt.target.set({ borderScaleFactor: 1 })
+    opt.target.setCoords()
+    proofs.forEach(async (entry, i) => {
+      if (opt.target.root == entry.proof) { return }
+      const collision = opt.target.intersectsWithObject(entry.image)
+      if (!collision) { return }
+      console.log(`Found collision with ${opt.target.root.conclusion.unicode()}`)
+
+      let choices = []
+      entry.incompletes.forEach((inc, j) => {
+        if(deepEqual(inc.tree.conclusion, opt.target.root.conclusion)) {
+          choices.push(j)
+        }
+      })
+
+      let toAttach
+      if(choices.length === 1) {
+        if (await modalConfirm(`Do you want to attach the proof tree you dragged to the incomplete goal of the tree you dragged it over?`, `Attach`, `Don't attach`)) {
+          toAttach = 0
+        }
+      } else if(collision && choices.length > 1) {
+        const choiceTexts = choices.map(j => entry.incompletes[j].tree.conclusion.unicode())
+
+        toAttach = await modalRadio(`Do you want to attach the proof tree you dragged to the one of the incomplete goals of the tree you dragged it over? Please choose which one you want to attach to, ordered below left to right with respect to their places in the proof tree.`, choiceTexts, `Attach`, `Don't attach`)
+      }
+
+      if(Number.isInteger(toAttach)) {
+        proofs[i].proof = fillIncompleteByIndex(proofs[i].proof, opt.target.root, toAttach)
+        proofs.forEach((entry, k) => {
+          if (opt.target.root == entry.proof) {
+            removeProof(k)
+            refreshList()
+            redrawAll()
+          }
+        })
+      }
+    })
+  }
 })
 
 const copyToClipboard = str => {
@@ -123,7 +187,7 @@ const refreshList = () => {
 }
 
 const addProof = (pf) => {
-  proofs.push({ proof: pf, x: null, y: null })
+  proofs.push({ proof: pf, x: null, y: null, incompletes: [] })
   pf.draw()
   refreshList()
 }
@@ -229,7 +293,7 @@ const help = () => {
     You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
   </p>
   <p>
-    You can click on the <span style="color: ${incompleteColor}">orange</span> scissors button (✄) to detach a proof, i.e. to create a separate proof tree with the current branch and changing the original one into an incomplete one.
+You can click on the <span style="color: ${incompleteColor}">orange</span> scissors button (✄) to <strong>detach</strong> a proof, i.e. to create a separate proof tree with the current branch and changing the original one into an incomplete one. You can also <strong>attach</strong> a separate proof on another one by <strong>dragging</strong> the subtree and <strong>dropping</strong> on the main one.
   </p>
   <p>
     As you work on the proof, you can click on the buttons on the left bar to either copy the LaTeX output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
@@ -599,20 +663,30 @@ ProofTree.prototype.image = function (root) {
   group.hasControls = false
   group.set({ borderColor: 'black' })
   group.root = root
-  group.on('moved', e => {
+  if (this == root) {
+    group.on('moved', e => {
+      proofs.forEach((entry, i) => {
+        if (root == entry.proof) {
+          proofs[i].x = e.target.aCoords.bl.x
+          proofs[i].y = e.target.aCoords.bl.y
+        }
+      })
+    })
+  }
+
+  if(isIncomplete) {
     proofs.forEach((entry, i) => {
       if (root == entry.proof) {
-        proofs[i].x = e.target.aCoords.bl.x
-        proofs[i].y = e.target.aCoords.bl.y
+        proofs[i].incompletes.push({ image: group, tree: this })
       }
     })
-  })
+  }
   return group
 }
 
 ProofTree.prototype.draw = function () {
+  proofs.forEach((entry, i) => { if (this == entry.proof) proofs[i].incompletes = [] })
   let im = this.image(this)
-  canvas.add(im)
   proofs.forEach((entry, i) => {
     if (this == entry.proof) {
       if(entry.x == null || entry.y == null) {
@@ -620,8 +694,10 @@ ProofTree.prototype.draw = function () {
         proofs[i].y = (window.innerHeight + im.height) / 2
       }
       im.setPositionByOrigin(new fabric.Point(proofs[i].x, proofs[i].y), 'left', 'bottom')
-    } 
+      proofs[i].image = im
+    }
   })
   im.setCoords()
+  canvas.add(im)
   return im
 }

@@ -79,12 +79,12 @@ const modalPromptBinds = html => {
   })
 }
 
-const modalPrompt = s => {
+const modalPrompt = (s, okText = "OK", cancelText = "Cancel") => {
   let html = `<p>${s}</p>
               <p><textarea></textarea></p>
               <p>
-                <button class="ok">OK</button>
-                <button class="cancel">Cancel</button>
+                <button class="ok">${okText}</button>
+                <button class="cancel">${cancelText}</button>
               </p>`
 
   let p = modalPromptBinds(html)
@@ -194,7 +194,7 @@ const modalRadioBinds = html => {
   })
 }
 
-const modalRadio = (s, options) => {
+const modalRadio = (s, options, okText = "OK", cancelText = "Cancel") => {
   let labels = ``
   options.forEach((opt, i) => {
     labels += `<p><label><input type="radio" name="choice" value="${i}" /> ${opt}</label></p>`
@@ -203,8 +203,8 @@ const modalRadio = (s, options) => {
   let html = `<p>${s}</p>
               ${labels}
               <p>
-                <button class="ok" disabled>OK</button>
-                <button class="cancel">Cancel</button>
+                <button class="ok" disabled>${okText}</button>
+                <button class="cancel">${cancelText}</button>
               </p>`
 
   let p = modalRadioBinds(html)
@@ -272,11 +272,11 @@ const modalConfirmBinds = html => {
   })
 }
 
-const modalConfirm = s => {
+const modalConfirm = (s, okText = "OK", cancelText = "Cancel") => {
   let html = `<p>${s}</p>
               <p>
-                <button class="ok">OK</button>
-                <button class="cancel">Cancel</button>
+                <button class="ok">${okText}</button>
+                <button class="cancel">${cancelText}</button>
               </p>`
 
   let p = modalConfirmBinds(html)
