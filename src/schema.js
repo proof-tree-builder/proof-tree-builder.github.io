@@ -28,6 +28,15 @@ class Term {
       throw new TypeError('Cannot construct Term instances directly')
     }
   }
+
+  // checks if we should put parens around this formula
+  shouldParen () {
+    return !(this instanceof TermVar || this instanceof TermInt)
+  }
+
+  // parenthesize the formula if necessary in the Unicode or LaTeX rendering
+  punicode () { return this.shouldParen() ? `(${this.unicode()})` : this.unicode() }
+  platex () { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
 }
 
 class TermVar extends Term {
@@ -70,8 +79,8 @@ class TermFun extends Term {
     return new TermFun(this.name, subargs)
   }
 
-  unicode () { return `${this.name}(${this.args.map(x => x.unicode()).join(', ')})` }
-  latex () { return `${this.name}(${this.args.map(x => x.latex()).join(', ')})` }
+  unicode () { return `${this.name}(${this.args.map(x => x.punicode()).join(', ')})` }
+  latex () { return `${this.name}(${this.args.map(x => x.platex()).join(', ')})` }
   smtlib () { return `(${this.name}${this.primitive ? '' : '_' + this.args.length} ${this.args.map(x => x.smtlib()).join(' ')})` }
   reconstructor () { return `new TermFun("${this.name}", [${this.args.map(arg => arg.reconstructor()).join(", ")}])` }
 
@@ -1101,8 +1110,8 @@ class AddTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.unicode()} + ${this.second.unicode()}` }
-  latex () { return `${this.first.latex()} + ${this.second.latex()}` }
+  unicode () { return `${this.first.punicode()} + ${this.second.punicode()}` }
+  latex () { return `${this.first.platex()} + ${this.second.platex()}` }
   reconstructor () {
     return `new AddTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1123,8 +1132,8 @@ class SubtractTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.unicode()} - ${this.second.unicode()}` }
-  latex () { return `${this.first.latex()} - ${this.second.latex()}` }
+  unicode () { return `${this.first.punicode()} - ${this.second.punicode()}` }
+  latex () { return `${this.first.platex()} - ${this.second.platex()}` }
   reconstructor () {
     return `new SubtractTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1145,8 +1154,8 @@ class MultiplyTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.unicode()} * ${this.second.unicode()}` }
-  latex () { return `${this.first.latex()} * ${this.second.latex()}` }
+  unicode () { return `${this.first.punicode()} * ${this.second.punicode()}` }
+  latex () { return `${this.first.platex()} * ${this.second.platex()}` }
   reconstructor () {
     return `new MultiplyTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1167,8 +1176,8 @@ class DivideTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.unicode()} / ${this.second.unicode()}` }
-  latex () { return `${this.first.latex()} / ${this.second.latex()}` }
+  unicode () { return `${this.first.punicode()} / ${this.second.punicode()}` }
+  latex () { return `${this.first.platex()} / ${this.second.platex()}` }
   reconstructor () {
     return `new DivideTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
