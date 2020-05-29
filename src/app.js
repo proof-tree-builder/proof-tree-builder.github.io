@@ -576,7 +576,7 @@ ProofTree.prototype.image = function (root) {
                 updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
               } else if (rule === Sequencing) {
                 const parsed = await modalFormulaPrompt('Enter the middle formula to prove:')
-                updated = applyHoare(this.conclusion, rule, parsed1)
+                updated = applyHoare(this.conclusion, rule, parsed)
               } else {
                 updated = applyHoare(this.conclusion, rule)
               }
