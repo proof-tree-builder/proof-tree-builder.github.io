@@ -1,26 +1,18 @@
-
-/// /////UTILITY FUNCTIONS ///////
-
 // Check if argument (s) is a string
 const isString = (s) => typeof s === 'string' || s instanceof String
 
 // Check deep equality
 const deepEqual = (x, y) => {
-  const ok = Object.keys
-
   const tx = typeof x
-
   const ty = typeof y
   return x && y && tx === 'object' && tx === ty && x.constructor === y.constructor ? (
-    ok(x).length === ok(y).length &&
-      ok(x).every(key => deepEqual(x[key], y[key]))
+    Object.keys(x).length === Object.keys(y).length &&
+      Object.keys(x).every(key => deepEqual(x[key], y[key]))
   ) : (x === y)
 }
 
 // Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
-
-/// //////TERM CLASS & CHILDREN ///////////
 
 class Term {
   constructor () {
@@ -109,8 +101,6 @@ class TermInt extends Term {
   getFreeVars () { return [] }
   getFunctions () { return [] }
 }
-
-/// //////FORMULA CLASS & CHILDREN ///////////
 
 class Formula {
   constructor () {
@@ -817,8 +807,6 @@ class NotRight extends LKProofTree {
   }
 }
 
-/// ////////////////// FORALL & EXISTS //////////
-
 class ForallLeft extends LKProofTree {
   constructor (premise, conclusion, premiseFormulaIndex, conclusionFormulaIndex, t) {
     super([premise], conclusion)
@@ -1093,8 +1081,6 @@ class LKIncomplete extends LKProofTree {
 
 // End of LK rules
 
-/// ////////////// HOARE STUFF /////////////////////////////
-
 class AddTerms extends TermFun {
   constructor (first, second) {
     // parent constructor will throw error if arguments are not terms
@@ -1293,8 +1279,6 @@ class Equal extends Relation {
   }
 }
 
-/// ////////////// COMMANDS /////////////////////////////
-
 class Command {
   constructor () {
     if (new.target === Command) {
@@ -1380,8 +1364,6 @@ class CmdWhile extends Command {
   }
 }
 
-/// ////////////// HOARE TRIPLE /////////////////////////////
-
 class HoareTriple {
   constructor (pre, command, post) {
     if (pre instanceof Formula && post instanceof Formula && command instanceof Command) {
@@ -1405,8 +1387,6 @@ class HoareTriple {
     return `new HoareTriple(${this.pre.reconstructor()}, ${this.command.reconstructor()}, ${this.post.reconstructor()})`
   }
 }
-
-/// ////////////// HOARE PROOF TREE /////////////////////////////
 
 class HoareProofTree extends ProofTree {
   constructor (premises, conclusion) {
@@ -1704,7 +1684,6 @@ const fillIncompleteByIndex = (tree, toComplete, i) => {
     } else if (tree instanceof LKIncomplete || tree instanceof HoareIncomplete) {
       if (tree.completer || !deepEqual(tree.conclusion, toComplete.conclusion)) {
         return { t: tree, i: i }
-      // } else if (!deepEqual(tree.conclusion, toComplete.conclusion)) {
       } else {
         return { t: (i === 0) ? toComplete : tree, i: i - 1 }
       }
