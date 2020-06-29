@@ -1380,7 +1380,7 @@ class HoareTriple {
   }
 
   latex () {
-    return `\\vdash {${this.pre.latex()}} ${this.command.latex()} {${this.post.latex()}}`
+    return `\\vdash \\{${this.pre.latex()}\\} \\; ${this.command.latex()} \\; \\{${this.post.latex()}\\}`
   }
 
   reconstructor () {
