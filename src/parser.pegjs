@@ -67,9 +67,9 @@ Term2
 
 // Literals for terms
 Term1
-  = name:Name { return new TermVar(name); }
+  = name:Name _ "(" _ terms:Terms _ ")" { return new TermFun(name, terms); }
+  / name:Name { return new TermVar(name); }
   / i:Integer { return new TermInt(i); }
-  / name:Name _ "(" _ terms:Terms _ ")" { return new TermFun(name, terms); }
   / "(" _ t:Term _ ")" { return t; }
 
 Terms

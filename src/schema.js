@@ -23,7 +23,7 @@ class Term {
 
   // checks if we should put parens around this formula
   shouldParen () {
-    return !(this instanceof TermVar || this instanceof TermInt)
+    return !(this instanceof TermVar || this instanceof TermInt || this instanceof TermFun)
   }
 
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
