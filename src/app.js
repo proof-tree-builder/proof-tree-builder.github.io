@@ -323,8 +323,8 @@ You can click on the <span style="color: ${incompleteColor}">orange</span> sciss
   </p>
   <br>
   <small>
-    The source code of the Proof Tree Builder can be found <a href="https://github.com/joom/proof-tree-builder" target="_blank">here</a>.<br>
-    Proof Tree Builder is developed by Joomy Korkut, Anastasiya Kravchuk-Kirilyuk and John Li. 2018-2020.
+    The source code of the Proof Tree Builder can be found <a href="https://github.com/proof-tree-builder" target="_blank">here</a>.<br>
+    Proof Tree Builder is developed by Joomy Korkut, Anastasiya Kravchuk-Kirilyuk and John Li. 2018-2022.
   </small>`)
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {

@@ -1,7 +1,7 @@
 # proof-tree-builder
 A web-based graphical proof assistant for LK and Hoare logic. 
 
-[Live here.](https://joom.github.io/proof-tree-builder/src/)
+[Live here.](https://proof-tree-builder.github.io/)
 
 For the Z3 rule, we are using a version of Z3 compiled to WebAssembly, which we run in browser, thanks to Clément Pit-Claudel's [z3.wasm](https://github.com/cpitclaudel/z3.wasm) project.
 For graphics, we use [Fabric.js](http://fabricjs.com/). To generate a parser from a grammar, we use [PEG.js](https://pegjs.org/).
