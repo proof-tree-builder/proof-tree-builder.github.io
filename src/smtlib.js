@@ -92,6 +92,6 @@ const onZ3Message = (event) => {
 }
 
 const setupZ3Worker = () => {
-  worker = new window.Worker("worker.js");
+  worker = new window.Worker("/src/worker.js");
   worker.onmessage = onZ3Message;
 }

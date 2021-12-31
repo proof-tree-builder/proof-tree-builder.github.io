@@ -254,8 +254,8 @@ const help = () => {
   </p>
   <p><button id="showLKRules">Show LK rules</button></p>
   <div id="LKRules" style="display: none">
-    <p><img src="./rules/propositional.png"></p>
-    <p><img src="./rules/firstOrder.png"></p>
+    <p><img src="./src/rules/propositional.png"></p>
+    <p><img src="./src/rules/firstOrder.png"></p>
   </div>
   <br>
   <h2>Hoare logic</h2>
@@ -282,7 +282,7 @@ const help = () => {
   </p>
   <p><button id="showHoareRules">Show Hoare logic rules</button></p>
   <div id="HoareRules" style="display: none">
-    <p><img src="./rules/hoare.png"></p>
+    <p><img src="./src/rules/hoare.png"></p>
   </div>
   <br>
   <h2>General usage</h2>

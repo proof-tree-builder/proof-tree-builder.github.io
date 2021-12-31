@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Proof Tree Builder</title>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.4.4/fabric.min.js"></script>
-    <script type="text/javascript" src="parser.js"></script>
+    <script type="text/javascript" src="src/fabric.min.js"></script>
+    <script type="text/javascript" src="src/parser.js"></script>
     <style type="text/css">
       * { margin: 0; padding: 0;}
 
@@ -75,7 +75,7 @@
       #left-bar {
         position: fixed;
         height: 100%;
-        width: 10em;
+        width: 11em;
         top: 2.5em;
         left: 0;
         border: 1px solid black;
@@ -288,7 +288,7 @@
       <button type="button" id="addHoareGoal">Add Hoare logic goal</button>
       <button type="button" id="loadProof">Load proof file</button>
       <button type="button" id="help">Help</button>
-      <img src="loading.gif" alt="Loading..." id="loading" style="display: none">
+      <img src="src/loading.gif" alt="Loading..." id="loading" style="display: none">
       <span id="loadingMsg"></span>
       <label class="switch" alt="Switch between Learn and Automate modes">
         <input type="checkbox" id="mode">
@@ -306,16 +306,16 @@
 
     <canvas id="c" width="800" height="450"></canvas>
 
-    <script type="text/javascript" src="protocol.js"></script>
-    <script type="text/javascript" src="schema.js"></script>
-    <script type="text/javascript" src="parser.js"></script>
-    <script type="text/javascript" src="apply.js"></script>
-    <script type="text/javascript" src="smtlib.js"></script>
-    <script type="text/javascript" src="app.js"></script>
-    <!-- <script type="text/javascript" src="example.js"></script> -->
-    <script type="text/javascript" src="learn.js"></script>
-    <script type="text/javascript" src="automation.js"></script>
-    <script type="text/javascript" src="modals.js"></script>
+    <script type="text/javascript" src="src/protocol.js"></script>
+    <script type="text/javascript" src="src/schema.js"></script>
+    <script type="text/javascript" src="src/parser.js"></script>
+    <script type="text/javascript" src="src/apply.js"></script>
+    <script type="text/javascript" src="src/smtlib.js"></script>
+    <script type="text/javascript" src="src/app.js"></script>
+    <!-- <script type="text/javascript" src="src/example.js"></script> -->
+    <script type="text/javascript" src="src/learn.js"></script>
+    <script type="text/javascript" src="src/automation.js"></script>
+    <script type="text/javascript" src="src/modals.js"></script>
     <script type="text/javascript">
       setupZ3Worker()
       help()

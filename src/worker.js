@@ -82,5 +82,5 @@ c
   return { init: init }
 }
 
-importScripts("protocol.js")
+importScripts("./protocol.js")
 makeWorker(self, console, queries, responses, performance).init()
