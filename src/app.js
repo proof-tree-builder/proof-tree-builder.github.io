@@ -148,7 +148,13 @@ const copyToClipboard = str => {
 
 const giveLatex = i => {
   let pf = proofs[i].proof
-  let code = pf.latex()
+  let code = `\\documentclass{article}
+\\usepackage{bussproofs}
+\\begin{document}
+\\begin{prooftree}
+${pf.latex()}
+\\end{prooftree}
+\\end{document}`
   copyToClipboard(code)
   modalAlert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
 }
