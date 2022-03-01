@@ -18,6 +18,11 @@ const generateSmtlib = sequent => {
   })
   return [...s, 
          `(assert (not ${sequent.smtlib()}))`,
+  // the 2 lines below are based on a hack described in
+  // https://github.com/cpitclaudel/z3.wasm/issues/2#issuecomment-832659189
+  // don't know why this works
+         `(declare-fun __FORBIDDEN__ () Int)`,
+         `(assert-soft (= __FORBIDDEN__ 10))`,
          `(check-sat)`,
          `(exit)`
          ].join('\n')
