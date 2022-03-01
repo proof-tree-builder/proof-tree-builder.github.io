@@ -1,0 +1,2 @@
+/* Proof for ⊢ ((p ⇒ q) ⇒ p) ⇒ p */
+new ImpliesRight(new ImpliesLeft(new ImpliesRight(new Identity(new Sequent([new Var("p")], [new Var("q"), new Var("p")]), 0, 1), new Sequent([], [new Implies(new Var("p"), new Var("q")), new Var("p")]), 0, 0, 0), new Identity(new Sequent([new Var("p")], [new Var("p")]), 0, 0), new Sequent([new Implies(new Implies(new Var("p"), new Var("q")), new Var("p"))], [new Var("p")]), 0, 0, 0), new Sequent([], [new Implies(new Implies(new Implies(new Var("p"), new Var("q")), new Var("p")), new Var("p"))]), 0, 0, 0)
