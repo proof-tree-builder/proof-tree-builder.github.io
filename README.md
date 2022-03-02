@@ -19,8 +19,9 @@ You can click the "Add LK goal" button to add a new sequent calculus goal to pro
 * `exists x. g(k,x) |- exists y. g(k,y)`
 * `|- ((p => q) => p) => p`
 * `x > 1 |- x > 0` (needs Z3)
-* `x <= y, y <= z |- x <= z` (needs Z3, currently buggy because of the Z3 build)
+* `x <= y, y <= z |- x <= z` (needs Z3)
 * `|- (P(0) && (forall x. (P(x) => P(x + 1)))) => P(3)` (needs Z3)
+* `|- (P(z) && (forall x. (P(x) => P(s(x))))) => P(s(s(s(z))))`
 
 Or you can click the "Add Hoare logic goal" button to add a new Hoare triple, such as
 
