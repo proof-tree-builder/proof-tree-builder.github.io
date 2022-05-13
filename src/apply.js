@@ -67,7 +67,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
 
     // if none, then can't apply rule
     if (indices.length == 0) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`There is no formula with the ${connectives[rule.name]} connective on the left hand side.`)
     }
 
     let idx
@@ -207,7 +207,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
 
     // if none, then can't apply rule
     if (indices.length == 0) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`There is no formula with the ${connectives[rule.name]} connective on the right hand side.`)
     }
 
     let idx

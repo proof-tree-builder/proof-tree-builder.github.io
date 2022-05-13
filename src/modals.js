@@ -307,6 +307,16 @@ const modalAlertBinds = html => {
   })
 }
 
+const modalWarning = s => {
+  let html = `<p>${s}</p>
+              <p>
+                <button class="ok error">OK</button>
+              </p>`
+
+  let p = modalAlertBinds(html)
+  return p
+}
+
 const modalAlert = s => {
   let html = `<p>${s}</p>
               <p>

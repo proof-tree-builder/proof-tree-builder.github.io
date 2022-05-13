@@ -548,25 +548,40 @@ ProofTree.prototype.image = function (root) {
                 updated = await auto(this)
                 if(updated === this) { return }
               } else if (rule === WeakeningLeft) {
+                if (this.conclusion.precedents.length < 1) throw new Error('There is no formula on the left side to drop.')
                 const i = await modalRadio('For weakening, select a formula from the left side to drop:', this.conclusion.precedents.map(x => x.unicode()))
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === WeakeningRight) {
+                if (this.conclusion.antecedents.length < 1) throw new Error('There is no formula on the right side to drop.')
                 const i = await modalRadio('For weakening, select a formula from the right side to drop:', this.conclusion.antecedents.map(x => x.unicode()))
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === ContractionLeft) {
+                if (this.conclusion.precedents.length < 1) throw new Error('There is no formula on the left side to repeat.')
                 const i = await modalRadio('For contraction, select a formula from the left side to repeat:', this.conclusion.precedents.map(x => x.unicode()))
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === ContractionRight) {
+                if (this.conclusion.antecedents.length < 1) throw new Error('There is no formula on the right side to repeat.')
                 const i = await modalRadio('For contraction, select a formula from the right side to repeat:', this.conclusion.antecedents.map(x => x.unicode()))
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === Cut) {
                 const parsed = await modalFormulaPrompt('Enter the formula to prove:')
                 updated = await applyLK(this.conclusion, rule, parsed)
-              } else if (rule === ForallLeft || rule === ExistsRight) {
-                const parsed = await modalTermPrompt('Enter the term to substitute for the variable:')
+              } else if (rule === ForallLeft) {
+                if (!this.conclusion.precedents.some(e => e instanceof Forall)) throw new Error('There are no ∀-quantified formula on the left side.')
+                const parsed = await modalTermPrompt('Enter the term to substitute for the variable currently bound by ∀:')
                 updated = await applyLK(this.conclusion, rule, parsed)
-              } else if (rule === ForallRight || rule === ExistsLeft) {
-                const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable:')
+              } else if (rule === ExistsRight) {
+                console.log(this.conclusion.antecedents);
+                if (!this.conclusion.antecedents.some(e => e instanceof Exists)) throw new Error('There are no ∃-quantified formula on the right side.')
+                const parsed = await modalTermPrompt('Enter the term to substitute for the variable currently bound by ∃:')
+                updated = await applyLK(this.conclusion, rule, parsed)
+              } else if (rule === ForallRight) {
+                if (!this.conclusion.antecedents.some(e => e instanceof Forall)) throw new Error('There are no ∀-quantified formula on the right side.')
+                const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable currently bound by ∀:')
+                updated = await applyLK(this.conclusion, rule, new TermVar(parsed))
+              } else if (rule === ExistsLeft) {
+                if (!this.conclusion.precedents.some(e => e instanceof Exists)) throw new Error('There are no ∃-quantified formula on the left side.')
+                const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable currently bound by ∃:')
                 updated = await applyLK(this.conclusion, rule, new TermVar(parsed))
               } else {
                 updated = await applyLK(this.conclusion, rule)
@@ -596,9 +611,7 @@ ProofTree.prototype.image = function (root) {
             })
             entry.proof.draw()
           } catch(err) {
-            modalAlert(`Rule not applicable!`)
-            // TODO better error messages
-            console.log(err.message);
+            modalWarning(err.message)
             console.log(err);
           }
         })

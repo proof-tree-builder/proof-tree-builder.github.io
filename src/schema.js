@@ -1695,3 +1695,20 @@ const fillIncompleteByIndex = (tree, toComplete, i) => {
   }
   return aux(tree, toComplete, i).t
 }
+
+const connectives = {
+  "AndLeft": "∧",
+  "OrLeft": "∨",
+  "NotLeft": "¬",
+  "ImpliesLeft": "⇒",
+  "FalsityLeft": "⊥",
+  "ForallLeft": "∀",
+  "ExistsLeft": "∃",
+  "AndRight": "∧",
+  "OrRight": "∨",
+  "NotRight": "¬",
+  "ImpliesRight": "⇒",
+  "TruthRight": "⊤",
+  "ForallRight": "∀",
+  "ExistsRight": "∃"
+}
