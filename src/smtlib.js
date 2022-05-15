@@ -60,9 +60,10 @@ const checkWithZ3 = (sequent, cb, hasBogus = false) => {
         let p = SExpressionParser.parse(s)
                                  .filter(x => x instanceof Array && !x.includes("__FORBIDDEN__"))
         console.log(p)
+        cb(false, p)
+        return
       }
-      console.log(lastResult);
-      cb((/unsat/).test(lastResult))
+      cb((/unsat/).test(lastResult), [])
     }
   }, 100)
 }

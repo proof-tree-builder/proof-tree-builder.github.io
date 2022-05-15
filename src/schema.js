@@ -1030,11 +1030,34 @@ class Z3Rule extends LKProofTree {
     this.latexName = 'Z3'
     this.z3Response = "checking"
 
-    checkWithZ3(conclusion, result => {
+    checkWithZ3(conclusion, (result, modelArray) => {
       this.z3Response = result
       if(!result) {
         console.log(result);
-        modalWarning("Z3 says no!")
+        
+        let table = `<table class="counterexample">`
+        for (const row of modelArray) {
+          const name = row[1]
+          const args = row[2]
+          const hasArgs = args.length > 0
+          const bodyArray = row[4]
+          const retTy = row[3]
+          let type, body
+          body = row[4]
+          if (retTy === "Bool" && hasArgs) {
+            type = "Relation"
+          } else if (retTy === "Bool") {
+            type = "Propositional variable"
+          } else if (retTy === "Int" && hasArgs) {
+            type = "Function"
+          } else {
+            type = "Term"
+          }
+
+          table += `<tr><td>${type}</td><td><b>${name}</b></td><td>${body}</td></tr>`
+        }
+        table += `</table>`
+        modalWarning(`Z3 says no! Here is a counterexample:<br>${table}`)
         // throw new TypeError('Z3 does not accept this sequent!')
       }
 
