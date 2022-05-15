@@ -1,4 +1,4 @@
-const generateSmtlib = sequent => {
+const generateSmtlib = (sequent, hasBogus) => {
   let s = new Set()
   sequent.getFreePropVars().forEach(fv => {
     s.add(`(declare-const ${fv.v} Bool)`)
@@ -16,26 +16,29 @@ const generateSmtlib = sequent => {
     const args = Array(fun.args.length).fill('Int').join(' ')
     s.add(`(declare-fun ${fun.name}_${fun.args.length} (${args}) Int)`)
   })
-  return [...s, 
-         `(assert (not ${sequent.smtlib()}))`,
+  return [`(reset)`,
+          `(set-option :produce-models true)`,
+          ...s, 
+          `(assert (not ${sequent.smtlib()}))`,
   // the 2 lines below are based on a hack described in
   // https://github.com/cpitclaudel/z3.wasm/issues/2#issuecomment-832659189
   // don't know why this works
-         `(declare-fun __FORBIDDEN__ () Int)`,
-         `(assert-soft (= __FORBIDDEN__ 10))`,
-         `(check-sat)`,
-         `(exit)`
+          hasBogus ? `(declare-fun __FORBIDDEN__ () Int)` : ``,
+          hasBogus ? `(assert-soft (= __FORBIDDEN__ 10))` : ``,
+          `(check-sat)`,
+          `(get-model)`,
+          `(exit)`
          ].join('\n')
 }
 
 let lastResult = ``
 let isLoaded = false
-const checkWithZ3 = (sequent, cb) => {
+const checkWithZ3 = (sequent, cb, hasBogus = false) => {
   lastResult = ``
   isLoaded = false
-  let input = generateSmtlib(sequent)
+  let input = generateSmtlib(sequent, hasBogus)
   console.log(input);
-  let args = ['-smt2']
+  let args = ['-smt2', '-nw']
   verification_start = window.performance.now();
   postZ3Message(queries.VERIFY, { args: args, input: input });
 
@@ -43,11 +46,24 @@ const checkWithZ3 = (sequent, cb) => {
     if (isLoaded) { 
       clearInterval(wait) 
       if((/Failed to verify/).test(lastResult)) {
-        modalAlert(`<strong>Bug in the Z3 build:</strong> ${lastResult}`)
+        if (hasBogus) {
+          modalWarning(`<strong>Bug in the Z3 build:</strong> ${lastResult}`)
+        } else {
+          // HACK: run Z3 without the bogus assertion first, 
+          // try again with it if you get an error
+          checkWithZ3(sequent, cb, true) 
+        }
         return
       }
+      if((/sat\(model/).test(lastResult)) {
+        let s = lastResult.substring(lastResult.indexOf("("))
+        let p = SExpressionParser.parse(s)
+                                 .filter(x => x instanceof Array && !x.includes("__FORBIDDEN__"))
+        console.log(p)
+      }
+      console.log(lastResult);
       cb((/unsat/).test(lastResult))
-    } 
+    }
   }, 100)
 }
 
@@ -99,4 +115,78 @@ const onZ3Message = (event) => {
 const setupZ3Worker = () => {
   worker = new window.Worker("/src/worker.js");
   worker.onmessage = onZ3Message;
+}
+
+// from https://gist.github.com/DmitrySoshnikov/2a434dda67019a4a7c37
+const SExpressionParser = {
+  parse(expression) {
+    this._expression = expression
+    this._cursor = 0
+    this._ast = []
+    return this._parseExpression()
+  },
+
+  _parseExpression() {
+    this._whitespace()
+    if (this._expression[this._cursor] === '(') {
+      return this._parseList()
+    }
+    return this._parseAtom()
+  },
+
+  _parseList() {
+    this._ast.push([])
+    this._expect('(')
+    this._parseListEntries()
+    this._expect(')')
+    return this._ast[0]
+  },
+
+  _parseListEntries() {
+    this._whitespace();
+    if (this._expression[this._cursor] === ')') { return }
+
+    let entry = this._parseExpression()
+    if (entry !== '') {
+      if (Array.isArray(entry)) {
+        entry = this._ast.pop()
+      }
+      this._ast[this._ast.length - 1].push(entry)
+    }
+    return this._parseListEntries()
+  },
+
+  _parseAtom() {
+    const terminator = /\s+|\)/
+    let atom = ''
+
+    while (this._expression[this._cursor] &&
+           !terminator.test(this._expression[this._cursor])) {
+      atom += this._expression[this._cursor]
+      this._cursor++
+    }
+
+    if (atom !== '' && !isNaN(atom)) {
+      atom = Number(atom)
+    }
+
+    return atom
+  },
+
+  _whitespace() {
+    const ws = /^\s+/;
+    while (this._expression[this._cursor] &&
+           ws.test(this._expression[this._cursor])) {
+      this._cursor++
+    }
+  },
+
+  _expect(c) {
+    if (this._expression[this._cursor] !== c) {
+      throw new Error(
+        `Unexpected token: ${this._expression[this._cursor]}, expected ${c}.`
+      )
+    }
+    this._cursor++
+  }
 }

@@ -1033,7 +1033,8 @@ class Z3Rule extends LKProofTree {
     checkWithZ3(conclusion, result => {
       this.z3Response = result
       if(!result) {
-        modalAlert("Z3 says no!")
+        console.log(result);
+        modalWarning("Z3 says no!")
         // throw new TypeError('Z3 does not accept this sequent!')
       }
 
@@ -1711,4 +1712,10 @@ const connectives = {
   "TruthRight": "⊤",
   "ForallRight": "∀",
   "ExistsRight": "∃"
+}
+const commands = {
+  "CmdAssign": "assignment",
+  "CmdSeq": "sequencing",
+  "CmdIf": "conditional",
+  "CmdWhile": "loop"
 }

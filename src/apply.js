@@ -359,7 +359,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
     return new Z3Rule(sequent)
   }
 
-  throw new Error('no such rule so far')
+  throw new Error('No such rule so far')
 }
 
 const applyHoare = (triple, rule, uservar, uservar2) => {
@@ -373,14 +373,14 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
 
     if (!(command instanceof CmdAssign) ||
       !deepEqual(post.subst(v, term), pre)) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the assignment rule.`)
     }
 
     return new Assignment(triple)
 
   } else if (rule === Sequencing) {
     if (!(command instanceof CmdSeq)) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the sequencing rule.`)
     }
 
     let first = command.first
@@ -406,7 +406,7 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
 
   } else if (rule === Conditional) {
     if (!(command instanceof CmdIf)) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the conditional rule.`)
     }
     let c = command.condition
     let btrue = command.btrue
@@ -426,7 +426,7 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
 
     if (!(command instanceof CmdWhile) &&
       !deepEqual(pre, new And(pre, new Not(c)))) {
-      throw new Error('Rule not applicable.')
+      throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the loop rule.`)
     }
 
     let p1 = new And(pre, c)
