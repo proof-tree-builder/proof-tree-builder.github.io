@@ -1,5 +1,9 @@
-// Check if argument (s) is a string
-const isString = (s) => typeof s === 'string' || s instanceof String
+const tagTester = name => { //from underscore.js
+  var tag = '[object ' + name + ']'
+  return obj => { return Object.prototype.toString.call(obj) === tag }
+}
+const isString = tagTester('String')
+const isNumber = tagTester('Number')
 
 // Check deep equality
 const deepEqual = (x, y) => {
@@ -100,6 +104,35 @@ class TermInt extends Term {
 
   getFreeVars () { return [] }
   getFunctions () { return [] }
+}
+
+class TermIte extends Term {
+  constructor (cond, t, e) {
+    super()
+    if (cond instanceof Formula && t instanceof Term && e instanceof Term) {
+      this.args = [cond, t, e]
+      this.cond = cond
+      this.t = t
+      this.e = e
+    } else {
+      throw new TypeError('TermIte has to take a conditional and two terms')
+    }
+  }
+
+  subst(v, term) {
+    return new TermIte(
+      this.cond.subst(v, term),
+      this.t.subst(v, term),
+      this.e.subst(v, term))
+  }
+
+  unicode () { return `if ${this.cond.punicode()} then ${this.t.punicode()} else ${this.e.punicode()}` }
+  latex () { return `\\text{if}\\; ${this.cond.platex()} \\;\\text{then}\\; ${this.t.platex()} \\;\\text{else}\\; ${this.e.platex()}` }
+  smtlib () { return `(ite ${this.cond.platex()} ${this.t.platex()} ${this.e.platex()})` }
+  reconstructor () { return `new TermIte(${this.cond.reconstructor()}, ${this.t.reconstructor()}, ${this.e.reconstructor()})` }
+
+  getFreeVars () { return this.args.map(arg => arg.getFreeVars()).flat() }
+  getFunctions () { return this.args.map(arg => arg.getFunctions()).flat() }
 }
 
 class Formula {
@@ -249,6 +282,31 @@ class Implies extends Formula {
   latex () { return `${this.left.platex()} \\Rightarrow ${this.right.platex()}` }
   smtlib () { return `(=> ${this.left.smtlib()} ${this.right.smtlib()})` }
   reconstructor () { return `new Implies(${this.left.reconstructor()}, ${this.right.reconstructor()})` }
+}
+
+class Ite extends Formula {
+  constructor (cond, t, e) {
+    super()
+    if (cond instanceof Formula && t instanceof Formula && e instanceof Formula) {
+      this.cond = cond
+      this.t = t
+      this.e = e
+      this.subformulas = [cond, t, e]
+    } else {
+      throw new TypeError('Ite has to contain Formulas')
+    }
+  }
+
+  subst (v, term) {
+    return new Implies(this.cond.subst(v, term),
+                       this.t.subst(v, term),
+                       this.e.subst(v, term))
+  }
+
+  unicode () { return `if ${this.cond.punicode()} then ${this.t.punicode()} else ${this.e.punicode()}` }
+  latex () { return `\\text{if}\\; ${this.cond.platex()} \\;\\text{then}\\; ${this.t.platex()} \\;\\text{else}\\; ${this.e.platex()}` }
+  smtlib () { return `(ite ${this.cond.platex()} ${this.t.platex()} ${this.e.platex()})` }
+  reconstructor () { return `new Ite(${this.cond.reconstructor()}, ${this.t.reconstructor()}, ${this.e.reconstructor()})` }
 }
 
 class Not extends Formula {
@@ -1033,7 +1091,61 @@ class Z3Rule extends LKProofTree {
     checkWithZ3(conclusion, (result, modelArray) => {
       this.z3Response = result
       if(!result) {
-        console.log(result);
+
+        // const untilExclamation = s => s.indexOf('!') === -1 ? s : s.substr(0, s.indexOf('!'))
+        const untilExclamation = s => s
+        const smtTerm = (t, expected = Term) => {
+          if (isString(t)) {
+            if (t === "true") { return new Truth() }
+            if (t === "false") { return new Falsity() }
+            if (expected == Term) { return new TermVar(untilExclamation(t)) }
+            if (expected == Formula) { return new Var(untilExclamation(t)) }
+          }
+          if (isNumber(t)) { return new TermInt(parseInt(t)) }
+          if (t instanceof Array) {
+            if (t[0] === "ite" && expected == Term) {
+              let b1 = smtTerm(t[2])
+              let b2 = smtTerm(t[3])
+              // return new TermIte(smtTerm(t[1], Formula), b1, b2)
+              // FIXME the deep eq check is a hack, remove when you update Z3
+              return deepEqual(b1, b2) ? b1 : new TermIte(smtTerm(t[1], Formula), b1, b2)
+            }
+            if (t[0] === "ite" && expected == Formula) {
+              let b1 = smtTerm(t[2], Formula)
+              let b2 = smtTerm(t[3], Formula)
+              // return new Ite(smtTerm(t[1], Formula), b1, b2)
+              // FIXME the deep eq check is a hack, remove when you update Z3
+              return deepEqual(b1, b2) ? b1 : new Ite(smtTerm(t[1], Formula), b1, b2)
+            }
+            if (t[0] === "-" && isNumber(t[1]) && t.length === 2) {
+              return new TermInt(-t[1])
+            } else if (t[0] === "-" && t.length === 2) {
+              return new MultiplyTerms(new TermInt(-1), smtTerm(t[1]))
+            }
+            if (t[0] === "+") { return new AddTerms(smtTerm(t[1]), smtTerm(t[2]), smtTerm(t[3])) }
+            if (t[0] === "-") { return new SubtractTerms(smtTerm(t[1]), smtTerm(t[2]), smtTerm(t[3])) }
+            if (t[0] === "*") { return new MultiplyTerms(smtTerm(t[1]), smtTerm(t[2]), smtTerm(t[3])) }
+            if (t[0] === "/") { return new DivideTerms(smtTerm(t[1]), smtTerm(t[2]), smtTerm(t[3])) }
+            if (t[0] === "=") { return new Equal(smtTerm(t[1]), smtTerm(t[2])) }
+            if (t[0] === "<") { return new LessThan(smtTerm(t[1]), smtTerm(t[2])) }
+            if (t[0] === "<=") { return new LeqThan(smtTerm(t[1]), smtTerm(t[2])) }
+            if (t[0] === ">") { return new GreaterThan(smtTerm(t[1]), smtTerm(t[2])) }
+            if (t[0] === "<=") { return new GeqThan(smtTerm(t[1]), smtTerm(t[2])) }
+            if (t[0] === "and") { return new And(smtTerm(t[1], Formula), smtTerm(t[2], Formula)) }
+            if (t[0] === "or") { return new Or(smtTerm(t[1], Formula), smtTerm(t[2], Formula)) }
+            if (t[0] === "=>") { return new Implies(smtTerm(t[1], Formula), smtTerm(t[2], Formula)) }
+            if (t[0] === "not") { return new Not(smtTerm(t[1], Formula)) }
+            if (t[0] === "!") { return new Not(smtTerm(t[1], Formula)) }
+            if (expected == Term && isString(t[0])) {
+              return new TermFun(t[0], t.slice(1).map(x => smtTerm(x)))
+            } else if (expected == Formula && isString(t[0])) {
+              return new Relation(t[0], t.slice(1).map(x => smtTerm(x)))
+            } else {
+              throw new Error(`Cannot parse SMT term/formula ${t}`)
+            }
+          }
+          throw new Error(`Unexpected value in Z3 model: ${t}`)
+        }
         
         let table = `<table class="counterexample">`
         for (const row of modelArray) {
@@ -1044,21 +1156,32 @@ class Z3Rule extends LKProofTree {
           const retTy = row[3]
           let type, body
           body = row[4]
+          let newBody = ``
           if (retTy === "Bool" && hasArgs) {
             type = "Relation"
+            newBody += `(${args.map(a => untilExclamation(a[0])).join(", ")}) ↦ `
+            newBody += smtTerm(body, Formula).unicode()
           } else if (retTy === "Bool") {
             type = "Propositional variable"
+            newBody += smtTerm(body, Formula).unicode()
           } else if (retTy === "Int" && hasArgs) {
             type = "Function"
+            newBody += `(${args.map(a => untilExclamation(a[0])).join(", ")}) ↦ `
+            newBody += smtTerm(body, Term).unicode()
           } else {
             type = "Term"
+            newBody += smtTerm(body, Term).unicode()
           }
 
-          table += `<tr><td>${type}</td><td><b>${name}</b></td><td>${body}</td></tr>`
+          table += `<tr><td>${type}</td><td><b>${name}</b></td><td>${newBody}</td></tr>`
         }
         table += `</table>`
-        modalWarning(`Z3 says no! Here is a counterexample:<br>${table}`)
-        // throw new TypeError('Z3 does not accept this sequent!')
+
+        if(modelArray.length === 0) {
+          modalWarning(`Z3 says no!`)
+        } else {
+          modalWarning(`Z3 says no! Here is a counterexample:<br>${table}`)
+        }
       }
 
       // FIXME

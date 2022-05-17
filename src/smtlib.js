@@ -57,9 +57,8 @@ const checkWithZ3 = (sequent, cb, hasBogus = false) => {
       }
       if((/sat\(model/).test(lastResult)) {
         let s = lastResult.substring(lastResult.indexOf("("))
-        let p = SExpressionParser.parse(s)
-                                 .filter(x => x instanceof Array && !x.includes("__FORBIDDEN__"))
-        console.log(p)
+        let p = parseSexpr(s).filter(x => x instanceof Array && !x.includes("__FORBIDDEN__"))
+        console.log(lastResult);
         cb(false, p)
         return
       }
@@ -118,76 +117,18 @@ const setupZ3Worker = () => {
   worker.onmessage = onZ3Message;
 }
 
-// from https://gist.github.com/DmitrySoshnikov/2a434dda67019a4a7c37
-const SExpressionParser = {
-  parse(expression) {
-    this._expression = expression
-    this._cursor = 0
-    this._ast = []
-    return this._parseExpression()
-  },
-
-  _parseExpression() {
-    this._whitespace()
-    if (this._expression[this._cursor] === '(') {
-      return this._parseList()
-    }
-    return this._parseAtom()
-  },
-
-  _parseList() {
-    this._ast.push([])
-    this._expect('(')
-    this._parseListEntries()
-    this._expect(')')
-    return this._ast[0]
-  },
-
-  _parseListEntries() {
-    this._whitespace();
-    if (this._expression[this._cursor] === ')') { return }
-
-    let entry = this._parseExpression()
-    if (entry !== '') {
-      if (Array.isArray(entry)) {
-        entry = this._ast.pop()
-      }
-      this._ast[this._ast.length - 1].push(entry)
-    }
-    return this._parseListEntries()
-  },
-
-  _parseAtom() {
-    const terminator = /\s+|\)/
-    let atom = ''
-
-    while (this._expression[this._cursor] &&
-           !terminator.test(this._expression[this._cursor])) {
-      atom += this._expression[this._cursor]
-      this._cursor++
-    }
-
-    if (atom !== '' && !isNaN(atom)) {
-      atom = Number(atom)
-    }
-
-    return atom
-  },
-
-  _whitespace() {
-    const ws = /^\s+/;
-    while (this._expression[this._cursor] &&
-           ws.test(this._expression[this._cursor])) {
-      this._cursor++
-    }
-  },
-
-  _expect(c) {
-    if (this._expression[this._cursor] !== c) {
-      throw new Error(
-        `Unexpected token: ${this._expression[this._cursor]}, expected ${c}.`
-      )
-    }
-    this._cursor++
-  }
+// from https://rosettacode.org/wiki/S-expressions
+const parseSexpr = function(arg) {
+	var t = arg.match(/\s*("[^"]*"|\(|\)|"|[^\s()"]+)/g)
+	for (var o, c=0, i=t.length-1; i>=0; i--) {
+		var n, ti = t[i].trim()
+		if (ti == '"') return
+		else if (ti == '(') t[i]='[', c+=1
+		else if (ti == ')') t[i]=']', c-=1
+		else if ((n=+ti) == ti) t[i]=n
+		else t[i] = '\'' + ti.replace('\'', '\\\'') + '\''
+		if (i>0 && ti!=']' && t[i-1].trim()!='(' ) t.splice(i,0, ',')
+		if (!c) if (!o) o=true; else return
+	}
+	return c ? undefined : eval(t.join(''))
 }
