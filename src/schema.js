@@ -1178,9 +1178,9 @@ class Z3Rule extends LKProofTree {
         table += `</table>`
 
         if(modelArray.length === 0) {
-          modalWarning(`Z3 says no!`)
+          modalWarning(`Z3 says no to the goal ${conclusion.unicode().trim()}!`)
         } else {
-          modalWarning(`Z3 says no! Here is a counterexample:<br>${table}`)
+          modalWarning(`Z3 says no to the goal ${conclusion.unicode().trim()}.<br>Here is a counterexample:<br>${table}`)
         }
       }
 
