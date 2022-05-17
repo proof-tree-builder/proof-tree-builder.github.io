@@ -320,9 +320,6 @@ You can click on the <span style="color: ${incompleteColor}">orange</span> sciss
   <p>
     If Z3 finds the goal to be valid, it will draw a <span style="color: ${successColor}">green</span> line over it. If Z3 finds the goal to be not valid, it will draw a <span style="color: ${failureColor}">red</span> line over it.
   </p>
-  <p>
-    Remember that while our proof assistant does not assume the law of excluded middle (P ∨ ¬ P), Z3 does! So there might be goals that our proof assistant cannot prove on purpose, but Z3 will say yes to them.
-  </p>
   <br>
   <p>
     Happy proof hacking!
