@@ -453,6 +453,7 @@ ProofTree.prototype.image = function (root) {
       fontFamily: 'Helvetica',
       fontSize: 11,
       stroke: 'white',
+      hoverCursor: 'pointer',
       backgroundColor: incompleteColor
     })
 
@@ -629,6 +630,7 @@ ProofTree.prototype.image = function (root) {
       fontFamily: 'Helvetica',
       fontSize: 11,
       stroke: 'white',
+      hoverCursor: 'pointer',
       backgroundColor: failureColor
     })
 
@@ -636,6 +638,7 @@ ProofTree.prototype.image = function (root) {
       fontFamily: 'Helvetica',
       fontSize: 11,
       stroke: 'white',
+      hoverCursor: 'pointer',
       backgroundColor: incompleteColor
     })
 
@@ -674,7 +677,7 @@ ProofTree.prototype.image = function (root) {
   } else {
     groupImages = [premiseGroup, line, ruleLabel, text]
   }
-  let group = new fabric.Group(groupImages, { selectable: true, subTargetCheck: true })
+  let group = new fabric.Group(groupImages, { selectable: true, subTargetCheck: true, hoverCursor: 'auto' })
 
   group.lockRotation = true
   group.lockScalingX = true
