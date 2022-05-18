@@ -156,7 +156,7 @@ ${pf.latex()}
 \\end{prooftree}
 \\end{document}`
   copyToClipboard(code)
-  modalAlert(`LaTeX output for the ${pf.conclusion.unicode()} proof tree is copied to the clipboard!`)
+  modalAlert(`LaTeX output for the <code>${pf.conclusion.unicode()}</code> proof tree is copied to the clipboard!`)
 }
 
 const removeProof = i => {
@@ -272,6 +272,7 @@ const help = () => {
     <ul class="help-examples">
       <li><code>{true} if true then x := 3 else x := 5 {x = 3}</code></li>
       <li><code>{true} if x < 0 then x := -1 * x else x := x {x >= 0}</code></li>
+      <li><code>{i = 0} while i < 3 do (i := i+1) {i = 3}</code></li>
       <li><code>{0 <= n} (r := 0; i := 0); while i < n do (r := r+2; i := i+1) {r = 2*n}</code></li>
     </ul>
   </p>
@@ -588,10 +589,10 @@ ProofTree.prototype.image = function (root) {
               if (rule === Consequence) {
                 const parsed1 = await modalFormulaPromptDefault(
                     `Enter the first middle formula for the consequence rule: <br>
-                    (leave it blank if it is the same as the precondition ${this.conclusion.pre.unicode()})`, this.conclusion.pre)
+                    (leave it blank if it is the same as the precondition <code>${this.conclusion.pre.unicode()}</code>)`, this.conclusion.pre)
                 const parsed2 = await modalFormulaPromptDefault(
                     `Enter the second middle formula for the consequence rule: <br>
-                    (leave it blank if it is the same as the postcondition ${this.conclusion.post.unicode()})`, this.conclusion.post)
+                    (leave it blank if it is the same as the postcondition <code>${this.conclusion.post.unicode()}</code>)`, this.conclusion.post)
                 updated = applyHoare(this.conclusion, rule, parsed1, parsed2)
               } else if (rule === Sequencing) {
                 const parsed = await modalFormulaPrompt('Enter the middle formula to prove:')

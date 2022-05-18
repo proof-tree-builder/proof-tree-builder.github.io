@@ -1173,14 +1173,14 @@ class Z3Rule extends LKProofTree {
             newBody += smtTerm(body, Term).unicode()
           }
 
-          table += `<tr><td>${type}</td><td><b>${name}</b></td><td>${newBody}</td></tr>`
+          table += `<tr><td>${type}</td><td><b>${name}</b></td><td><code>${newBody}</code></td></tr>`
         }
         table += `</table>`
 
         if(modelArray.length === 0) {
-          modalWarning(`Z3 says no to the goal ${conclusion.unicode().trim()}!`)
+          modalWarning(`Z3 says no to the goal <code>${conclusion.unicode().trim()}</code>!`)
         } else {
-          modalWarning(`Z3 says no to the goal ${conclusion.unicode().trim()}.<br>Here is a counterexample:<br>${table}`)
+          modalWarning(`Z3 says no to the goal <code>${conclusion.unicode().trim()}</code>.<br>Here is a counterexample:<br>${table}`)
         }
       }
 

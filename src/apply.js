@@ -176,7 +176,7 @@ const applyLK = async (sequent, rule, uservar, strict=true) => {
       return new ForallLeft(premise, sequent, idx, idx, uservar)
     } else if (rule === ExistsLeft) {
       if (sequent.getFreeTermVars().some(v => deepEqual(v, uservar))) {
-        modalAlert(`${uservar.v} is not a free variable!`)
+        modalAlert(`<code>${uservar.v}</code> is not a free variable!`)
         return null
       }
       // original Exists formula
@@ -371,9 +371,12 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
     let v = command.v
     let term = command.t
 
-    if (!(command instanceof CmdAssign) ||
-      !deepEqual(post.subst(v, term), pre)) {
+    if (!(command instanceof CmdAssign)) {
       throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the assignment rule.`)
+    }
+    let newpre = post.subst(v, term)
+    if (!deepEqual(newpre, pre)) {
+      throw new Error(`The precondition should be <code>${newpre.unicode()}</code> for a valid application of the assignment rule here.`)
     }
 
     return new Assignment(triple)
@@ -424,9 +427,12 @@ const applyHoare = (triple, rule, uservar, uservar2) => {
     let c = command.condition
     let body = command.body
 
-    if (!(command instanceof CmdWhile) &&
-      !deepEqual(pre, new And(pre, new Not(c)))) {
+    if (!(command instanceof CmdWhile)) {
       throw new Error(`The command in the goal is ${commands[command.constructor.name]} but you are trying to apply the loop rule.`)
+    }
+    let newpost = new And(pre, new Not(c))
+    if(!deepEqual(post, newpost)) {
+      throw new Error(`The postcondition should be <code>${newpost.unicode()}</code> for a valid application of the loop rule here.`)
     }
 
     let p1 = new And(pre, c)
