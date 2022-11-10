@@ -193,7 +193,7 @@ const refreshList = () => {
 }
 
 const addProof = (pf) => {
-  proofs.push({ proof: pf, x: null, y: null, incompletes: [] })
+  proofs.push({ proof: pf, x1: null, x2: null, y: null, incompletes: [] })
   pf.draw()
   refreshList()
 }
@@ -721,7 +721,8 @@ ProofTree.prototype.image = function (root) {
     group.on('moved', e => {
       proofs.forEach((entry, i) => {
         if (root == entry.proof) {
-          proofs[i].x = e.target.aCoords.bl.x
+          proofs[i].x1 = e.target.aCoords.bl.x
+          proofs[i].x2 = e.target.aCoords.br.x
           proofs[i].y = e.target.aCoords.bl.y
         }
       })
@@ -738,16 +739,18 @@ ProofTree.prototype.image = function (root) {
   return group
 }
 
+
 ProofTree.prototype.draw = function () {
   proofs.forEach((entry, i) => { if (this == entry.proof) proofs[i].incompletes = [] })
   let im = this.image(this)
   proofs.forEach((entry, i) => {
     if (this == entry.proof) {
-      if(entry.x == null || entry.y == null) {
-        proofs[i].x = (window.innerWidth - im.width) / 2
+      if(entry.x1 == null || entry.x2 == null || entry.y == null) {
+        proofs[i].x1 = (window.innerWidth - im.width) / 2
+        proofs[i].x2 = (window.innerWidth + im.width) / 2
         proofs[i].y = (window.innerHeight + im.height) / 2
       }
-      im.setPositionByOrigin(new fabric.Point(proofs[i].x, proofs[i].y), 'left', 'bottom')
+      im.setPositionByOrigin(new fabric.Point((proofs[i].x1 + proofs[i].x2) / 2, proofs[i].y), 'center', 'bottom')
       proofs[i].image = im
     }
   })
