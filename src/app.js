@@ -365,10 +365,22 @@ You can click on the <span style="color: ${incompleteColor}">orange</span> sciss
 document.getElementById('help').addEventListener('click', help)
 
 ProofTree.prototype.image = function (root) {
-  let premiseImages = this.premises.map(p => p.image(root))
-
   if (this.completer) {
     return this.completer.image(root)
+  }
+
+  let premiseImages = null
+  if (this.folded) {
+    premiseImages = this.premises.map(p => {
+      ellipses = new fabric.Text('...', {
+        fontFamily: 'Helvetica',
+        fontSize: 30,
+        stroke: 'black'
+      })
+      return new fabric.Group([ellipses], {})
+    })
+  } else {
+    premiseImages = this.premises.map(p => p.image(root))
   }
   let isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
 
@@ -446,6 +458,7 @@ ProofTree.prototype.image = function (root) {
   let ruleLabel = null
   let deleteLabel = null
   let detachLabel = null
+  let foldLabel = null
   if (isIncomplete) {
     ruleLabel = new fabric.Text(' + ', {
       fontFamily: 'Helvetica',
@@ -660,6 +673,21 @@ ProofTree.prototype.image = function (root) {
         refreshAll()
       }
     })
+
+    if(this.premises.length > 0) {
+      let n = "⃠"
+      foldLabel = new fabric.Text(n, {
+        fontFamily: 'Helvetica',
+        fontSize: 11,
+        stroke: this.folded ? 'lightgray' : 'black',
+        hoverCursor: 'pointer',
+        backgroundColor: this.folded ? 'black' : 'lightgray'
+      })
+      foldLabel.on('mousedown', async (e) => {
+        this.folded = !this.folded
+        refreshAll()
+      })
+    }
   }
 
   ruleLabel.setPositionByOrigin(
@@ -671,7 +699,13 @@ ProofTree.prototype.image = function (root) {
       (new fabric.Point(15, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
     detachLabel.setPositionByOrigin(
       (new fabric.Point(30, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
-    groupImages = [premiseGroup, line, ruleLabel, deleteLabel, detachLabel, text]
+    if(foldLabel) {
+      foldLabel.setPositionByOrigin(
+        (new fabric.Point(45, 5)).add(ruleLabel.getPointByOrigin('right', 'top'), 'left', 'top'))
+      groupImages = [premiseGroup, line, ruleLabel, deleteLabel, detachLabel, foldLabel, text]
+    } else {
+      groupImages = [premiseGroup, line, ruleLabel, deleteLabel, detachLabel, text]
+    }
   } else {
     groupImages = [premiseGroup, line, ruleLabel, text]
   }
