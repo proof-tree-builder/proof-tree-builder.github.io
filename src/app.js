@@ -10,6 +10,7 @@ let successColor = '#4cd625'
 let failureColor = '#dc3545'
 let foldColor = 'lightgray'
 let goodColor = 'black'
+let textFont = 'Helvetica Neue, Helvetica, Arial, sans-serif'
 
 const isLearnMode = () => document.getElementById('mode').checked
 const isAutomateMode = () => !document.getElementById('mode').checked
@@ -242,8 +243,8 @@ const focusOnProof = i => {
   let obj = canvas.item(i)
   canvas.setActiveObject(obj)
   let pt = obj.getPointByOrigin("center", "center")
-  canvas.absolutePan({x: pt.x - window.innerWidth / 2, y: pt.y - window.innerHeight / 2})
   canvas.setZoom(1)
+  canvas.absolutePan({x: pt.x - window.innerWidth / 2, y: pt.y - window.innerHeight / 2})
   canvas.renderAll()
 }
 
@@ -418,7 +419,7 @@ ProofTree.prototype.image = function (root) {
   if (this.folded) {
     premiseImages = this.premises.map(p => {
       ellipses = new fabric.Text('...', {
-        fontFamily: 'Helvetica',
+        fontFamily: textFont,
         fontSize: 30,
         stroke: 'black'
       })
@@ -443,7 +444,7 @@ ProofTree.prototype.image = function (root) {
   let premiseGroup = this.premises ? new fabric.Group(premiseImages, opt) : new fabric.Group([], opt)
 
   let text = new fabric.Text(this.conclusion.unicode(), {
-    fontFamily: 'Helvetica',
+    fontFamily: textFont,
     fontSize: 30
   })
   let newTextPt = (new fabric.Point(0, 30)).add(premiseGroup.getPointByOrigin('center', 'bottom'))
@@ -506,7 +507,7 @@ ProofTree.prototype.image = function (root) {
   let foldLabel = null
   if (isIncomplete) {
     ruleLabel = new fabric.Text(' + ', {
-      fontFamily: 'Helvetica',
+      fontFamily: textFont,
       fontSize: 11,
       stroke: 'white',
       hoverCursor: 'pointer',
@@ -677,13 +678,13 @@ ProofTree.prototype.image = function (root) {
     })
   } else {
     ruleLabel = new fabric.Text(this.unicodeName, {
-      fontFamily: 'Helvetica',
+      fontFamily: textFont,
       fontSize: 10,
       stroke: color
     })
 
     deleteLabel = new fabric.Text(' - ', {
-      fontFamily: 'Helvetica',
+      fontFamily: textFont,
       fontSize: 11,
       stroke: 'white',
       hoverCursor: 'pointer',
@@ -691,7 +692,7 @@ ProofTree.prototype.image = function (root) {
     })
 
     detachLabel = new fabric.Text('✄', {
-      fontFamily: 'Helvetica',
+      fontFamily: textFont,
       fontSize: 11,
       stroke: 'white',
       hoverCursor: 'pointer',
@@ -724,7 +725,7 @@ ProofTree.prototype.image = function (root) {
     if(this.premises.length > 0) {
       let n = "⃠"
       foldLabel = new fabric.Text(n, {
-        fontFamily: 'Helvetica',
+        fontFamily: textFont,
         fontSize: 11,
         stroke: this.folded ? foldColor : 'black',
         hoverCursor: 'pointer',
