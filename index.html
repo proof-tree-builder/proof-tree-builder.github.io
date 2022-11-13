@@ -15,6 +15,10 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
+      a { color: #0d6efd; }
+      a:visited { color: #0d6efd; }
+      a:hover { color: #0a58ca; }
+
       #top-bar {
         position: fixed;
         width: 100%;
@@ -26,9 +30,6 @@
       }
 
       button {
-        /*
-        background: #0d6efd;
-        */
         background: #FFA500;
         color: #212529;
         border: 1px solid #212529;
@@ -38,16 +39,6 @@
         background: #6610f2;
         color: white;
       }
-      /*
-      button.ok {
-        background: #00CC84;
-        color: black;
-      }
-      button.cancel {
-        background: #dc3545;
-        color: white;
-      }
-      */
       button#help {
         background: #c29cff;
         color: black;
@@ -341,16 +332,15 @@
       }
       th, td { padding: 0.5em 1em 0.5em 1em; }
 
+      /* thanks to https://stackoverflow.com/a/8160532/2016295 */
       .latex sub, .latex sup {
         text-transform: uppercase;
       }
-
       .latex sub {
         vertical-align: -0.5ex;
         margin-left: -0.1667em;
         margin-right: -0.125em;
       }
-
       .latex sup {
         font-size: 0.80em;
         vertical-align: 0.15em;

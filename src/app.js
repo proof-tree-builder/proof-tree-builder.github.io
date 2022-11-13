@@ -8,6 +8,7 @@ canvas.setHeight(window.innerHeight)
 let incompleteColor = '#FFA500'
 let successColor = '#4cd625'
 let failureColor = '#dc3545'
+let foldColor = 'lightgray'
 let goodColor = 'black'
 
 const isLearnMode = () => document.getElementById('mode').checked
@@ -23,14 +24,6 @@ const setLoading = (msg) => {
 const unsetLoading = () => {
   document.getElementById("loading").style = "display: none"
   document.getElementById("loadingMsg").style = "display: none"
-}
-const promptTrim = (s) => {
-  let x = prompt(s)
-  if (x === null) {
-    return null
-  } else {
-    return x.trim()
-  }
 }
 
 // Panning with ALT + drag
@@ -185,13 +178,13 @@ const refreshList = () => {
     let status = entry.proof.status()
     let result = ``
     if (status instanceof Unprovable) {
-      result = `<span class="resultBad">✖</span>`
+      result = `<span class="resultBad" title="A part of this proof has failed">✖</span>`
     } else if (status instanceof Incomplete) {
-      result = `<span class="resultIncomplete">✎</span>`
+      result = `<span class="resultIncomplete" title="Incomplete proof">✎</span>`
     } else if (status instanceof CompleteWithZ3) {
-      result = `<span class="resultOk">✓*</span>`
+      result = `<span class="resultOk" title="Complete proof, using Z3">✓*</span>`
     } else if (status instanceof Complete) {
-      result = `<span class="resultOk">✓</span>`
+      result = `<span class="resultOk" title="Complete proof">✓</span>`
     }
 
     ol.innerHTML += `<li value="${i}" class="${entry.selected ? 'selected' : ''}">
@@ -207,8 +200,8 @@ const refreshList = () => {
   })
 }
 
-const addProof = (pf) => {
-  proofs.push({ proof: pf, x1: null, x2: null, y: null, incompletes: [] })
+const addProof = (pf, x1 = null, x2 = null, y = null) => {
+  proofs.push({ proof: pf, x1: x1, x2: x2, y: y, incompletes: [] })
   pf.draw()
   refreshList()
 }
@@ -339,6 +332,9 @@ const help = () => {
   </p>
   <p>
 You can click on the <span style="color: ${incompleteColor}">orange</span> scissors button (✄) to <strong>detach</strong> a proof, i.e. to create a separate proof tree with the current branch and changing the original one into an incomplete one. You can also <strong>attach</strong> a separate proof on another one by <strong>dragging</strong> the subtree and <strong>dropping</strong> on the main one.
+  </p>
+  <p>
+For rules with premises, you can click on the <span style="background: ${foldColor}">gray</span> hide button (⃠) to hide the premises of a proof rule, which shows each premise as an ellipses. Clicking the same button again will reveal the premises. You can use this feature to clean up your workspace while working on large proofs.
   </p>
   <p>
     As you work on the proof, you can click on the buttons on the left bar to either copy the <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
@@ -694,6 +690,7 @@ ProofTree.prototype.image = function (root) {
     deleteLabel.on('mousedown', async (e) => {
       const msg = `Are you sure you want to <strong>unapply</strong> the ${this.unicodeName} rule
                    for the conclusion <br>${this.conclusion.unicode()}<br> and the rules applied after/above?`
+      console.log(this);
       if(await modalConfirm(msg)) {
         this.toDelete = true
         refreshAll()
@@ -704,6 +701,7 @@ ProofTree.prototype.image = function (root) {
       const msg = `Are you sure you want to <strong>detach</strong> the proof at the ${this.unicodeName} rule
                    for the conclusion <br>${this.conclusion.unicode()} ?<br>
                    This will unapply the ${this.unicodeName} rule in the current proof tree, and also will create an extra proof tree with the ${this.unicodeName} rule at the bottom, followed by the rest of this branch of the proof tree.`
+      console.log(this);
       if(await modalConfirm(msg)) {
         let deepCopy = eval(this.reconstructor())
         addProof(deepCopy)
@@ -717,9 +715,9 @@ ProofTree.prototype.image = function (root) {
       foldLabel = new fabric.Text(n, {
         fontFamily: 'Helvetica',
         fontSize: 11,
-        stroke: this.folded ? 'lightgray' : 'black',
+        stroke: this.folded ? foldColor : 'black',
         hoverCursor: 'pointer',
-        backgroundColor: this.folded ? 'black' : 'lightgray'
+        backgroundColor: this.folded ? 'black' : foldColor
       })
       foldLabel.on('mousedown', async (e) => {
         this.folded = !this.folded
@@ -755,17 +753,6 @@ ProofTree.prototype.image = function (root) {
   group.hasControls = false
   group.set({ borderColor: 'black' })
   group.root = root
-  if (this == root) {
-    group.on('moved', e => {
-      proofs.forEach((entry, i) => {
-        if (root == entry.proof) {
-          proofs[i].x1 = e.target.aCoords.bl.x
-          proofs[i].x2 = e.target.aCoords.br.x
-          proofs[i].y = e.target.aCoords.bl.y
-        }
-      })
-    })
-  }
 
   if(isIncomplete) {
     proofs.forEach((entry, i) => {
@@ -777,6 +764,12 @@ ProofTree.prototype.image = function (root) {
   return group
 }
 
+canvas.on('object:modified', e => {
+  let i = proofs.findIndex(entry => e.target.root == entry.proof)
+  proofs[i].x1 = e.target.aCoords.bl.x
+  proofs[i].x2 = e.target.aCoords.br.x
+  proofs[i].y = e.target.aCoords.bl.y
+})
 
 ProofTree.prototype.draw = function () {
   proofs.forEach((entry, i) => { if (this == entry.proof) proofs[i].incompletes = [] })
