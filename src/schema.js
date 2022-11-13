@@ -18,6 +18,12 @@ const deepEqual = (x, y) => {
 // Check if argument (arr) is array of objects type (cl)
 const arrayOf = (arr, cl) => arr instanceof Array && arr.every(a => a instanceof cl)
 
+class Status { }
+class Complete extends Status { }
+class CompleteWithZ3 extends Status { }
+class Incomplete extends Status { }
+class Unprovable extends Status { }
+
 class Term {
   constructor () {
     if (new.target === Term) {
@@ -547,6 +553,14 @@ ${rule}
       default:
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
+  }
+
+  status () {
+    let prems = this.premises.map(p => p.status())
+    if(prems.some(s => s instanceof Unprovable)) { return new Unprovable() }
+    if(prems.some(s => s instanceof Incomplete)) { return new Incomplete() }
+    if(prems.some(s => s instanceof CompleteWithZ3)) { return new CompleteWithZ3() }
+    return new Complete()
   }
 }
 
@@ -1189,12 +1203,23 @@ class Z3Rule extends LKProofTree {
         canvas.remove(obj)
       })
       proofs.map(p => p.proof.draw())
+      refreshList()
 
     })
   }
 
   reconstructor () {
     return `new Z3Rule(${this.conclusion.reconstructor()})`
+  }
+
+  status () {
+    if (this.z3Response === true) {
+      return new CompleteWithZ3()
+    } else if (this.z3Response === false) {
+      return new Unprovable()
+    } else {
+      return new Incomplete()
+    }
   }
 }
 
@@ -1222,6 +1247,14 @@ class LKIncomplete extends LKProofTree {
       return this.completer.reconstructor()
     } else {
       return `new LKIncomplete(${this.conclusion.reconstructor()})`
+    }
+  }
+
+  status () {
+    if (this.completer) {
+      return this.completer.status()
+    } else {
+      return new Incomplete()
     }
   }
 }
@@ -1577,6 +1610,14 @@ ${rule}
         throw new TypeError(`Don't know how to typeset a judgment with ${this.premises.length} premises`)
     }
   }
+
+  status () {
+    let prems = this.premises.map(p => p.status())
+    if(prems.some(s => s instanceof Unprovable)) { return new Unprovable() }
+    if(prems.some(s => s instanceof Incomplete)) { return new Incomplete() }
+    if(prems.some(s => s instanceof CompleteWithZ3)) { return new CompleteWithZ3() }
+    return new Complete()
+  }
 }
 
 /*
@@ -1803,6 +1844,14 @@ class HoareIncomplete extends HoareProofTree {
       return this.completer.reconstructor()
     } else {
       return `new HoareIncomplete(${this.conclusion.reconstructor()})`
+    }
+  }
+
+  status () {
+    if (this.completer) {
+      return this.completer.status()
+    } else {
+      return new Incomplete()
     }
   }
 }

@@ -182,14 +182,27 @@ const refreshList = () => {
   let ol = document.querySelector('#left-bar ol')
   ol.innerHTML = ''
   proofs.forEach((entry, i) => {
+    let status = entry.proof.status()
+    let result = ``
+    if (status instanceof Unprovable) {
+      result = `<span class="resultBad">✖</span>`
+    } else if (status instanceof Incomplete) {
+      result = `<span class="resultIncomplete">✎</span>`
+    } else if (status instanceof CompleteWithZ3) {
+      result = `<span class="resultOk">✓*</span>`
+    } else if (status instanceof Complete) {
+      result = `<span class="resultOk">✓</span>`
+    }
+
     ol.innerHTML += `<li value="${i}" class="${entry.selected ? 'selected' : ''}">
-                        <span onclick="javascript:selectProof(${i})">
+                        <span class="conclusion" onclick="javascript:selectProof(${i})">
                         ${entry.proof.conclusion.unicode()}
                         </span>
                         <br>
                         <button onclick="javascript:giveLatex(${i})" class="latex">L<sup>a</sup>T<sub>e</sub>X</button>
                         <button onclick="javascript:removeProof(${i})">✖ Delete</button>
                         <button onclick="javascript:saveProof(${i})">💾 Save</button>
+                        ${result}
                      </li>`
   })
 }
