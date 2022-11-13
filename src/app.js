@@ -182,8 +182,10 @@ const refreshList = () => {
   let ol = document.querySelector('#left-bar ol')
   ol.innerHTML = ''
   proofs.forEach((entry, i) => {
-    ol.innerHTML += `<li value="${i}">
+    ol.innerHTML += `<li value="${i}" class="${entry.selected ? 'selected' : ''}">
+                        <span onclick="javascript:selectProof(${i})">
                         ${entry.proof.conclusion.unicode()}
+                        </span>
                         <br>
                         <button onclick="javascript:giveLatex(${i})" class="latex">L<sup>a</sup>T<sub>e</sub>X</button>
                         <button onclick="javascript:removeProof(${i})">✖ Delete</button>
@@ -206,6 +208,29 @@ const redrawAll = () => {
 const refreshAll = () => {
   proofs.forEach(pf => { pf.proof = reorganizeTree(pf.proof) })
   redrawAll()
+}
+
+const createSelection = opt => {
+  let root =  opt.selected[0].root
+  let index = proofs.findIndex(entry => root == entry.proof)
+  proofs[index].selected = true
+  refreshList()
+}
+const removeSelection = (opt, shouldRefresh = true) => {
+  for (var i = 0; i < proofs.length; i++) {
+    proofs[i].selected = false
+  }
+  if (shouldRefresh) { refreshList() }
+}
+canvas.on("selection:created", createSelection)
+canvas.on("selection:cleared", removeSelection)
+canvas.on("selection:updated", opt => {
+  removeSelection(opt, false)
+  createSelection(opt)
+})
+const selectProof = i => {
+  canvas.setActiveObject(canvas.item(i))
+  canvas.renderAll()
 }
 
 document.getElementById('addLKGoal').addEventListener('click', async () => {
