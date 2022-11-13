@@ -6,8 +6,8 @@ canvas.setWidth(window.innerWidth)
 canvas.setHeight(window.innerHeight)
 
 let incompleteColor = '#FFA500'
-let successColor = '#00CC84'
-let failureColor = '#FF2500'
+let successColor = '#4cd625'
+let failureColor = '#dc3545'
 let goodColor = 'black'
 
 const isLearnMode = () => document.getElementById('mode').checked
@@ -156,7 +156,7 @@ ${pf.latex()}
 \\end{prooftree}
 \\end{document}`
   copyToClipboard(code)
-  modalAlert(`LaTeX output for the <code>${pf.conclusion.unicode()}</code> proof tree is copied to the clipboard!`)
+  modalAlert(`<span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> output for the <code>${pf.conclusion.unicode()}</code> proof tree is copied to the clipboard!`)
 }
 
 const removeProof = i => {
@@ -185,7 +185,7 @@ const refreshList = () => {
     ol.innerHTML += `<li value="${i}">
                         ${entry.proof.conclusion.unicode()}
                         <br>
-                        <button onclick="javascript:giveLatex(${i})">LaTeX</button>
+                        <button onclick="javascript:giveLatex(${i})" class="latex">L<sup>a</sup>T<sub>e</sub>X</button>
                         <button onclick="javascript:removeProof(${i})">✖ Delete</button>
                         <button onclick="javascript:saveProof(${i})">💾 Save</button>
                      </li>`
@@ -303,7 +303,7 @@ const help = () => {
 You can click on the <span style="color: ${incompleteColor}">orange</span> scissors button (✄) to <strong>detach</strong> a proof, i.e. to create a separate proof tree with the current branch and changing the original one into an incomplete one. You can also <strong>attach</strong> a separate proof on another one by <strong>dragging</strong> the subtree and <strong>dropping</strong> on the main one.
   </p>
   <p>
-    As you work on the proof, you can click on the buttons on the left bar to either copy the LaTeX output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
+    As you work on the proof, you can click on the buttons on the left bar to either copy the <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
   </p>
   <br>
   <h3>Modes of usage</h3>
