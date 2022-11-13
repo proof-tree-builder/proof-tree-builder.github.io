@@ -188,7 +188,7 @@ const refreshList = () => {
     }
 
     ol.innerHTML += `<li value="${i}" class="${entry.selected ? 'selected' : ''}">
-                        <span class="conclusion" onclick="javascript:selectProof(${i})">
+                        <span class="conclusion" onclick="javascript:selectProof(${i})" ondblclick="javascript:focusOnProof(${i})">
                         ${entry.proof.conclusion.unicode()}
                         </span>
                         <br>
@@ -236,6 +236,14 @@ canvas.on("selection:updated", opt => {
 })
 const selectProof = i => {
   canvas.setActiveObject(canvas.item(i))
+  canvas.renderAll()
+}
+const focusOnProof = i => {
+  let obj = canvas.item(i)
+  canvas.setActiveObject(obj)
+  let pt = obj.getPointByOrigin("center", "center")
+  canvas.absolutePan({x: pt.x - window.innerWidth / 2, y: pt.y - window.innerHeight / 2})
+  canvas.setZoom(1)
   canvas.renderAll()
 }
 
@@ -335,6 +343,9 @@ You can click on the <span style="color: ${incompleteColor}">orange</span> sciss
   </p>
   <p>
 For rules with premises, you can click on the <span style="background: ${foldColor}">gray</span> hide button (⃠) to hide the premises of a proof rule, which shows each premise as an ellipses. Clicking the same button again will reveal the premises. You can use this feature to clean up your workspace while working on large proofs.
+  </p>
+  <p>
+  The left bar contains a list of proofs you are working on at a given time. You can click on the goal to select the proof tree in the workspace. Double clicking on the goal will pan you to the proof tree, and reset the zoom. The icon next to buttons for each proof shows whether you have finished the proof (<span class="resultOk">✓</span> or <span class="resultOk">✓*</span> if you have used Z3), or still working on your proof (<span class="resultIncomplete" title="Incomplete proof">✎</span>), or whether the proof has failed for some subtree (<span class="resultBad" title="A part of this proof has failed">✖</span>).
   </p>
   <p>
     As you work on the proof, you can click on the buttons on the left bar to either copy the <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> output for a given proof, or to save that proof onto your computer as a file. You can later reload the proof file into the proof assistant by clicking the "Load proof file" button on the top bar.
