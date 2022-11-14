@@ -170,7 +170,7 @@ const saveProof = i => {
   pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
   pom.setAttribute('download', `${goal}.proof`)
   pom.click()
-};
+}
 
 const refreshList = () => {
   let ol = document.querySelector('#left-bar ol')
@@ -318,8 +318,8 @@ const help = () => {
   </p>
   <br>
   <p>
-    Our Hoare triples are based on a simple imperative language (SIL). 
-    SIL has only 4 kinds of statements: 
+    Our Hoare triples are based on a simple imperative language (SIL).
+    SIL has only 4 kinds of statements:
     <ul class="help-list">
     <li>assignments <code>x := t</code> where <code>t</code> is a term</li>
     <li>conditionals <code>if c then s1 else s2</code> where <code>c</code> is a formula and <code>s1</code> and <code>s2</code> are statements</li>
@@ -334,7 +334,7 @@ const help = () => {
   <br>
   <h2>General usage</h2>
   <p>
-    You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply. 
+    You can click on the <span style="color: ${incompleteColor}">orange</span> plus buttons next to incomplete proof trees, then choose a proof rules to apply.
   </p>
   <p>
     You can click on the <span style="color: ${failureColor}">red</span> minus button to unapply proof rules that are already applied.
@@ -362,7 +362,7 @@ For rules with premises, you can click on the <span style="background: ${foldCol
   <br>
   <h3>Z3 support</h3>
   <p>
-    The proof assistant currently cannot evaluate functions or relations. For example, if there is a term <code>1 + 1</code>, it will get stuck, it will not evaluate to <code>2</code>. Therefore you cannot prove <code>P(1 + 1) |- P(2)</code> by normal proof rules. For these cases, you can use the <strong>Z3</strong> pseudo-rule. This rule runs the Z3 theorem prover in the background to check if the goal is valid. You can also use this rule for other logical goals you do not want to write the full proof for, but still want to check. 
+    The proof assistant currently cannot evaluate functions or relations. For example, if there is a term <code>1 + 1</code>, it will get stuck, it will not evaluate to <code>2</code>. Therefore you cannot prove <code>P(1 + 1) |- P(2)</code> by normal proof rules. For these cases, you can use the <strong>Z3</strong> pseudo-rule. This rule runs the Z3 theorem prover in the background to check if the goal is valid. You can also use this rule for other logical goals you do not want to write the full proof for, but still want to check.
   </p>
   <p>
     If Z3 finds the goal to be valid, it will draw a <span style="color: ${successColor}">green</span> line over it. If Z3 finds the goal to be not valid, it will draw a <span style="color: ${failureColor}">red</span> line over it.
@@ -379,7 +379,7 @@ For rules with premises, you can click on the <span style="background: ${foldCol
   let ex = document.querySelectorAll('ul.help-examples')
   Array.from(ex[0].children).forEach(li => {
     let but = toNodes(`<button>Try this!</button>`)[0]
-    but.addEventListener('click', e => { 
+    but.addEventListener('click', e => {
       addProof(new LKIncomplete(peg.parse(li.children[0].innerText, { startRule: "Sequent" }) ))
       but.style.background = successColor
       but.innerText = "✓"
@@ -390,7 +390,7 @@ For rules with premises, you can click on the <span style="background: ${foldCol
   })
   Array.from(ex[1].children).forEach(li => {
     let but = toNodes(`<button>Try this!</button>`)[0]
-    but.addEventListener('click', e => { 
+    but.addEventListener('click', e => {
       addProof(new HoareIncomplete(peg.parse(li.children[0].innerText, { startRule: "HoareTriple" }) ))
       but.style.background = successColor
       but.innerText = "✓"
@@ -430,7 +430,7 @@ ProofTree.prototype.image = function (root) {
   }
   let isIncomplete = this instanceof LKIncomplete || this instanceof HoareIncomplete
 
-  
+
   premiseImages.forEach((image, i) => {
     if (i === 0) return
 
@@ -607,38 +607,58 @@ ProofTree.prototype.image = function (root) {
                 if(updated === this) { return }
               } else if (rule === WeakeningLeft) {
                 if (this.conclusion.precedents.length < 1) throw new Error('There is no formula on the left side to drop.')
-                const i = await modalRadio('For weakening, select a formula from the left side to drop:', this.conclusion.precedents.map(x => x.unicode()))
+                let i
+                if (this.conclusion.precedents.length === 1) {
+                  i = 0
+                } else {
+                  i = await modalRadio('For weakening, select a formula from the left side to drop:', this.conclusion.precedents.map(x => x.unicode()))
+                }
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === WeakeningRight) {
                 if (this.conclusion.antecedents.length < 1) throw new Error('There is no formula on the right side to drop.')
-                const i = await modalRadio('For weakening, select a formula from the right side to drop:', this.conclusion.antecedents.map(x => x.unicode()))
+                let i
+                if (this.conclusion.antecedents.length === 1) {
+                  i = 0
+                } else {
+                  i = await modalRadio('For weakening, select a formula from the right side to drop:', this.conclusion.antecedents.map(x => x.unicode()))
+                }
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === ContractionLeft) {
                 if (this.conclusion.precedents.length < 1) throw new Error('There is no formula on the left side to repeat.')
-                const i = await modalRadio('For contraction, select a formula from the left side to repeat:', this.conclusion.precedents.map(x => x.unicode()))
+                let i
+                if (this.conclusion.precedents.length === 1) {
+                  i = 0
+                } else {
+                  i = await modalRadio('For contraction, select a formula from the left side to repeat:', this.conclusion.precedents.map(x => x.unicode()))
+                }
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === ContractionRight) {
                 if (this.conclusion.antecedents.length < 1) throw new Error('There is no formula on the right side to repeat.')
-                const i = await modalRadio('For contraction, select a formula from the right side to repeat:', this.conclusion.antecedents.map(x => x.unicode()))
+                let i
+                if (this.conclusion.antecedents.length === 1) {
+                  i = 0
+                } else {
+                  i = await modalRadio('For contraction, select a formula from the right side to repeat:', this.conclusion.antecedents.map(x => x.unicode()))
+                }
                 updated = await applyLK(this.conclusion, rule, i)
               } else if (rule === Cut) {
                 const parsed = await modalFormulaPrompt('Enter the formula to prove:')
                 updated = await applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallLeft) {
-                if (!this.conclusion.precedents.some(e => e instanceof Forall)) throw new Error('There are no ∀-quantified formula on the left side.')
+                if (!this.conclusion.precedents.some(e => e instanceof Forall)) throw new Error('There is no ∀-quantified formula on the left side.')
                 const parsed = await modalTermPrompt('Enter the term to substitute for the variable currently bound by ∀:')
                 updated = await applyLK(this.conclusion, rule, parsed)
               } else if (rule === ExistsRight) {
-                console.log(this.conclusion.antecedents);
-                if (!this.conclusion.antecedents.some(e => e instanceof Exists)) throw new Error('There are no ∃-quantified formula on the right side.')
+                console.log(this.conclusion.antecedents)
+                if (!this.conclusion.antecedents.some(e => e instanceof Exists)) throw new Error('There is no ∃-quantified formula on the right side.')
                 const parsed = await modalTermPrompt('Enter the term to substitute for the variable currently bound by ∃:')
                 updated = await applyLK(this.conclusion, rule, parsed)
               } else if (rule === ForallRight) {
-                if (!this.conclusion.antecedents.some(e => e instanceof Forall)) throw new Error('There are no ∀-quantified formula on the right side.')
+                if (!this.conclusion.antecedents.some(e => e instanceof Forall)) throw new Error('There is no ∀-quantified formula on the right side.')
                 const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable currently bound by ∀:')
                 updated = await applyLK(this.conclusion, rule, new TermVar(parsed))
               } else if (rule === ExistsLeft) {
-                if (!this.conclusion.precedents.some(e => e instanceof Exists)) throw new Error('There are no ∃-quantified formula on the left side.')
+                if (!this.conclusion.precedents.some(e => e instanceof Exists)) throw new Error('There is no ∃-quantified formula on the left side.')
                 const parsed = await modalNamePrompt('Enter a fresh variable to substitute for the variable currently bound by ∃:')
                 updated = await applyLK(this.conclusion, rule, new TermVar(parsed))
               } else {
@@ -670,7 +690,7 @@ ProofTree.prototype.image = function (root) {
             entry.proof.draw()
           } catch(err) {
             modalWarning(err.message)
-            console.log(err);
+            console.log(err)
           }
         })
       })
@@ -702,7 +722,7 @@ ProofTree.prototype.image = function (root) {
     deleteLabel.on('mousedown', async (e) => {
       const msg = `Are you sure you want to <strong>unapply</strong> the ${this.unicodeName} rule
                    for the conclusion <br>${this.conclusion.unicode()}<br> and the rules applied after/above?`
-      console.log(this);
+      console.log(this)
       if(await modalConfirm(msg)) {
         this.toDelete = true
         refreshAll()
@@ -713,7 +733,7 @@ ProofTree.prototype.image = function (root) {
       const msg = `Are you sure you want to <strong>detach</strong> the proof at the ${this.unicodeName} rule
                    for the conclusion <br>${this.conclusion.unicode()} ?<br>
                    This will unapply the ${this.unicodeName} rule in the current proof tree, and also will create an extra proof tree with the ${this.unicodeName} rule at the bottom, followed by the rest of this branch of the proof tree.`
-      console.log(this);
+      console.log(this)
       if(await modalConfirm(msg)) {
         let deepCopy = eval(this.reconstructor())
         addProof(deepCopy)
