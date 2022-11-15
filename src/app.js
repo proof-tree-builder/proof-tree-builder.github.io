@@ -558,10 +558,10 @@ ProofTree.prototype.image = function (root) {
           let applicables = applicableLK(this.conclusion).map(x => x.name)
           box.querySelectorAll('button').forEach(but => {
             if (but.value === "Z3Rule") { return }
-            if (but.value === "WeakeningLeft") { return }
-            if (but.value === "WeakeningRight") { return }
-            if (but.value === "ContractionLeft") { return }
-            if (but.value === "ContractionRight") { return }
+            if (but.value === "WeakeningLeft") { if (this.conclusion.precedents.length > 0) { return } else { but.remove() } }
+            if (but.value === "WeakeningRight") { if (this.conclusion.antecedents.length > 0) { return } else { but.remove() } }
+            if (but.value === "ContractionLeft") { if (this.conclusion.precedents.length > 0) { return } else { but.remove() } }
+            if (but.value === "ContractionRight") { if (this.conclusion.antecedents.length > 0) { return } else { but.remove() } }
             if (but.value === "'Auto'") { return }
             if (!applicables.includes(but.value)) { but.remove() }
           })
