@@ -31,14 +31,31 @@ class Term {
     }
   }
 
+  precedence () {
+    return 3
+  }
+
   // checks if we should put parens around this formula
   shouldParen () {
     return !(this instanceof TermVar || this instanceof TermInt || this instanceof TermFun)
   }
 
   // parenthesize the formula if necessary in the Unicode or LaTeX rendering
-  punicode () { return this.shouldParen() ? `(${this.unicode()})` : this.unicode() }
-  platex () { return this.shouldParen() ? `(${this.latex()})` : this.latex() }
+  punicode (parentPrec = null, position = 'left') {
+    const prec = this.precedence()
+    const needsParen = parentPrec !== null &&
+      (prec < parentPrec || (position === 'right' && prec === parentPrec))
+    const text = this.unicode()
+    return needsParen ? `(${text})` : (this.shouldParen() ? `(${text})` : text)
+  }
+
+  platex (parentPrec = null, position = 'left') {
+    const prec = this.precedence()
+    const needsParen = parentPrec !== null &&
+      (prec < parentPrec || (position === 'right' && prec === parentPrec))
+    const text = this.latex()
+    return needsParen ? `(${text})` : (this.shouldParen() ? `(${text})` : text)
+  }
 }
 
 class TermVar extends Term {
@@ -131,6 +148,8 @@ class TermIte extends Term {
       this.t.subst(v, term),
       this.e.subst(v, term))
   }
+
+  precedence () { return 0 }
 
   unicode () { return `if ${this.cond.punicode()} then ${this.t.punicode()} else ${this.e.punicode()}` }
   latex () { return `\\text{if}\\; ${this.cond.platex()} \\;\\text{then}\\; ${this.t.platex()} \\;\\text{else}\\; ${this.e.platex()}` }
@@ -1276,8 +1295,19 @@ class AddTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.punicode()} + ${this.second.punicode()}` }
-  latex () { return `${this.first.platex()} + ${this.second.platex()}` }
+  precedence () { return 1 }
+
+  unicode () {
+    const left = this.first.punicode(this.precedence(), 'left')
+    const right = this.second.punicode(this.precedence(), 'right')
+    return `${left} + ${right}`
+  }
+
+  latex () {
+    const left = this.first.platex(this.precedence(), 'left')
+    const right = this.second.platex(this.precedence(), 'right')
+    return `${left} + ${right}`
+  }
   reconstructor () {
     return `new AddTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1298,8 +1328,19 @@ class SubtractTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.punicode()} - ${this.second.punicode()}` }
-  latex () { return `${this.first.platex()} - ${this.second.platex()}` }
+  precedence () { return 1 }
+
+  unicode () {
+    const left = this.first.punicode(this.precedence(), 'left')
+    const right = this.second.punicode(this.precedence(), 'right')
+    return `${left} - ${right}`
+  }
+
+  latex () {
+    const left = this.first.platex(this.precedence(), 'left')
+    const right = this.second.platex(this.precedence(), 'right')
+    return `${left} - ${right}`
+  }
   reconstructor () {
     return `new SubtractTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1320,8 +1361,19 @@ class MultiplyTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.punicode()} * ${this.second.punicode()}` }
-  latex () { return `${this.first.platex()} * ${this.second.platex()}` }
+  precedence () { return 2 }
+
+  unicode () {
+    const left = this.first.punicode(this.precedence(), 'left')
+    const right = this.second.punicode(this.precedence(), 'right')
+    return `${left} * ${right}`
+  }
+
+  latex () {
+    const left = this.first.platex(this.precedence(), 'left')
+    const right = this.second.platex(this.precedence(), 'right')
+    return `${left} * ${right}`
+  }
   reconstructor () {
     return `new MultiplyTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
@@ -1342,8 +1394,19 @@ class DivideTerms extends TermFun {
       this.second.subst(v, term))
   }
 
-  unicode () { return `${this.first.punicode()} / ${this.second.punicode()}` }
-  latex () { return `${this.first.platex()} / ${this.second.platex()}` }
+  precedence () { return 2 }
+
+  unicode () {
+    const left = this.first.punicode(this.precedence(), 'left')
+    const right = this.second.punicode(this.precedence(), 'right')
+    return `${left} / ${right}`
+  }
+
+  latex () {
+    const left = this.first.platex(this.precedence(), 'left')
+    const right = this.second.platex(this.precedence(), 'right')
+    return `${left} / ${right}`
+  }
   reconstructor () {
     return `new DivideTerms(${this.first.reconstructor()}, ${this.second.reconstructor()})`
   }
